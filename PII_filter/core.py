@@ -1,6 +1,4 @@
 
-# PII_filter/core.py
-
 from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern, RecognizerResult
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
@@ -15,19 +13,58 @@ logging.getLogger().setLevel(logging.ERROR)
 # ============================================================
 # Helpers: Unicode-friendly "word" class (no \p{}, Python-safe)
 # ============================================================
+# Allow a dot '.' in name words (e.g., "17." in "Straße des 17. Juni")
 NAME_WORD = (
     r"(?:[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ\u00C0-\u024F\u0370-\u03FF"
     r"\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F"
     r"\u08A0-\u08FF]"
     r"[A-Za-z0-9À-ÖØ-öø-ÿĀ-ſ\u00C0-\u024F\u0370-\u03FF"
     r"\u0400-\u04FF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F"
-    r"\u08A0-\u08FF'’-]*)"
+    r"\u08A0-\u08FF'’\.-]*)"
 )
 
+# ============================================================
+# Street types
+# ============================================================
+# Expanded general STREET_TYPES (kept your international ones + full German set)
 STREET_TYPES = (
-    r"(?:street|st\.?|road|rd\.?|avenue|ave\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?"
-    r"|rue|chemin|allee|via|viale|calle|carrer"
-    r"|straße|strasse|str\.?|caddesi|cad\.?|sokak|sk\.?)"
+    r"(?:"
+    # English / international
+    r"street|st\.?|road|rd\.?|avenue|ave\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?"
+    r"|rue|chemin|via|viale|calle|carrer"
+    # Core German
+    r"|allee|weg|platz|ufer|ring|damm"
+    r"|straße|strasse|str\.?"
+    # Newly added German/DE variants
+    r"|gasse|gässchen|gäßchen|gässle|gäßle|gaesschen|gaessle"
+    r"|chaussee|chaus\."
+    r"|brücke|bruecke"
+    r"|steig|stiege|stieg|steg"
+    r"|zeile|pfad"
+    r"|twiete|tweute|twete"
+    r"|hohl|hohle"
+    r"|berg|tal|thal|wald|feld|see|bach"
+    r"|kai|kanal|deich|wall|gürtel|guertel|markt|anger"
+    # Turkish (kept)
+    r"|caddesi|cad\.?|sokak|sk\.?"
+    r")"
+)
+
+# Dedicated German street suffix list (ordered longest-first to avoid partials like 'see' inside 'chaussee')
+STREET_TYPES_DE = (
+    r"(?:"
+    r"straße|strasse|str\.?"
+    r"|chaussee|chaus\."
+    r"|gässchen|gäßchen|gässle|gäßle|gaesschen|gaessle|gasse"
+    r"|allee|platz|ufer|ring|damm|weg"
+    r"|brücke|bruecke"
+    r"|stiege|steig|stieg|steg"
+    r"|zeile|pfad"
+    r"|twiete|tweute|twete"
+    r"|hohle|hohl"
+    r"|berg|thal|tal|wald|feld|see|bach"
+    r"|kai|kanal|deich|wall|gürtel|guertel|markt|anger"
+    r")"
 )
 
 # ============================================================
@@ -63,11 +100,37 @@ PATTERN_NUM_NAME_TYPE = rf"""
 \b
 """
 
+# Classic DE "…straße/strasse/str." + (optional) number/range
 PATTERN_DE_SUFFIX_NUM = rf"""
 \b
 [A-ZÄÖÜ][\wÄÖÜäöüß'’-]*?(?:straße|strasse|str\.)
 \s*
 \d{{1,5}}[a-zA-Z]?
+(?:\s*[-–]\s*\d+[a-zA-Z]?)?
+\b
+"""
+
+# German prefix-based street names (with/without house number)
+# e.g., "Am Kupfergraben 4", "Im Wiesental", "An der Spree 12"
+PATTERN_DE_PREFIX_STREET = rf"""
+\b
+(?:Am|Im|In(?:\s+der|\s+den|\s+dem)?|An(?:\s+der|\s+den|\s+dem)?|
+   Auf(?:\s+der|\s+dem)?|Unter(?:\s+der|\s+den|\s+dem)?|Über(?:\s+der|\s+den|\s+dem)?|
+   Vor(?:\s+der|\s+den|\s+dem)?|Hinter(?:\s+der|\s+den|\s+dem)?|Neben(?:\s+der|\s+den|\s+dem)?|
+   Bei(?:\s+der|\s+den|\s+dem)?|Zu(?:m|r))
+\s+
+(?:{NAME_WORD}(?:\s+{NAME_WORD}){{0,4}})
+(?:\s+\d{{1,5}}[a-zA-Z]?)?
+\b
+"""
+
+# Any Uppercase-started German compound ending with a known street suffix,
+# with optional house number/range. Catches "Kurfürstendamm", "Alexanderplatz", "Seebach 3".
+PATTERN_DE_ANY_SUFFIX = rf"""
+\b
+[A-ZÄÖÜ][\wÄÖÜäöüß'’-]+?(?:{STREET_TYPES_DE})
+\s*
+\d{{0,5}}[a-zA-Z]?
 (?:\s*[-–]\s*\d+[a-zA-Z]?)?
 \b
 """
@@ -95,6 +158,8 @@ STRICT_ADDRESS_REGEX = (
     f"(?:{PATTERN_TYPE_NAME_NUM})|"
     f"(?:{PATTERN_NUM_NAME_TYPE})|"
     f"(?:{PATTERN_DE_SUFFIX_NUM})|"
+    f"(?:{PATTERN_DE_PREFIX_STREET})|"
+    f"(?:{PATTERN_DE_ANY_SUFFIX})|"
     f"(?:{PATTERN_TR_NO})|"
     f"(?:{PATTERN_ARABIC})"
 )
@@ -370,7 +435,7 @@ def _resolve_overlaps(text, items):
     for r in items:
         drop=False
         for k in kept:
-            if not (r.end<=k.start or r.start>=k.end):
+            if not (r.end <= k.start or r.start >= k.end):
                 if PRIORITY[r.entity_type] > PRIORITY[k.entity_type] or \
                    (PRIORITY[r.entity_type]==PRIORITY[k.entity_type] and (r.end-r.start) > (k.end-k.start)):
                     kept.remove(k)
@@ -389,7 +454,7 @@ def _demote_phone_over_date(text, items):
     for r in items:
         if r.entity_type!="PHONE_NUMBER":
             out.append(r); continue
-        if any(not(r.end<=ds or r.start>=de) for ds,de in dates):
+        if any(not(r.end <= ds or r.start >= de) for ds,de in dates):
             continue
         out.append(r)
     return out
@@ -403,6 +468,83 @@ def _filter_label_leading_locations(text, items):
             if any(tail.strip().startswith(k) for k in ["passport", "id", "identity", "personalausweis"]):
                 # skip this location to avoid '<LOCATION> Passport'
                 continue
+        out.append(r)
+    return out
+
+# ============================================================
+# Toggleable FALSE-POSITIVE GUARDS (no class; keyword flags)
+# ============================================================
+NATURAL_SUFFIXES = ("berg","tal","thal","wald","feld","see","bach")
+
+ADDRESS_CONTEXT_KEYWORDS = (
+    "wohne", "wohnhaft", "adresse", "liegt", "befindet", "ist in", "bei"
+)
+
+def _guard_natural_suffix_requires_number(text: str, items, suffixes: tuple):
+    """Drop ADDRESS if span ends with a natural-feature suffix and has no digits."""
+    if not items:
+        return items
+    out = []
+    for r in items:
+        if r.entity_type == "ADDRESS":
+            span = text[r.start:r.end].strip()
+            lower = span.lower()
+            if any(lower.endswith(suf) for suf in suffixes):
+                if not re.search(r"\d", span):
+                    # no house number → drop
+                    continue
+        out.append(r)
+    return out
+
+def _guard_single_token_addresses(text: str, items):
+    """Drop ADDRESS if it is a single token without any digits."""
+    if not items:
+        return items
+    out = []
+    for r in items:
+        if r.entity_type=="ADDRESS":
+            span=text[r.start:r.end].strip()
+            if len(span.split()) == 1 and not re.search(r"\d", span):
+                continue
+        out.append(r)
+    return out
+
+def _guard_address_vs_person(items):
+    """Prefer PERSON over ADDRESS on overlaps."""
+    if not items:
+        return items
+    persons = [p for p in items if p.entity_type == "PERSON"]
+    if not persons:
+        return items
+    out = []
+    for r in items:
+        if r.entity_type == "ADDRESS":
+            overlap_with_person = any(not (r.end <= p.start or r.start >= p.end) for p in persons)
+            if overlap_with_person:
+                # drop ADDRESS in favor of PERSON
+                continue
+        out.append(r)
+    return out
+
+def _guard_requires_context(text: str, items, keywords: tuple, window: int):
+    """
+    If ADDRESS has no digits (no house number), require presence of address-ish context
+    within `window` chars around the span.
+    """
+    if not items:
+        return items
+    lower = text.lower()
+    out = []
+    for r in items:
+        if r.entity_type == "ADDRESS":
+            span = text[r.start:r.end]
+            if not re.search(r"\d", span):
+                left = max(0, r.start - window)
+                right = min(len(text), r.end + window)
+                ctx = lower[left:right]
+                if not any(k in ctx for k in keywords):
+                    # no contextual evidence → drop
+                    continue
         out.append(r)
     return out
 
@@ -463,9 +605,9 @@ def _merge_address_location(text, items):
     items=sorted(items,key=lambda r:r.start)
     merged=[]
     i=0
-    while i<len(items):
+    while i < len(items):
         cur=items[i]
-        if i+1<len(items):
+        if i+1 < len(items):
             nxt=items[i+1]
             between=text[cur.end:nxt.start]
             if (cur.entity_type=="ADDRESS" and nxt.entity_type=="LOCATION") or \
@@ -482,7 +624,16 @@ def _merge_address_location(text, items):
 # ============================================================
 # MAIN
 # ============================================================
-def anonymize_text(text: str) -> str:
+def anonymize_text(
+    text: str,
+    *,
+    guards_enabled: bool = True,
+    guard_natural_suffix_requires_number: bool = True,
+    guard_single_token_addresses: bool = True,
+    guard_address_vs_person_priority: bool = True,
+    guard_requires_context_without_number: bool = True,
+    guard_context_window: int = 40
+) -> str:
     if not text or not text.strip():
         return text
 
@@ -514,24 +665,35 @@ def anonymize_text(text: str) -> str:
 
     final=_inject_custom_matches(text,filtered)
 
-    final=_demote_phone_over_date(text,final)
+    # ---------- Toggleable guards ----------
+    if guards_enabled:
+        if guard_natural_suffix_requires_number:
+            final = _guard_natural_suffix_requires_number(text, final, NATURAL_SUFFIXES)
+        if guard_single_token_addresses:
+            final = _guard_single_token_addresses(text, final)
+        if guard_address_vs_person_priority:
+            final = _guard_address_vs_person(final)
+        if guard_requires_context_without_number:
+            final = _guard_requires_context(text, final, ADDRESS_CONTEXT_KEYWORDS, guard_context_window)
+    # --------------------------------------
 
+    final=_demote_phone_over_date(text,final)
     final=_merge_address_location(text,final)
 
-    # MASKS 
+    # MASKS: single-escaped HTML tokens (as requested)
     operators={
 
-        "PERSON":        OperatorConfig("replace", {"new_value": "<PERSON>"}),
-        "EMAIL_ADDRESS": OperatorConfig("replace", {"new_value": "<EMAIL>"}),
-        "PHONE_NUMBER":  OperatorConfig("replace", {"new_value": "<PHONE>"}),
-        "ADDRESS":       OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
-        "LOCATION":      OperatorConfig("replace", {"new_value": "<LOCATION>"}),
+        "PERSON":        OperatorConfig("replace", {"new_value": "&lt;PERSON&gt;"}),
+        "EMAIL_ADDRESS": OperatorConfig("replace", {"new_value": "&lt;EMAIL&gt;"}),
+        "PHONE_NUMBER":  OperatorConfig("replace", {"new_value": "&lt;PHONE&gt;"}),
+        "ADDRESS":       OperatorConfig("replace", {"new_value": "&lt;ADDRESS&gt;"}),
+        "LOCATION":      OperatorConfig("replace", {"new_value": "&lt;LOCATION&gt;"}),
 
-        "DATE":          OperatorConfig("replace", {"new_value": "<DATE>"}),
-        "PASSPORT":      OperatorConfig("replace", {"new_value": "<PASSPORT>"}),
-        "ID_NUMBER":     OperatorConfig("replace", {"new_value": "<ID_NUMBER>"}),
-        "TAX_ID":        OperatorConfig("replace", {"new_value": "<TAX_ID>"}),
-        "IP_ADDRESS":    OperatorConfig("replace", {"new_value": "<IP_ADDRESS>"})
+        "DATE":          OperatorConfig("replace", {"new_value": "&lt;DATE&gt;"}),
+        "PASSPORT":      OperatorConfig("replace", {"new_value": "&lt;PASSPORT&gt;"}),
+        "ID_NUMBER":     OperatorConfig("replace", {"new_value": "&lt;ID_NUMBER&gt;"}),
+        "TAX_ID":        OperatorConfig("replace", {"new_value": "&lt;TAX_ID&gt;"}),
+        "IP_ADDRESS":    OperatorConfig("replace", {"new_value": "&lt;IP_ADDRESS&gt;"})
     }
 
     out=anonymizer.anonymize(text=text, analyzer_results=final, operators=operators)

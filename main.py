@@ -19,6 +19,16 @@ Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
 """,
 
+    "German": """
+Mein Name ist Max Mustermann, geboren am 31.12.1990.
+Ich wohne in der Musterallee 5, 10115 Berlin.
+Meine E‑Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
+Personalausweisnummer: T22000129
+Steuer-ID: 12 345 678 901
+USt-IdNr.: DE 123456789
+""",
+
+
     "French": """
 Je m'appelle Marie Dupont, née le 31-05-1995.
 J'habite au 12 rue de Rivoli, 75001 Paris.
