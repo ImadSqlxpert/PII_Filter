@@ -1066,6 +1066,57 @@ class PIIFilter:
                 continue
             out.append(r)
         return out
+    import re  # ensure this is at the top of your file
+
+# ... inside class PIIFilter:
+
+    def _filter_locations_with_inline_or_near_labels(self, text: str, items, window: int = 28):
+        """
+        Drop LOCATION when ID/PASSPORT/TAX label keywords appear:
+          • inside the LOCATION span (inline), or
+          • within `window` chars on either side (adjacent).
+        This catches cases where NLP expands the LOCATION span to include label tokens
+        (e.g., '10115 Berlin VAT') and removes them to avoid misleading LOCATION output.
+        """
+        if not items:
+            return items
+
+        # Lowercased text for robust matching.
+        lt = text.lower()
+
+        # Lowercase keyword set for consistent containment checks.
+        label_tokens_lower = (
+            {kw.lower() for kw in self.PASSPORT_KEYWORDS}
+            | {kw.lower() for kw in self.ID_KEYWORDS}
+            | {kw.lower() for kw in self.TAX_KEYWORDS}
+        )
+
+        out = []
+        for r in items:
+            if r.entity_type != "LOCATION":
+                out.append(r)
+                continue
+
+            # Inline (inside span)
+            span_lower = lt[r.start:r.end]
+            if any(kw in span_lower for kw in label_tokens_lower):
+                # Label keyword is *inside* the LOCATION span → drop it
+                continue
+
+            # Adjacent (left/right window)
+            left = lt[max(0, r.start - window):r.start]
+            right = lt[r.end:min(len(text), r.end + window)]
+            # Normalize boundary punctuation/whitespace
+            left_norm = re.sub(r"[\s:,\-–—\|]+$", " ", left)
+            right_norm = re.sub(r"^[\s:,\-–—\|]+", " ", right)
+
+            if any(kw in left_norm for kw in label_tokens_lower) or any(kw in right_norm for kw in label_tokens_lower):
+                # Label keyword is right next to the LOCATION span → drop it
+                continue
+
+            out.append(r)
+
+        return out
     
     def _filter_non_postal_locations(self, text: str, items, enable: bool = True, window: int = 16):
         """
@@ -1117,6 +1168,41 @@ class PIIFilter:
             # Standalone city/country/location term without digits and not near address → drop
             # (e.g., "Toronto", "Beverly Hills", "Tokyo" in isolation)
             continue
+
+        return out
+    
+    def _filter_locations_with_inline_or_near_labels(self, text: str, items, window: int = 28):
+        """
+        Drop LOCATION when ID/PASSPORT/TAX label keywords appear:
+      • inside the LOCATION span, or
+      • within `window` chars on either side.
+        This catches cases where NLP expands span to include the label token (e.g., '10115 Berlin VAT').
+        """
+        label_tokens = set(self.PASSPORT_KEYWORDS) | set(self.ID_KEYWORDS) | set(self.TAX_KEYWORDS)
+        if not items:
+            return items
+
+        lower_text = text.lower()
+        out = []
+        for r in items:
+            if r.entity_type != "LOCATION":
+                out.append(r)
+                continue
+
+            span_lower = lower_text[r.start:r.end]
+            if any(kw in span_lower for kw in label_tokens):
+                # Label keyword was included inside the LOCATION span → drop it
+                continue
+
+            left = lower_text[max(0, r.start - window):r.start]
+            right = lower_text[r.end:min(len(text), r.end + window)]
+            left_norm = re.sub(r"[\s:,\-–—\|]+$", " ", left)
+            right_norm = re.sub(r"^[\s:,\-–—\|]+", " ", right)
+            if any(kw in left_norm for kw in label_tokens) or any(kw in right_norm for kw in label_tokens):
+                # Label keyword is adjacent (left/right window) → drop it
+                continue
+
+            out.append(r)
 
         return out
 
@@ -1608,10 +1694,16 @@ class PIIFilter:
 
         # Custom injections
         final = self._inject_custom_matches(text, filtered)
+        
+        # Drop LOCATION when a label keyword is inline or adjacent
+        final = self._filter_locations_with_inline_or_near_labels(text, final, window=28)
 
         # strict LOCATION policy — drop standalone city names unless postal/near-address
         final = self._filter_non_postal_locations(text, final, enable=self.STRICT_LOCATION_POSTAL_ONLY)
-        
+
+        # strict LOCATION policy — drop standalone city names unless postal/near-address
+        final = self._filter_non_postal_locations(text, final, enable=self.STRICT_LOCATION_POSTAL_ONLY)
+
         # Address guards
         if guards_enabled:
             if guard_natural_suffix_requires_number:
