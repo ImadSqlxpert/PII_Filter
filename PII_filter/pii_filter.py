@@ -106,7 +106,7 @@ class PIIFilter:
 
         # Feature flag to include loose unlabeled TAX fallbacks (default off)
         self.ENABLE_LOOSE_TAX = False
-
+        self.STRICT_LOCATION_POSTAL_ONLY = True
         self._build_patterns()
         self._setup_analyzer()
 
@@ -563,10 +563,15 @@ class PIIFilter:
             r"(?i)\b(?:personalausweis(?:nummer|nr\.?)|identity\s*card|id\s*(?:no\.?|number)|dni|nif|nie|bsn|pesel|egn|cnp|amka|cpr|rodné\s*číslo|rodne\s*cislo|jmbg|emšo|emso)"
             r"\s*[:#]?\s*([A-Z0-9][A-Z0-9\-]{4,24})"
         )
+        
         self.LABELED_TAX_VALUE_RX = re.compile(
-            r"(?i)\b(?:steuer[-\s]*id|steueridentifikationsnummer|tin|tax\s*id|tax\s*number|vat|ust-?id(?:nr\.?)?|ustid|vies|nif|nie|siren|siret|piva|p\.?iva|afm|utr|cvr|oib|nip|regon|dic|cui|eik|bulstat)"
-            r"\s*[:#]?\s*([A-Z]{2}\s*[A-Z0-9][A-Z0-9\.\-\s]{1,24}|[A-Z0-9\-\s]{6,24})"
+             r"(?i)\b(?:steuer[-\s]*id|steueridentifikationsnummer|tin|tax\s*id|tax\s*number|vat|ust-?id(?:nr\.?)?|ustid|vies|nif|nie|siren|siret|piva|p\.?iva|afm|utr|cvr|oib|nip|regon|dic|cui|eik|bulstat)"
+                r"\s*[:#]?\s*("
+                 r"(?=[A-Z]{2}\s*[A-Z0-9][A-Z0-9\.\-\s]{1,24})(?=.*\d)[A-Z]{2}\s*[A-Z0-9][A-Z0-9\.\-\s]{1,24}"
+                 r"|(?=[A-Z0-9\-\s]{6,24})(?=.*\d)[A-Z0-9\-\s]{6,24}"
+                    r")"
         )
+
 
         # US IDs: SSN/ITIN/EIN (label-led only)
         self.SSN_LABEL_RX = re.compile(r"(?i)\bssn\b[:#\-]?\s*(\d{3}-\d{2}-\d{4}|\d{9})")
@@ -1061,6 +1066,59 @@ class PIIFilter:
                 continue
             out.append(r)
         return out
+    
+    def _filter_non_postal_locations(self, text: str, items, enable: bool = True, window: int = 16):
+        """
+        Drop LOCATION results which are:
+          - standalone (no digits in span),
+          - and not overlapping/near an ADDRESS (within `window` chars).
+
+        Keep:
+          - postal+city (digits present),
+          - address-adjacent locations.
+
+        This narrows LOCATION to address/postal contexts and prevents generic city name FPs.
+        """
+        if not enable or not items:
+            return items
+
+        # Collect address spans
+        addr_spans = [(r.start, r.end) for r in items if r.entity_type == "ADDRESS"]
+
+        def near_address(loc_start: int, loc_end: int) -> bool:
+            for (as_, ae) in addr_spans:
+                # overlap
+                if not (loc_end <= as_ or loc_start >= ae):
+                    return True
+                # adjacency
+                if abs(loc_start - ae) <= window or abs(as_ - loc_end) <= window:
+                    return True
+            return False
+
+        out = []
+        for r in items:
+            if r.entity_type != "LOCATION":
+                out.append(r)
+                continue
+
+            span = text[r.start:r.end]
+            has_digit = any(ch.isdigit() for ch in span)
+
+            if has_digit:
+                # Postal+city case (e.g., EU postal injections); keep
+                out.append(r)
+                continue
+
+            if near_address(r.start, r.end):
+                # Location is part of or next to an address; keep
+                out.append(r)
+                continue
+
+            # Standalone city/country/location term without digits and not near address → drop
+            # (e.g., "Toronto", "Beverly Hills", "Tokyo" in isolation)
+            continue
+
+        return out
 
     def _guard_natural_suffix_requires_number(self, text: str, items, suffixes: tuple):
         if not items:
@@ -1551,6 +1609,9 @@ class PIIFilter:
         # Custom injections
         final = self._inject_custom_matches(text, filtered)
 
+        # strict LOCATION policy — drop standalone city names unless postal/near-address
+        final = self._filter_non_postal_locations(text, final, enable=self.STRICT_LOCATION_POSTAL_ONLY)
+        
         # Address guards
         if guards_enabled:
             if guard_natural_suffix_requires_number:

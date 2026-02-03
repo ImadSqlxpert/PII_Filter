@@ -1,0 +1,14 @@
+{
+  "tests/unit/test_regex_patterns.py::test_address_regex_negative[This is not an address]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[ABC12 London]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[123 Berlin]": true,
+  "tests/unit/test_regex_patterns.py::test_address_regex_negative[This string should never look like a street]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[ABC-123 London]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[1234 Berlin]": true,
+  "tests/unit/test_regex_patterns.py::test_address_regex_negative[Random text without patterns]": true,
+  "tests/unit/test_regex_patterns.py::test_address_regex_negative[Lorem ipsum dolor sit amet]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[90210-1234 Beverly Hills]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[150-0001 Tokyo]": true,
+  "tests/unit/test_regex_patterns.py::test_postal_regex_negative[01001-000 S\\xe3o Paulo]": true,
+  "tests/unit/test_ids_tax.py::test_id_number_positive[UK NINO: QQ 12 34 56 C]": true
+}
