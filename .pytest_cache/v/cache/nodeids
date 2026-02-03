@@ -1,0 +1,14 @@
+[
+  "tests/unit/test_validators.py::test_aba_invalid",
+  "tests/unit/test_validators.py::test_aba_valid",
+  "tests/unit/test_validators.py::test_geo_bounds_invalid",
+  "tests/unit/test_validators.py::test_geo_bounds_valid",
+  "tests/unit/test_validators.py::test_iban_invalid",
+  "tests/unit/test_validators.py::test_iban_valid",
+  "tests/unit/test_validators.py::test_imei_invalid",
+  "tests/unit/test_validators.py::test_imei_valid",
+  "tests/unit/test_validators.py::test_luhn_invalid",
+  "tests/unit/test_validators.py::test_luhn_valid",
+  "tests/unit/test_validators.py::test_nhs_invalid",
+  "tests/unit/test_validators.py::test_nhs_valid"
+]

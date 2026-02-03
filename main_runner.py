@@ -52,14 +52,14 @@ except Exception:
 pf_class = None
 anonymize_fn = None
 try:
-    from PII_filter.core import PIIFilter as _PF
+    from pii_filter.pii_filter import PIIFilter as _PF
     pf_class = _PF
 except Exception:
     pass
 
 if anonymize_fn is None:
     try:
-        from PII_filter.core import anonymize_text as _ANON
+        from pii_filter.pii_filter import anonymize_text as _ANON
         anonymize_fn = _ANON
     except Exception:
         pass

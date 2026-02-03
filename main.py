@@ -1,4 +1,4 @@
-from PII_filter.core import anonymize_text
+from pii_filter.pii_filter import anonymize_text
 
 
 TEST_TEXTS = {
