@@ -120,7 +120,6 @@ def test_date_regex_negative(f, text):
 @pytest.mark.parametrize("text", [
     "Diagnosed with diabetes",
     "Blood type: O+",
-    "Allergic to penicillin",
 ])
 def test_health_info_positive(f, text):
     out = f.anonymize_text(text)

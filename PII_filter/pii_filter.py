@@ -934,11 +934,16 @@ class PIIFilter:
             patterns=[Pattern("iban", self.IBAN_RX.pattern, 0.40),
                       Pattern("bic", self.BIC_RX.pattern, 0.40)],
         )
+        self.health_recognizer = PatternRecognizer(
+            supported_entity="HEALTH_INFO", supported_language="all",
+            patterns=[Pattern("health_terms", r"(?i)\b(?:allergic|diagnosed|blood\s*type|diabetes|hypertension|asthma|cancer|heart\s*disease|penicillin|insulin|medication)\b", 0.60)],
+        )
 
         for rec in [
             self.address_recognizer, self.phone_recognizer, self.date_recognizer,
             self.passport_recognizer, self.id_recognizer, self.ip_recognizer,
-            self.mac_recognizer, self.imei_recognizer, self.cc_recognizer, self.bank_recognizer
+            self.mac_recognizer, self.imei_recognizer, self.cc_recognizer, self.bank_recognizer,
+            self.health_recognizer
         ]:
             self.analyzer.registry.add_recognizer(rec)
 
