@@ -24,8 +24,8 @@ class PIIFilter:
 
     PRIORITY = {
         "ADDRESS": 8,
-        "PASSPORT": 7,
-        "ID_NUMBER": 7,
+        "PASSPORT": 8,
+        "ID_NUMBER": 9,
         "DRIVER_LICENSE": 7,
         "VOTER_ID": 7,
         "RESIDENCE_PERMIT": 7,
@@ -63,7 +63,7 @@ class PIIFilter:
         "MEETING_ID": 4,
 
         "MAC_ADDRESS": 6,
-        "IMEI": 6,
+        "IMEI": 8,
         "ADVERTISING_ID": 6,
         "DEVICE_ID": 5,
 
@@ -879,7 +879,7 @@ class PIIFilter:
         self.GEO_COORDS_RX = re.compile(r"\b([+-]?\d{1,2}\.\d+)[,\s]+([+-]?\d{1,3}\.\d+)\b")
         self.PLUS_CODE_RX = re.compile(r"\b[23456789CFGHJMPQRVWX]{2,8}\+[23456789CFGHJMPQRVWX]{2,3}\b")
         self.W3W_RX = re.compile(r"\b///([a-z]+(?:\.[a-z]+){2,})\b")
-        self.PLATE_LABEL_RX = re.compile(r"(?i)\b(?:license\s*plate|registration|plate\s*no|matr[ií]cula|targa|immatriculation|kennzeichen|număr\s*de\s*înmatriculare|车牌)\b[:#\-]?\s*([A-Z0-9\- ]{4,12})")
+        self.PLATE_LABEL_RX = re.compile(r"(?i)\b(?:license\s*plate|registration|plate\s*no|matr[ií]cula|targa|immatriculation|kennzeichen|număr\s*de\s*înmatriculare|车牌|plate)\b[:#\-]?\s*([A-Z0-9\- ]{4,12})")
 
     # ====================
     # Analyzer setup
@@ -939,11 +939,16 @@ class PIIFilter:
             patterns=[Pattern("health_terms", r"(?i)\b(?:allergic|diagnosed|blood\s*type|diabetes|hypertension|asthma|cancer|heart\s*disease|penicillin|insulin|medication)\b", 0.60)],
         )
 
+        self.plate_recognizer = PatternRecognizer(
+            supported_entity="LICENSE_PLATE", supported_language="all",
+            patterns=[Pattern("plate", self.PLATE_LABEL_RX.pattern, 0.60)],
+        )
+
         for rec in [
             self.address_recognizer, self.phone_recognizer, self.date_recognizer,
             self.passport_recognizer, self.id_recognizer, self.ip_recognizer,
             self.mac_recognizer, self.imei_recognizer, self.cc_recognizer, self.bank_recognizer,
-            self.health_recognizer
+            self.health_recognizer, self.plate_recognizer
         ]:
             self.analyzer.registry.add_recognizer(rec)
 

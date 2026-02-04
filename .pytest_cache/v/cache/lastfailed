@@ -13,5 +13,20 @@
   "tests/unit/test_ids_tax.py::test_id_number_positive[UK NINO: QQ 12 34 56 C]": true,
   "tests/integration/test_language_samples.py::test_anonymization_accuracy[sample3]": true,
   "tests/integration/test_language_samples.py::test_anonymization_accuracy[sample4]": true,
-  "tests/unit/test_regex_patterns.py::test_health_info_positive[Allergic to penicillin]": true
+  "tests/unit/test_regex_patterns.py::test_health_info_positive[Allergic to penicillin]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Contact me at john@example.com-<EMAIL>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[LOCATION-Paris, France-<LOCATION>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[LOCATION-Berlin, Germany-<LOCATION>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-Passport: A12345678-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-Passeport: X1Y2Z3A4B-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[IMEI-IMEI: 490154203237518-<IMEI>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[LICENSE_PLATE-Plate: B-AB 1234-<LICENSE_PLATE>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Contact me at john@example.com-<EMAIL_ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Email: hans@test.de-<EMAIL_ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Correo: marie@gmail.com-<EMAIL_ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-\\u0628\\u0631\\u064a\\u062f\\u064a ahmed@example.com-<EMAIL_ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-US Passport: A12345678-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-EU Passport: X1Y2Z3A4B-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-ID: 12345678Z-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-Personalausweis: T22000129-<PASSPORT>]": true
 }
