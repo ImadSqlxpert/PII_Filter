@@ -1066,57 +1066,9 @@ class PIIFilter:
                 continue
             out.append(r)
         return out
-    import re  # ensure this is at the top of your file
 
-# ... inside class PIIFilter:
 
-    def _filter_locations_with_inline_or_near_labels(self, text: str, items, window: int = 28):
-        """
-        Drop LOCATION when ID/PASSPORT/TAX label keywords appear:
-          • inside the LOCATION span (inline), or
-          • within `window` chars on either side (adjacent).
-        This catches cases where NLP expands the LOCATION span to include label tokens
-        (e.g., '10115 Berlin VAT') and removes them to avoid misleading LOCATION output.
-        """
-        if not items:
-            return items
 
-        # Lowercased text for robust matching.
-        lt = text.lower()
-
-        # Lowercase keyword set for consistent containment checks.
-        label_tokens_lower = (
-            {kw.lower() for kw in self.PASSPORT_KEYWORDS}
-            | {kw.lower() for kw in self.ID_KEYWORDS}
-            | {kw.lower() for kw in self.TAX_KEYWORDS}
-        )
-
-        out = []
-        for r in items:
-            if r.entity_type != "LOCATION":
-                out.append(r)
-                continue
-
-            # Inline (inside span)
-            span_lower = lt[r.start:r.end]
-            if any(kw in span_lower for kw in label_tokens_lower):
-                # Label keyword is *inside* the LOCATION span → drop it
-                continue
-
-            # Adjacent (left/right window)
-            left = lt[max(0, r.start - window):r.start]
-            right = lt[r.end:min(len(text), r.end + window)]
-            # Normalize boundary punctuation/whitespace
-            left_norm = re.sub(r"[\s:,\-–—\|]+$", " ", left)
-            right_norm = re.sub(r"^[\s:,\-–—\|]+", " ", right)
-
-            if any(kw in left_norm for kw in label_tokens_lower) or any(kw in right_norm for kw in label_tokens_lower):
-                # Label keyword is right next to the LOCATION span → drop it
-                continue
-
-            out.append(r)
-
-        return out
     
     def _filter_non_postal_locations(self, text: str, items, enable: bool = True, window: int = 16):
         """
@@ -1172,39 +1124,65 @@ class PIIFilter:
         return out
     
     def _filter_locations_with_inline_or_near_labels(self, text: str, items, window: int = 28):
+        
         """
         Drop LOCATION when ID/PASSPORT/TAX label keywords appear:
-      • inside the LOCATION span, or
-      • within `window` chars on either side.
-        This catches cases where NLP expands span to include the label token (e.g., '10115 Berlin VAT').
+          • inside the LOCATION span (inline, as separate tokens), or
+          • within `window` chars on either side (adjacent).
+        Uses word-boundary style checks to avoid substrings like 'id' matching in 'Madrid'.
         """
-        label_tokens = set(self.PASSPORT_KEYWORDS) | set(self.ID_KEYWORDS) | set(self.TAX_KEYWORDS)
+        
         if not items:
             return items
 
-        lower_text = text.lower()
+        lt = text.lower()
+
+        # Prepare a single boundary-aware regex for all label keywords.
+        # We escape each keyword and join with alternation.
+        # (?<!\\w) and (?!\\w) are word-boundary analogs for unicode-aware token edges.
+        label_tokens_lower = (
+            {kw.lower() for kw in self.PASSPORT_KEYWORDS}
+            | {kw.lower() for kw in self.ID_KEYWORDS}
+            | {kw.lower() for kw in self.TAX_KEYWORDS}
+        )
+
+        # Sort longer first to avoid partials like 'id' shadowing 'identity card'
+        sorted_kws = sorted(label_tokens_lower, key=len, reverse=True)
+        # Build a pattern that matches any keyword as a token/phrase with boundaries
+        # e.g., (?<!\w)(passport|identity card|tax id|vat|ustid)(?!\w)
+        kw_alt = "|".join(re.escape(kw) for kw in sorted_kws)
+        kw_re = re.compile(rf"(?<!\w)(?:{kw_alt})(?!\w)")
+
+        def contains_kw_token(hay: str) -> bool:
+            return bool(kw_re.search(hay))
+
         out = []
         for r in items:
             if r.entity_type != "LOCATION":
                 out.append(r)
                 continue
 
-            span_lower = lower_text[r.start:r.end]
-            if any(kw in span_lower for kw in label_tokens):
-                # Label keyword was included inside the LOCATION span → drop it
+
+        
+            span_lower = lt[r.start:r.end]
+            if contains_kw_token(span_lower):
+                # Label keyword is inline (proper token) inside LOCATION → drop
                 continue
 
-            left = lower_text[max(0, r.start - window):r.start]
-            right = lower_text[r.end:min(len(text), r.end + window)]
+            left = lt[max(0, r.start - window):r.start]
+            right = lt[r.end:min(len(text), r.end + window)]
+            # Normalize boundary punctuation/whitespace
             left_norm = re.sub(r"[\s:,\-–—\|]+$", " ", left)
             right_norm = re.sub(r"^[\s:,\-–—\|]+", " ", right)
-            if any(kw in left_norm for kw in label_tokens) or any(kw in right_norm for kw in label_tokens):
-                # Label keyword is adjacent (left/right window) → drop it
+
+            if contains_kw_token(left_norm) or contains_kw_token(right_norm):
+                # Label keyword is adjacent (as a token) → drop
                 continue
 
             out.append(r)
 
         return out
+
 
     def _guard_natural_suffix_requires_number(self, text: str, items, suffixes: tuple):
         if not items:
