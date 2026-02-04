@@ -98,7 +98,7 @@ My office IPs are 192.168.1.10 and 2001:0db8:85a3::8a2e:0370:7334.
     "German (expanded)": """
 Mein Name ist Max Mustermann, geboren am 31.12.1990.
 Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).
-Meine E‑Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
+Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
 Personalausweisnummer: T22000129
 Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
@@ -169,6 +169,14 @@ VAT: ES X1234567T
 Benim adım Ahmet Yılmaz. Doğum tarihim 01-01-1992.
 Adresim Atatürk Caddesi No:15, Ankara.
 E‑posta adresim ahmet.yilmaz@example.com ve telefon numaram 0555 123 45 67.
+""",
+
+    "Arabic": """
+اسمي أحمد محمد. ولدت في 31/12/1990.
+أعيش في شارع الملك فيصل 20، الرياض 12345.
+بريدي الإلكتروني ahmed.mohamed@example.com ورقم هاتفي +966 50 123 4567.
+جواز السفر: A12345678
+عنوان IP الخاص بي: 192.168.1.10
 """,
 
     "US Tax & IDs": """

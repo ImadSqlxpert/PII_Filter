@@ -1,0 +1,10 @@
+[
+  {
+    "text": "This is a normal sentence without any personal information.",
+    "expected_no_pii": true
+  },
+  {
+    "text": "The weather is nice today in the city.",
+    "expected_no_pii": true
+  }
+]

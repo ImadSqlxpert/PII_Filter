@@ -1,0 +1,7 @@
+[
+  {
+    "text": "Mein Name ist Max Mustermann, geboren am 31.12.1990. Ich wohne in der Musterstraße 5, 10115 Berlin.",
+    "language": "de",
+    "expected_anonymized": "Mein Name ist <PERSON>, geboren am <DATE>. Ich wohne in der <ADDRESS>."
+  }
+]

@@ -113,3 +113,15 @@ def test_date_regex_negative(f, text):
         re.search(f.DATE_REGEX_3, text)
     )
     assert not found, f"Should NOT match: {text}"
+
+# -----------------------------
+# Health info tests
+# -----------------------------
+@pytest.mark.parametrize("text", [
+    "Diagnosed with diabetes",
+    "Blood type: O+",
+    "Allergic to penicillin",
+])
+def test_health_info_positive(f, text):
+    out = f.anonymize_text(text)
+    assert "<HEALTH_INFO>" in out, f"Should detect health info: {text}"
