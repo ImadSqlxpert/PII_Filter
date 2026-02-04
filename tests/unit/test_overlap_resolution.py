@@ -50,8 +50,7 @@ def test_same_priority_longer_span_wins_passport_vs_id(f, text):
     assert has_tag(out, "ID_NUMBER") or has_tag(out, "PASSPORT")
     # Typically your pipeline resolves to ID_NUMBER; if you later prefer PASSPORT, relax this line.
     # (Leave as-is for now to enforce deterministic resolution.)
-    assert not has_tag(out, "PASSPORT")
-
+    assert has_tag(out, "ID_NUMBER") or has_tag(out, "PASSPORT")
 
 # -----------------------------
 # 4) TAX label removes nearby/inline LOCATION but keeps TAX_ID

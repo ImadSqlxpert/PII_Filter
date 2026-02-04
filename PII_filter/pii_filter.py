@@ -6,6 +6,7 @@ from langdetect import detect
 import re
 import warnings
 import logging
+import unicodedata
 
 
 class PIIFilter:
@@ -565,7 +566,7 @@ class PIIFilter:
         )
         
         self.LABELED_TAX_VALUE_RX = re.compile(
-             r"(?i)\b(?:steuer[-\s]*id|steueridentifikationsnummer|tin|tax\s*id|tax\s*number|vat|ust-?id(?:nr\.?)?|ustid|vies|nif|nie|siren|siret|piva|p\.?iva|afm|utr|cvr|oib|nip|regon|dic|cui|eik|bulstat)"
+             r"(?i)\b(?:steuer[-\s]*id|steueridentifikationsnummer|tin|tax\s*id|tax\s*number|vat|ust-?id(?:nr\.?)?|ustid|vies|nif|siren|siret|piva|p\.?iva|afm|utr|cvr|oib|nip|regon|dic|cui|eik|bulstat)"
                 r"\s*[:#]?\s*("
                  r"(?=[A-Z]{2}\s*[A-Z0-9][A-Z0-9\.\-\s]{1,24})(?=.*\d)[A-Z]{2}\s*[A-Z0-9][A-Z0-9\.\-\s]{1,24}"
                  r"|(?=[A-Z0-9\-\s]{6,24})(?=.*\d)[A-Z0-9\-\s]{6,24}"
@@ -734,6 +735,16 @@ class PIIFilter:
             ]
         ]
 
+        # Simple substring cues used for quick prefix checks (lowercased)
+        self.INTRO_CUES = [
+        "my name is", "je m", "mein name", "ich hei", "me llamo", "mi chiamo",
+        "meu nome", "chamo-me", "ik heet", "mijn naam", "jag heter", "jeg heter", "jeg hedder",
+        "minun nimeni", "nimeni on", "ég heiti", "nazywam", "jmenuji se", "volám sa", "volam sa",
+        "a nevem", "hívnak", "ma numesc", "mă numesc", "казвам се", "με λένε", "ονομάζομαι",
+        "quhem", "ime mi je", "zovem se", "mano vardas", "mani sauc", "minu nimi on",
+        "jisimni", "is é mo ainm", "benim adım", "اسمي", "меня зовут", "мене звати", "мене звуть", "мяне завуць",
+        ]
+        
         # Keywords for label filtering
         self.PASSPORT_KEYWORDS = tuple({
             "passport","reisepass","pass","passeport","pasaporte","passaporte","passaporto","paspoort",
@@ -757,7 +768,7 @@ class PIIFilter:
             "tax id","tin","vat","vat id","vat no","vat number","vies",
             "steuer-id","steueridentifikationsnummer","steuernummer","ust-idnr","ustid","mwst",
             "numéro fiscal","numero fiscal","numéro de tva","tva","siren","siret",
-            "nif","cif","iva","nie",
+            "nif","cif","iva",
             "contribuinte","número de contribuinte",
             "p.iva","piva","partita iva","codice fiscale",
             "btw","btw-nummer","rsin",
@@ -970,6 +981,14 @@ class PIIFilter:
         t0 = low[0]
         if t0 in self.PRONOUN_PERSONS:
             return False
+        
+        
+        # 🚫 single-token near street word? Drop
+        left_ctx = text[max(0, start - 24):start].lower()
+        if any(sb in left_ctx for sb in self.STREET_BLOCKERS):
+            return False
+
+
         prefix = text[max(0, start - 40):start].lower()
         intro_cues = [
             "my name is", "je m", "mein name", "ich hei", "me llamo", "mi chiamo",
@@ -993,6 +1012,20 @@ class PIIFilter:
                 add.append(RecognizerResult("PERSON", s, e, 0.96))
         return self._resolve_overlaps(text, results + add) if add else results
 
+    def _has_intro_prefix(self, text: str, start: int, window: int = 48) -> bool:
+        """Heuristic: is there an intro cue immediately before this span?"""
+        prefix = text[max(0, start - window):start].lower()
+        return any(cue in prefix for cue in self.INTRO_CUES)
+
+    def _effective_priority(self, text: str, r) -> int:
+        """Bump PERSON priority above ADDRESS if preceded by an intro cue."""
+        base = self.PRIORITY.get(r.entity_type, 1)
+        if r.entity_type == "PERSON":
+            if self._has_intro_prefix(text, r.start):
+                # Make PERSON outrank ADDRESS (8) when intro precedes the span
+                return max(base, 9)
+        return base
+    
     # ====================
     # Overlaps / filters
     # ====================
@@ -1003,12 +1036,16 @@ class PIIFilter:
             drop = False
             for k in kept:
                 if not (r.end <= k.start or r.start >= k.end):
-                    if self.PRIORITY.get(r.entity_type, 1) > self.PRIORITY.get(k.entity_type, 1) or \
-                       (self.PRIORITY.get(r.entity_type, 1) == self.PRIORITY.get(k.entity_type, 1) and (r.end - r.start) > (k.end - k.start)):
+                    pr = self._effective_priority(text, r)
+                    pk = self._effective_priority(text, k)
+                    if pr > pk or (pr == pk and (r.end - r.start) > (k.end - k.start)):
                         kept.remove(k)
                         kept.append(r)
-                    drop = True
-                    break
+                        drop = True
+                        break
+                    else:
+                        drop = True
+                        break            
             if not drop:
                 kept.append(r)
         return sorted(kept, key=lambda x: x.start)
@@ -1072,57 +1109,79 @@ class PIIFilter:
     
     def _filter_non_postal_locations(self, text: str, items, enable: bool = True, window: int = 16):
         """
-        Drop LOCATION results which are:
-          - standalone (no digits in span),
-          - and not overlapping/near an ADDRESS (within `window` chars).
-
-        Keep:
-          - postal+city (digits present),
-          - address-adjacent locations.
-
-        This narrows LOCATION to address/postal contexts and prevents generic city name FPs.
+        Drop LOCATION that:
+        - does NOT match EU postal patterns
+        - AND is NOT near an ADDRESS
+        - AND IS near a PHONE or MEETING_ID (to weed out non‑EU postal formats)
+        - OR is standalone (no digits)
         """
         if not enable or not items:
             return items
 
-        # Collect address spans
-        addr_spans = [(r.start, r.end) for r in items if r.entity_type == "ADDRESS"]
+        out = []
 
-        def near_address(loc_start: int, loc_end: int) -> bool:
-            for (as_, ae) in addr_spans:
-                # overlap
-                if not (loc_end <= as_ or loc_start >= ae):
+        # Collect spans
+        addr_spans = [(r.start, r.end) for r in items if r.entity_type == "ADDRESS"]
+        phone_spans = [(r.start, r.end) for r in items if r.entity_type in ("PHONE_NUMBER", "MEETING_ID")]
+
+        def spans_near(a, b):
+            return abs(a[0] - b[1]) <= window or abs(a[1] - b[0]) <= window
+
+        def near_any(loc_span, spans):
+            for sp in spans:
+                # overlapping
+                if not (loc_span[1] <= sp[0] or loc_span[0] >= sp[1]):
                     return True
-                # adjacency
-                if abs(loc_start - ae) <= window or abs(as_ - loc_end) <= window:
+                # adjacent within window
+                if spans_near(loc_span, sp):
                     return True
             return False
 
-        out = []
         for r in items:
             if r.entity_type != "LOCATION":
                 out.append(r)
                 continue
 
-            span = text[r.start:r.end]
-            has_digit = any(ch.isdigit() for ch in span)
+            loc_span = (r.start, r.end)
+            span_text = text[r.start:r.end]
 
+            # Digit inside LOCATION span?
+            has_digit = any(ch.isdigit() for ch in span_text)
+
+            # Validate as EU postal?
+            is_postal = False
             if has_digit:
-                # Postal+city case (e.g., EU postal injections); keep
+                for patt in self.POSTAL_EU_PATTERNS:
+                    if re.search(patt, span_text, flags=re.I | re.UNICODE):
+                        is_postal = True
+                        break
+
+            # Keep LOCATION if EU postal (correct)
+            if has_digit and is_postal:
                 out.append(r)
                 continue
 
-            if near_address(r.start, r.end):
-                # Location is part of or next to an address; keep
+            # Keep LOCATION if near ADDRESS (merged/adjacent street+postal)
+            if near_any(loc_span, addr_spans):
                 out.append(r)
                 continue
 
-            # Standalone city/country/location term without digits and not near address → drop
-            # (e.g., "Toronto", "Beverly Hills", "Tokyo" in isolation)
+            
+            raw_segment_before_loc = text[max(0, r.start - 24):r.start]
+
+            phone_like = re.search(r"\b\d[\d\s\-()]{5,}\d\b", raw_segment_before_loc)
+
+            if phone_like and not has_digit and not is_postal:
+                # Non‑EU postal formats: keep PHONE, drop city
+                continue
+
+
+            # ❗ DROP standalone LOCATION
             continue
 
         return out
     
+
     def _filter_locations_with_inline_or_near_labels(self, text: str, items, window: int = 28):
         
         """
@@ -1637,6 +1696,14 @@ class PIIFilter:
     ) -> str:
         if not text or not text.strip():
             return text
+        
+
+            # 🔠 Normalize to NFC so intros like "M\u0306a\u0306" match "Mă"
+        try:
+             text = unicodedata.normalize("NFC", text)
+        except Exception:
+            pass
+
 
         try:
             lang = detect(text)
@@ -1679,9 +1746,6 @@ class PIIFilter:
         # strict LOCATION policy — drop standalone city names unless postal/near-address
         final = self._filter_non_postal_locations(text, final, enable=self.STRICT_LOCATION_POSTAL_ONLY)
 
-        # strict LOCATION policy — drop standalone city names unless postal/near-address
-        final = self._filter_non_postal_locations(text, final, enable=self.STRICT_LOCATION_POSTAL_ONLY)
-
         # Address guards
         if guards_enabled:
             if guard_natural_suffix_requires_number:
@@ -1705,6 +1769,11 @@ class PIIFilter:
 
         # Merge address/location
         final = self._merge_address_location(text, final)
+
+        print("DEBUG ENTITIES:")
+        for rr in final:
+            print(rr.entity_type, repr(text[rr.start:rr.end]), rr.start, rr.end)
+        print("----- END DEBUG -----")
 
         # Replacements: single-escaped HTML tokens
         operators = {
