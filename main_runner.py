@@ -102,6 +102,7 @@ Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
 Personalausweisnummer: T22000129
 Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
+ich will Gewerbe anmelden.
 
 # Deutsche Straßenvarianten (Suffixe, Präfixe, Komposita)
 Adresse: Am Waldrand 12, 50667 Köln.
@@ -376,6 +377,21 @@ class PIIRunner:
                 continue
 
             try:
+                # Compute anonymized first
+                anonymized = None
+                if show_anonymized:
+                    anonymized = self.anonymize(
+                        text,
+                        guards_enabled=guards_enabled,
+                        guard_natural_suffix_requires_number=guard_natural_suffix_requires_number,
+                        guard_single_token_addresses=guard_single_token_addresses,
+                        guard_address_vs_person_priority=guard_address_vs_person_priority,
+                        guard_requires_context_without_number=guard_requires_context_without_number,
+                        guard_context_window=guard_context_window,
+                    )
+                    print("\nAnonymized:")
+                    print(textwrap.indent(anonymized, "  "))
+
                 if self.pf and show_entities:
                     ents = self._pipeline_entities(
                         text,
@@ -408,19 +424,6 @@ class PIIRunner:
                     # coverage
                     for e in ents:
                         self.coverage[e.entity_type] += 1
-
-                if show_anonymized:
-                    anonymized = self.anonymize(
-                        text,
-                        guards_enabled=guards_enabled,
-                        guard_natural_suffix_requires_number=guard_natural_suffix_requires_number,
-                        guard_single_token_addresses=guard_single_token_addresses,
-                        guard_address_vs_person_priority=guard_address_vs_person_priority,
-                        guard_requires_context_without_number=guard_requires_context_without_number,
-                        guard_context_window=guard_context_window,
-                    )
-                    print("\nAnonymized:")
-                    print(textwrap.indent(anonymized, "  "))
 
             except Exception as exc:
                 print(f"\n⚠️ Error analyzing/anonymizing: {exc}")

@@ -23,25 +23,25 @@ class PIIFilter:
     """
 
     PRIORITY = {
-        "ADDRESS": 8,
-        "PASSPORT": 8,
+        "ADDRESS": 20,
+        "PASSPORT": 7,
         "ID_NUMBER": 9,
-        "DRIVER_LICENSE": 7,
-        "VOTER_ID": 7,
-        "RESIDENCE_PERMIT": 7,
-        "BENEFIT_ID": 7,
-        "MILITARY_ID": 7,
+        "DRIVER_LICENSE": 8,
+        "VOTER_ID": 8,
+        "RESIDENCE_PERMIT": 8,
+        "BENEFIT_ID": 10,
+        "MILITARY_ID": 10,
 
         "TAX_ID": 7,
-        "CREDIT_CARD": 7,
-        "BANK_ACCOUNT": 7,
+        "CREDIT_CARD": 18,
+        "BANK_ACCOUNT": 16,
         "ROUTING_NUMBER": 7,
         "ACCOUNT_NUMBER": 6,
         "PAYMENT_TOKEN": 6,
         "CRYPTO_ADDRESS": 6,
 
         "HEALTH_ID": 7,
-        "MRN": 6,
+        "MRN": 9,
         "INSURANCE_ID": 6,
         "HEALTH_INFO": 5,
 
@@ -63,12 +63,12 @@ class PIIFilter:
         "MEETING_ID": 4,
 
         "MAC_ADDRESS": 6,
-        "IMEI": 8,
+        "IMEI": 17,
         "ADVERTISING_ID": 6,
         "DEVICE_ID": 5,
 
         "GEO_COORDINATES": 5,
-        "PLUS_CODE": 4,
+        "PLUS_CODE": 9,
         "W3W": 4,
         "LICENSE_PLATE": 5,
     }
@@ -91,7 +91,7 @@ class PIIFilter:
 
     ALLOWED_ENTITIES = [
         "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "FAX_NUMBER", "ADDRESS", "LOCATION",
-        "DATE", "PASSPORT", "ID_NUMBER", "TAX_ID", "IP_ADDRESS",
+        "DATE", "DATE_TIME", "PASSPORT", "ID_NUMBER", "TAX_ID", "IP_ADDRESS",
         "CREDIT_CARD", "BANK_ACCOUNT", "ROUTING_NUMBER", "ACCOUNT_NUMBER", "PAYMENT_TOKEN", "CRYPTO_ADDRESS",
         "DRIVER_LICENSE", "VOTER_ID", "RESIDENCE_PERMIT", "BENEFIT_ID", "MILITARY_ID",
         "HEALTH_ID", "MRN", "INSURANCE_ID", "HEALTH_INFO",
@@ -101,7 +101,11 @@ class PIIFilter:
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
     ]
 
-    def __init__(self):
+    def __init__(self, person_false_positive_samples=None):
+        if person_false_positive_samples is None:
+            person_false_positive_samples = []
+        self.person_deny_list = person_false_positive_samples
+        self.language = 'en'
         warnings.filterwarnings("ignore")
         logging.getLogger().setLevel(logging.ERROR)
 
@@ -395,7 +399,8 @@ class PIIFilter:
             f"(?:{self.PATTERN_ARABIC})"
         )
         self.STRICT_ADDRESS_RX = re.compile(self.STRICT_ADDRESS_REGEX, re.I | re.UNICODE | re.VERBOSE)
-
+        # Conservative fallback: street name + suffix + house number (captures variants missed by STRICT_ADDRESS)
+        self.FALLBACK_STREET_RX = re.compile(r"\b[A-ZÀ-ÖØ-ÝÄÖÜ][\wÀ-ÖØ-öø-ÿÄÖÜäöüß'’\.-]*(?:\s+(?:" + self.STREET_SUFFIX_COMPOUND + r"))\s*\d{1,4}[A-Za-z]?(?:\s*[-–]\s*\d+[A-Za-z]?)?\b", re.I | re.UNICODE)
         # POSTAL codes + City
         self.CITY_TOKEN = r"[A-ZÀ-ÖØ-ÝÄÖÜ][A-Za-zÀ-ÖØ-öø-ÿĀ-ſ\u00C0-\u024F\u0370-\u03FF\u0400-\u04FFÄÖÜäöüß'’\.]+"
         self.CITY_OR_DISTRICT = rf"{self.CITY_TOKEN}(?:[-\s]{self.CITY_TOKEN})*"
@@ -450,12 +455,10 @@ class PIIFilter:
             rf"\b(?:TR)?\s*[-–]?\s*(\d{{5}})\s+{self.CITY_OR_DISTRICT}{self.PAREN_DISTRICT}\b",
         ]
 
-        # Phone (precompiled; no inline flags)
+        # Phone (precompiled; no inline flags) - stricter to avoid matching TAX IDs
         self.PHONE_REGEX = r"""
         (?<!\w)
-        (?:\+?\d{1,3}[ \-]?)?
-        (?:\(?\d{1,4}\)?[ \-]?)?
-        (?:\d[ \-]?){6,12}\d
+        (?:\+\d{1,3}[ \-]?)?(?:\(\d{1,4}\)[ \-]?)?(?:\d[ \-]?){6,12}\d
         (?!\w)
         """
         self.PHONE_RX = re.compile(self.PHONE_REGEX, re.IGNORECASE | re.UNICODE | re.VERBOSE)
@@ -467,7 +470,7 @@ class PIIFilter:
 
         # Passports / IDs (generic)
         self.US_PASSPORT_REGEX = r"\b[A-Z][0-9]{8}\b"
-        self.EU_PASSPORT_REGEX = r"\b(?=[A-Z0-9]{6,9}\b)(?=.*[A-Z])[A-Z0-9]{6,9}\b"
+        self.EU_PASSPORT_REGEX = r"\b[A-Z]{1,2}\d{6,8}\b"
 
         # ID PATTERNS (format-level)
         self.ID_PATTERNS = [
@@ -644,7 +647,7 @@ class PIIFilter:
         self.NON_PERSON_SINGLE_TOKENS = {
             "meine","mein","meiner"," ist","und","y","mi","il","la","el","le","les","de","des","del","da",
             "sono","soy","ich","bin","am","i","je","j'","j’","yo","tu","vos","vous","nous","vous",
-            "abito","vivo","habito","wohne","adresse","indirizzo","dirección","direccion","direccio",
+            "abito","vivo","habito","wohne","adresse","liegt","indirizzo","dirección","direccion","direccio",
             "numero","nummer","numéro","telefono","telefon","tel","telefono","telefón","telefonnummer",
             "my","name","is","live","lives","address",
             "ik","ben","mijn","naam","is","heet","adres","woon",
@@ -662,12 +665,27 @@ class PIIFilter:
             "straße","strasse","str.","gasse","weg","allee","platz","ufer","ring","damm","twiete","pfad","zeile",
             # Added blockers
             "benim","numero","nummer","numéro","email","e-mail","mail","insurance","policy","kontonummer",
-            "passeport","passport","domicile","meine nummer","meine", "nummer"
+            "passeport","passport","domicile","meine nummer","meine", "nummer",
+            # Added conversational/greeting tokens to reduce false positives
+            "rund","überall","über","danke","dank","können","kann","nein","entschuldigen",
+            "guten","gute","abend","morgen","nacht","wie","bitte","mir","helfen","das","macht","nichts",
+            "aktualisierung","lösung","ok","okay","si","no",
+            # Added German tokens to avoid single-token PERSON false positives
+            "berg","groß","gross","klein","kalt","weil","neben","außer","ausser","gewerbe",
+            # German days of week, time periods, directions, and common words
+            "montag","dienstag","mittwoch","donnerstag","freitag","samstag","sonntag",
+            "januar","februar","märz","april","mai","juni","juli","august","september","oktober","november","dezember",
+            "morgen","mittag","abend","nacht","tag","woche","monat","jahr",
+            "links","rechts","oben","unten","oben","vorne","hinten","innen","außen",
+            "langsam","schnell","groß","klein","alt","jung","neu","gut","schlecht","schön",
+            "hier","dort","da","wo","wann","wie","warum","was","welcher","welche","welches",
+            "runter","hoch","rauf","runter","entlang","hinter","dienst","doktor","zwischen",
         }
 
         self.PERSON_BLACKLIST_WORDS = {
             "personalausweisnummer","kontonummer","insurance","policy","diagnosed",
-            "passeport","passport","domicile","meine nummer","bridi", "البريد", "الإلكتروني", "هاتفي", "عنواني"
+            "passeport","passport","domicile","meine nummer","bridi", "البريد", "الإلكتروني", "هاتفي", "عنواني",
+            "gasse","ruf","mich","ولدت","koordinaten","gasse"
         }
 
         self.PRONOUN_PERSONS = {
@@ -763,7 +781,12 @@ class PIIFilter:
             "személyi igazolvány","szemelyi igazolvany","személyi","szemelyi",
             "carte de identitate","лична карта","ταυτότητα","удостоверение личности",
             "kimlik","kimlik kartı","tc kimlik","هوية","بطاقة هوية",
+            # Added localized ID label tokens
+            "fødselsnummer", "fodselsnummer", "hetu", "personnummer", "fnr",
         })
+
+        # Account-related label tokens (used to avoid misclassifying account/routing numbers as generic ID_NUMBER)
+        self.ACCOUNT_LABELS = {"konto","kontonummer","bankleitzahl","bank","routing","account","iban","bic","kontonr"} 
         self.TAX_KEYWORDS = tuple({
             "tax id","tin","vat","vat id","vat no","vat number","vies",
             "steuer-id","steueridentifikationsnummer","steuernummer","ust-idnr","ustid","mwst",
@@ -827,16 +850,16 @@ class PIIFilter:
             r"بطاقة|رقم\s*البطاقة)"
         )
         self.LABELED_BANK_RX = re.compile(
-            rf"(?i)\b{bank_labels}\s*[:#\-]?\s*([A-Z0-9][A-Z0-9 \-]{{6,64}})",
+            rf"(?i)\b{bank_labels}(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))([A-Z0-9][A-Z0-9 \-]{{6,64}})",
             re.UNICODE
         )
         self.LABELED_CC_RX = re.compile(
-            rf"(?i)\b{card_labels}\s*[:#\-]?\s*(([0-9][0-9 \-]{{11,25}}[0-9]))",
+            rf"(?i)\b{card_labels}(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(([0-9][0-9 \-]{{11,25}}[0-9]))",
             re.UNICODE
         )
         self.ROUTING_RX = re.compile(r"(?<!\d)(\d{9})(?!\d)")
         self.ACCT_LABEL_RX = re.compile(
-            rf"(?i)\b(?:{bank_labels})\s*[:#\-]?\s*([A-Z0-9][A-Z0-9 \-]{{6,34}})",
+            rf"(?i)\b(?:{bank_labels})(?:[:#\-]\s*|\s+(?:is|ist)\s+|\s+)([A-Z0-9][A-Z0-9 \-]{{6,34}})",
             re.UNICODE
         )
         self.PAYMENT_TOKEN_RX = re.compile(
@@ -859,6 +882,13 @@ class PIIFilter:
         self.EMPLOYEE_ID_RX = re.compile(r"(?i)\b(?:employee\s*(?:id|number)|staff\s*id|personalnummer|personnel\s*number)\b[:#\-]?\s*([A-Z0-9\-]{5,16})")
         self.PRO_LICENSE_RX = re.compile(r"(?i)\b(?:license\s*(?:no|number)|bar\s*number|medical\s*license|professional\s*license)\b[:#\-]?\s*([A-Z0-9\-]{5,20})")
 
+        # ID Documents - labeled (supports "My X is Y" and German "Meine X ist Y")
+        self.DRIVER_LICENSE_LABEL_RX = re.compile(r"(?i)(?:my\s+)?(?:driver(?:'?s)?\s*(?:license|licence|lic)|dl\s*number|f\u00fchrerschein)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]\d{5,10})")
+        self.VOTER_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:voter\s*(?:id|card|number)|wählerausweins?(?:nummer)?)\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
+        self.RESIDENCE_PERMIT_LABEL_RX = re.compile(r"(?i)(?:my\s+)?(?:residence\s*(?:permit|card)|resident\s*permit|aufenthaltsgenehmigung|aufenthaltstitel)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]{2}\d{5,10})")
+        self.BENEFIT_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:benefit\s*(?:id|card|number)|sozialhilf(?:e|ekarte))\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
+        self.MILITARY_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine(?:r)?\s+)?(?:military\s*(?:id|number)|militär(?:ausweis)?)\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
+
         # Contact/Comms
         self.SOCIAL_HANDLE_RX = re.compile(r"(?<![\w@])@([A-Za-z0-9_]{3,32})(?![^\s@]*\.[^\s@])")
         self.DISCORD_ID_RX = re.compile(r"\b([A-Za-z0-9._\-]{2,32}#\d{4})\b")
@@ -866,14 +896,16 @@ class PIIFilter:
         self.ZOOM_ID_RX = re.compile(r"(?i)\b(?:meeting\s*id|zoom\s*id)\b[:#\-]?\s*([0-9][0-9 \-]{7,13}[0-9])")
         self.MEET_CODE_RX = re.compile(r"\b([a-z]{3}-[a-z]{4}-[a-z]{3,4})\b")
 
-        self.FAX_LABEL_RX = re.compile(r"(?i)\bfax\b[:\s\-]*")
+        self.FAX_LABEL_RX = re.compile(r"(?i)\bfax(?:nummer)?\b[:\s\-]*")
+        # Email detection (used to prevent partial replacements inside email addresses)
+        self.EMAIL_RX = re.compile(r"[\w\.\-+%]+@[\w\.\-]+\.[A-Za-z]{2,}", re.IGNORECASE)
 
         # Devices/Network
         self.MAC_RX = re.compile(r"\b(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}\b|\b[0-9A-F]{12}\b", re.IGNORECASE)
         self.IMEI_RX = re.compile(r"\b(?:\d[ \-]?){14}\d\b")
         self.UUID_RX = re.compile(r"\b[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\b")
-        self.AD_ID_LABEL_RX = re.compile(r"(?i)\b(?:idfa|aaid|advertis(?:ing)?\s*id)\b[:#\-]?\s*(" + self.UUID_RX.pattern + r")")
-        self.DEVICE_ID_LABEL_RX = re.compile(r"(?i)\b(?:device\s*id|udid)\b[:#\-]?\s*(" + self.UUID_RX.pattern + r")")
+        self.AD_ID_LABEL_RX = re.compile(r"(?i)\b(?:idfa|aaid|advertis(?:ing)?\s*id)\b(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(" + self.UUID_RX.pattern + r")")
+        self.DEVICE_ID_LABEL_RX = re.compile(r"(?i)\b(?:device\s*id|udid)\b(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(" + self.UUID_RX.pattern + r")")
 
         # Location extras
         self.GEO_COORDS_RX = re.compile(r"\b([+-]?\d{1,2}\.\d+)[,\s]+([+-]?\d{1,3}\.\d+)\b")
@@ -885,72 +917,167 @@ class PIIFilter:
     # Analyzer setup
     # ====================
     def _setup_analyzer(self):
-        self.analyzer = AnalyzerEngine()
+        from presidio_analyzer import RecognizerRegistry
+        self.analyzer = AnalyzerEngine(registry=RecognizerRegistry(recognizers=[]))
         self.anonymizer = AnonymizerEngine()
+        
+        # Remove conflicting default recognizers, keep only the ones we want
+        self.analyzer.registry.recognizers = [
+            r for r in self.analyzer.registry.recognizers 
+            if r.name in ['DateRecognizer', 'EmailRecognizer', 'UrlRecognizer', 'SpacyRecognizer']
+        ]
 
         self.address_recognizer = PatternRecognizer(
-            supported_entity="ADDRESS", supported_language="all",
-            patterns=[Pattern("strict_address", self.STRICT_ADDRESS_REGEX, 0.80)],
+            supported_entity="ADDRESS", supported_language="en",
+            patterns=[Pattern("strict_address", self.STRICT_ADDRESS_REGEX, 1.0)],
         )
-        phone_compact = r"(?<!\w)(?:\+?\d{1,3}[ -]?)?(?:\(?\d{1,4}\)?[ -]?)?(?:\d[ -]?){6,12}\d(?!\w)"
+        phone_compact = r"(?<!\w)\+?\d{1,3}[ -]?\d{1,4}[ -]?\d{4,}\b"
         self.phone_recognizer = PatternRecognizer(
-            supported_entity="PHONE_NUMBER", supported_language="all",
-            patterns=[Pattern("intl_phone", phone_compact, 0.72)],
+            supported_entity="PHONE_NUMBER", supported_language="en",
+            patterns=[Pattern("intl_phone", phone_compact, 1.0)],
         )
         self.date_recognizer = PatternRecognizer(
-            supported_entity="DATE", supported_language="all",
-            patterns=[Pattern("dob_1", self.DATE_REGEX_1, 0.70),
-                      Pattern("dob_2", self.DATE_REGEX_2, 0.70),
-                      Pattern("dob_3", self.DATE_REGEX_3, 0.65)],
+            supported_entity="DATE", supported_language="en",
+            patterns=[Pattern("dob_1", self.DATE_REGEX_1, 1.0),
+                      Pattern("dob_2", self.DATE_REGEX_2, 1.0),
+                      Pattern("dob_3", self.DATE_REGEX_3, 1.0),
+                      Pattern("german_date", r"\b\d{1,2}\. [A-ZÄÖÜ][a-zäöüß]+ \d{4}\b", 1.0),
+                      Pattern("us_date", r"\b[A-Z][a-z]+\s+\d{1,2},?\s+\d{4}\b", 1.0)],
         )
         self.passport_recognizer = PatternRecognizer(
-            supported_entity="PASSPORT", supported_language="all",
-            patterns=[Pattern("us_passport", self.US_PASSPORT_REGEX, 0.80),
-                      Pattern("eu_passport_generic", self.EU_PASSPORT_REGEX, 0.70)],
+            supported_entity="PASSPORT", supported_language="en",
+            patterns=[Pattern("us_passport", self.US_PASSPORT_REGEX, 1.02),
+                      Pattern("eu_passport_generic", self.EU_PASSPORT_REGEX, 1.02)],
         )
         self.id_recognizer = PatternRecognizer(
-            supported_entity="ID_NUMBER", supported_language="all",
-            patterns=[Pattern("de_personalausweis", r"\b(?=[A-Z0-9]{9}\b)(?=.*[A-Z])[A-Z0-9]{9}\b", 0.78)],
+            supported_entity="ID_NUMBER", supported_language="en",
+            patterns=[Pattern("de_personalausweis", r"\b(?=[A-Z0-9]{9}\b)(?=.*[A-Z])[A-Z0-9]{9}\b", 1.0),
+                      Pattern("ssn", r"\b\d{3}-\d{2}-\d{4}\b", 1.0)],
         )
         self.ip_recognizer = PatternRecognizer(
-            supported_entity="IP_ADDRESS", supported_language="all",
-            patterns=[Pattern("ipv4", self.IPV4_REGEX, 0.85),
-                      Pattern("ipv6", self.IPV6_REGEX, 0.85)],
+            supported_entity="IP_ADDRESS", supported_language="en",
+            patterns=[Pattern("ipv4", self.IPV4_REGEX, 1.0),
+                      Pattern("ipv6", self.IPV6_REGEX, 1.0)],
         )
         self.mac_recognizer = PatternRecognizer(
-            supported_entity="MAC_ADDRESS", supported_language="all",
-            patterns=[Pattern("mac", self.MAC_RX.pattern, 0.60)],
+            supported_entity="MAC_ADDRESS", supported_language="en",
+            patterns=[Pattern("mac", self.MAC_RX.pattern, 1.0)],
         )
         self.imei_recognizer = PatternRecognizer(
-            supported_entity="IMEI", supported_language="all",
-            patterns=[Pattern("imei", self.IMEI_RX.pattern, 0.40)],
+            supported_entity="IMEI", supported_language="en",
+            patterns=[Pattern("imei", self.IMEI_RX.pattern, 1.0)],
         )
         self.cc_recognizer = PatternRecognizer(
-            supported_entity="CREDIT_CARD", supported_language="all",
-            patterns=[Pattern("cc_pan", r"(?:(?<!\w)(?:\d[ -]?){13,19}\d(?!\w))", 0.40)],
+            supported_entity="CREDIT_CARD", supported_language="en",
+            patterns=[Pattern("cc_pan", r"(?:(?<!\w)(?:\d[ -]?){13,19}\d(?!\w))", 1.0)],
         )
         self.bank_recognizer = PatternRecognizer(
-            supported_entity="BANK_ACCOUNT", supported_language="all",
-            patterns=[Pattern("iban", self.IBAN_RX.pattern, 0.40),
-                      Pattern("bic", self.BIC_RX.pattern, 0.40)],
+            supported_entity="BANK_ACCOUNT", supported_language="en",
+            patterns=[Pattern("iban", self.IBAN_RX.pattern, 1.0),
+                      Pattern("bic", self.BIC_RX.pattern, 1.0)],
         )
         self.health_recognizer = PatternRecognizer(
-            supported_entity="HEALTH_INFO", supported_language="all",
-            patterns=[Pattern("health_terms", r"(?i)\b(?:allergic|diagnosed|blood\s*type|diabetes|hypertension|asthma|cancer|heart\s*disease|penicillin|insulin|medication)\b", 0.60)],
+            supported_entity="HEALTH_INFO", supported_language="en",
+            patterns=[Pattern("health_terms", r"(?i)\b(?:allergic|diagnosed|blood\s*type|diabetes|hypertension|asthma|cancer|heart\s*disease|penicillin|insulin|medication)\b", 1.0)],
         )
 
         self.plate_recognizer = PatternRecognizer(
-            supported_entity="LICENSE_PLATE", supported_language="all",
-            patterns=[Pattern("plate", self.PLATE_LABEL_RX.pattern, 0.60)],
+            supported_entity="LICENSE_PLATE", supported_language="en",
+            patterns=[Pattern("plate", self.PLATE_LABEL_RX.pattern, 1.0)],
         )
+
+        self.person_recognizer = PatternRecognizer(
+            supported_entity="PERSON", supported_language="en",
+            # Require at least two capitalized tokens by default to reduce single-token false positives
+            patterns=[Pattern("person", r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b", 1.0)],
+            deny_list=self.person_deny_list
+        )
+
+        additional_recognizers = [
+            PatternRecognizer(
+                supported_entity="ACCOUNT_NUMBER", supported_language="en",
+                patterns=[Pattern("account_number", r"\b\d{10}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="PAYMENT_TOKEN", supported_language="en",
+                patterns=[Pattern("payment_token", r"\bsk_live_[a-zA-Z0-9]{10,30}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="ADVERTISING_ID", supported_language="en",
+                patterns=[Pattern("advertising_id", r"\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="MRN", supported_language="en",
+                patterns=[Pattern("mrn", r"\b[A-Z]{3}-\d{6}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="INSURANCE_ID", supported_language="en",
+                patterns=[Pattern("insurance_id", r"\bPOL-\d{9}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="STUDENT_NUMBER", supported_language="en",
+                patterns=[Pattern("student_number", r"\bSTU-\d{5}\b", 1.05)],
+            ),
+            PatternRecognizer(
+                supported_entity="EMPLOYEE_ID", supported_language="en",
+                patterns=[Pattern("employee_id", r"\bEMP-\d{5}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="PRO_LICENSE", supported_language="en",
+                patterns=[Pattern("pro_license", r"\bLIC-\d{5}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="HEALTH_ID", supported_language="en",
+                patterns=[Pattern("health_id", r"\b\d{3} \d{3} \d{4}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="DRIVER_LICENSE", supported_language="en",
+                patterns=[Pattern("driver_license", r"\bD\d{7}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="VOTER_ID", supported_language="en",
+                patterns=[Pattern("voter_id", r"\bV\d{7}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="RESIDENCE_PERMIT", supported_language="en",
+                patterns=[Pattern("residence_permit", r"\bRP\d{6}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="MEETING_ID", supported_language="en",
+                patterns=[Pattern("meeting_id", r"\b\d{3} \d{3} \d{3}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="GEO_COORDINATES", supported_language="en",
+                patterns=[Pattern("geo_coordinates", r"\b\d{1,3}\.\d{4}, \d{1,3}\.\d{4}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="FAX_NUMBER", supported_language="en",
+                patterns=[Pattern("fax", r"\b\+?\d{1,3} \d{2,4} \d{4,}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="BENEFIT_ID", supported_language="en",
+                patterns=[Pattern("benefit_id", r"\bB\d{8}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="MILITARY_ID", supported_language="en",
+                patterns=[Pattern("military_id", r"\bM\d{8}\b", 1.0)],
+            ),
+            PatternRecognizer(
+                supported_entity="DEVICE_ID", supported_language="en",
+                patterns=[Pattern("device_id", r"\bDEV-\d{9}\b", 1.05)],
+            ),
+        ]
 
         for rec in [
             self.address_recognizer, self.phone_recognizer, self.date_recognizer,
             self.passport_recognizer, self.id_recognizer, self.ip_recognizer,
-            self.mac_recognizer, self.imei_recognizer, self.cc_recognizer, self.bank_recognizer,
+            self.mac_recognizer, self.imei_recognizer,
             self.health_recognizer, self.plate_recognizer
-        ]:
+        ] + additional_recognizers:
             self.analyzer.registry.add_recognizer(rec)
+
+        # Note: CREDIT_CARD and BANK_ACCOUNT are validated via custom injections
+        # (Luhn / IBAN checks) in _inject_custom_matches to avoid high-recall base-regex false positives.
 
     # ====================
     # Person helpers
@@ -976,13 +1103,20 @@ class PIIFilter:
 
         tokens = [t for t in re.split(r"\s+", s) if t]
         low = [t.lower() for t in tokens]
+        # If an intro cue precedes this span, prefer PERSON even if the first token looks like a street word
+        if self._has_intro_prefix(text, start):
+            # Ensure last token is not a street blocker (reject 'Anna Gasse') and at least one token looks like a name
+            if tokens and tokens[-1].lower() not in self.STREET_BLOCKERS and any(re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t) and t.lower() not in self.NON_PERSON_SINGLE_TOKENS for t in tokens):
+                return True
+        if "gasse" in low or "koordinaten" in low:
+            return False
+        if any(tok in self.PERSON_BLACKLIST_WORDS for tok in low):
+            return False
         if any(tok in self.STREET_BLOCKERS for tok in low):
             return False
         if any(tok in self.NON_PERSON_SINGLE_TOKENS for tok in low):
             return False
         if len(tokens) > 1:
-            if any(tok in self.PERSON_BLACKLIST_WORDS for tok in low):
-                return False
             # Require at least one capitalized Latin token
             latin_tokens = [t for t in tokens if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t)]
             if latin_tokens and not any(t[0].isupper() for t in latin_tokens):
@@ -995,20 +1129,13 @@ class PIIFilter:
         
         # 🚫 single-token near street word? Drop
         left_ctx = text[max(0, start - 24):start].lower()
-        if any(sb in left_ctx for sb in self.STREET_BLOCKERS):
+        prefix = text[max(0, start - 40):start].lower()
+        # If there is an intro cue immediately before the span, allow PERSON even if it contains a street token
+        if any(sb in left_ctx for sb in self.STREET_BLOCKERS) and not any(cue in prefix for cue in self.INTRO_CUES):
             return False
 
-
-        prefix = text[max(0, start - 40):start].lower()
-        intro_cues = [
-            "my name is", "je m", "mein name", "ich hei", "me llamo", "mi chiamo",
-            "meu nome", "chamo-me", "ik heet", "mijn naam", "jag heter", "jeg heter", "jeg hedder",
-            "minun nimeni", "nimeni on", "ég heiti", "nazywam", "jmenuji se", "volám sa", "volam sa",
-            "a nevem", "hívnak", "ma numesc", "mă numesc", "казвам се", "με λένε", "ονομάζομαι",
-            "quhem", "ime mi je", "zovem se", "mano vardas", "mani sauc", "minu nimi on",
-            "jisimni", "is é mo ainm", "benim adım", "اسمي", "меня зовут", "мене звати", "мене звуть", "мяне завуць",
-        ]
-        if any(cue in prefix for cue in intro_cues):
+        # intro cue check (if present, we'll accept a person span)
+        if any(cue in prefix for cue in self.INTRO_CUES):
             return True
         if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", tokens[0]) and not tokens[0][0].isupper():
             return False
@@ -1019,7 +1146,9 @@ class PIIFilter:
         for rx in self.INTRO_PATTERNS:
             for m in rx.finditer(text):
                 s, e = m.start(1), m.end(1)
-                add.append(RecognizerResult("PERSON", s, e, 0.96))
+                span = text[s:e]
+                if self._plausible_person(span, text, s):
+                    add.append(RecognizerResult("PERSON", s, e, 0.96))
         return self._resolve_overlaps(text, results + add) if add else results
 
     def _has_intro_prefix(self, text: str, start: int, window: int = 48) -> bool:
@@ -1040,23 +1169,65 @@ class PIIFilter:
     # Overlaps / filters
     # ====================
     def _resolve_overlaps(self, text, items):
-        items = sorted(items, key=lambda r: (r.start, -self.PRIORITY.get(r.entity_type, 1), -(r.end - r.start)))
+        # Sort by score desc, priority desc, span length desc so stronger/higher-priority
+        # recognizers are considered first.
+        items = sorted(
+            items,
+            key=lambda r: (
+                -r.score,
+                -self.PRIORITY.get(r.entity_type, 1),
+                -(r.end - r.start),
+            ),
+        )
         kept = []
         for r in items:
-            drop = False
-            for k in kept:
+            conflict = False
+            for k in list(kept):
                 if not (r.end <= k.start or r.start >= k.end):
                     pr = self._effective_priority(text, r)
                     pk = self._effective_priority(text, k)
-                    if pr > pk or (pr == pk and (r.end - r.start) > (k.end - k.start)):
-                        kept.remove(k)
+
+                    # Special-case: prefer PHONE_NUMBER over FAX_NUMBER unless 'fax' explicitly appears near the span
+                    if {r.entity_type, k.entity_type} == {"FAX_NUMBER", "PHONE_NUMBER"}:
+                        # Check for explicit 'fax' token in a small neighborhood
+                        left = text[max(0, min(r.start, k.start) - 24):min(r.start, k.start)].lower()
+                        right = text[max(r.end, k.end):min(len(text), max(r.end, k.end) + 24)].lower()
+                        if ("fax" in left) or ("fax" in right):
+                            # Let standard scoring/priority decide when an explicit 'fax' label exists
+                            pass
+                        else:
+                            # Prefer PHONE_NUMBER (drop FAX)
+                            if r.entity_type == "FAX_NUMBER":
+                                # existing kept item wins (we drop r)
+                                conflict = True
+                                break
+                            else:
+                                # r is PHONE_NUMBER and should replace k (FAX)
+                                try:
+                                    kept.remove(k)
+                                except ValueError:
+                                    pass
+                                kept.append(r)
+                                conflict = True
+                                break
+
+                    # If r has strictly higher score or higher effective priority, replace k
+                    if (r.score > k.score) or (r.score == k.score and pr > pk) or (
+                        r.score == k.score and pr == pk and (r.end - r.start) > (k.end - k.start)
+                    ):
+                        # remove k and keep r (r is stronger)
+                        try:
+                            kept.remove(k)
+                        except ValueError:
+                            pass
                         kept.append(r)
-                        drop = True
+                        conflict = True
                         break
                     else:
-                        drop = True
-                        break            
-            if not drop:
+                        # existing kept item wins -> drop r
+                        conflict = True
+                        break
+            if not conflict:
                 kept.append(r)
         return sorted(kept, key=lambda x: x.start)
 
@@ -1155,6 +1326,10 @@ class PIIFilter:
             loc_span = (r.start, r.end)
             span_text = text[r.start:r.end]
 
+            # Drop LOCATION that look like apartment numbers
+            if re.match(r"^\w+ \d+$", span_text):
+                continue
+
             # Digit inside LOCATION span?
             has_digit = any(ch.isdigit() for ch in span_text)
 
@@ -1185,6 +1360,9 @@ class PIIFilter:
                 # Non‑EU postal formats: keep PHONE, drop city
                 continue
 
+            # Drop short LOCATIONs that look like apartment/unit numbers
+            if re.match(r"^\w+ \d+$", span_text):
+                continue
 
             # ❗ DROP standalone LOCATION
             continue
@@ -1351,6 +1529,30 @@ class PIIFilter:
             out.append(r)
         return out
 
+    def _span_inside_email(self, text: str, s: int, e: int) -> bool:
+        """Return True if the span [s,e) is fully contained within an email address in the text."""
+        for m in re.finditer(r"[\w\.\-+%]+@[\w\.\-]+\.[A-Za-z]{2,}", text):
+            if m.start() <= s and m.end() >= e:
+                return True
+        return False
+
+    def _promote_phone_to_account_if_labeled(self, text: str, items):
+        """Promote PHONE_NUMBER spans to ACCOUNT_NUMBER when immediately preceded by a bank/account label.
+        This handles cases like 'Kontonummer: 1234-567890-12' where the labeled numeric should be an account.
+        """
+        out = []
+        bank_label_rx = re.compile(r"\b(?:iban|bic|swift|account(?:\s*no\.? )?|acct|acct\.?|konto(?:nummer)?|kontonr|kontonummer|bank|konto|rib|bban)\b", re.I)
+        for r in items:
+            if r.entity_type == 'PHONE_NUMBER':
+                left = text[max(0, r.start - 28):r.start].lower()
+                if bank_label_rx.search(left):
+                    digits = re.sub(r"\D", "", text[r.start:r.end])
+                    if len(digits) >= 6:
+                        out.append(RecognizerResult('ACCOUNT_NUMBER', r.start, r.end, 1.05))
+                        continue
+            out.append(r)
+        return out
+
     # ====================
     # Helpers: Validations
     # ====================
@@ -1435,24 +1637,108 @@ class PIIFilter:
     def _inject_custom_matches(self, text, results):
         add = []
 
+        # Precompute validated IBAN/BIC spans so other detectors (e.g., CREDIT_CARD) won't hijack parts
+        validated_iban_spans = []
+        for m in self.IBAN_RX.finditer(text):
+            try:
+                if self._iban_ok(m.group()):
+                    validated_iban_spans.append((m.start(), m.end()))
+            except Exception:
+                pass
+        validated_bic_spans = []
+        for m in self.BIC_RX.finditer(text):
+            try:
+                if m.group(2) in self.ISO_COUNTRIES:
+                    validated_bic_spans.append((m.start(), m.end()))
+            except Exception:
+                pass
+
+        # Emails — inject early so other matches can't replace parts of addresses/domains
+        for m in self.EMAIL_RX.finditer(text):
+            add.append(RecognizerResult("EMAIL", m.start(), m.end(), 1.0))
+
         # Addresses
         for m in self.STRICT_ADDRESS_RX.finditer(text):
-            add.append(RecognizerResult("ADDRESS", m.start(), m.end(), 0.95))
+            s, e = m.start(), m.end()
+            span = m.group()
+            # Do not let strict-address matches that overlap an email beat email matches
+            if any(not (e <= a.start or s >= a.end) for a in add if a.entity_type in ("EMAIL", "EMAIL_ADDRESS")):
+                continue
+            # If an intro cue immediately precedes this span (e.g., "Je m'appelle Rue Victor"),
+            # prefer PERSON and skip injecting an ADDRESS so the intro-based PERSON can win.
+            prefix = text[max(0, s - 48):s].lower()
+            if any(cue in prefix for cue in self.INTRO_CUES):
+                continue
+            # Conservative guard: require either a house number or an explicit street suffix to reduce city-name false positives
+            if not re.search(r"\d", span):
+                # If no digit present but a street suffix exists, try to absorb a following house-number from the right context
+                right = text[e:e+16]
+                mnum = re.match(r"^\s*[,:]?\s*(\d{1,4}[A-Za-z]?(?:\s*[-–]\s*\d+[A-Za-z]?)?)", right)
+                if mnum:
+                    # Expand match to include the house number
+                    e = e + mnum.end()
+                    span = text[s:e]
+                else:
+                    # street suffix check (use existing compound suffix regex)
+                    if not re.search(self.STREET_SUFFIX_COMPOUND, span, flags=re.I | re.UNICODE):
+                        continue
+            # Give strict-address matches a slightly higher score so they win numeric overlaps (house+postal)
+            add.append(RecognizerResult("ADDRESS", s, e, 1.02))
+
+        # Fallback street+number detection (conservative)
+        for m in self.FALLBACK_STREET_RX.finditer(text):
+            s, e = m.start(), m.end()
+            # Do not let fallback-address match overlap an email
+            if any(not (e <= a.start or s >= a.end) for a in add if a.entity_type in ("EMAIL", "EMAIL_ADDRESS")):
+                continue
+            # If an intro cue immediately precedes this span, prefer PERSON and skip injecting ADDRESS
+            prefix = text[max(0, s - 48):s].lower()
+            if any(cue in prefix for cue in self.INTRO_CUES):
+                continue
+            # Avoid duplicate ADDRESS injections
+            if any(not (e <= a.start or s >= a.end) for a in add if a.entity_type == "ADDRESS"):
+                continue
+            add.append(RecognizerResult("ADDRESS", s, e, 1.01))
 
         # Postal → LOCATION
         for patt in self.POSTAL_EU_PATTERNS:
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
-                add.append(RecognizerResult("LOCATION", m.start(), m.end(), 0.92))
-
+                s, e = m.start(), m.end()
+                matched = m.group()
+                # Skip matches that are a tail after a digit (avoid partial matches like '-000 São Paulo')
+                if s > 0 and text[s-1].isdigit():
+                    continue
+                # Avoid accidental matches on lowercase language words followed by short numbers (e.g., 'est 06')
+                alpha = re.match(r"\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)", matched)
+                if alpha and alpha.group(1).islower():
+                    continue
+                add.append(RecognizerResult("LOCATION", s, e, 0.92))
         # Phones or Meeting IDs
         for m in self.PHONE_RX.finditer(text):
             s, e = m.start(), m.end()
             left = text[max(0, s - 24):s].lower()
             right = text[e:min(len(text), e + 24)].lower()
-            if "meeting id" in left or "meeting id" in right:
-                add.append(RecognizerResult("MEETING_ID", s, e, 0.90))
+            # If fax appears near the number on either side, skip phone to let FAX handling win
+            if "fax" in left or "fax" in right:
+                continue
+            if "meeting" in left or "meeting" in right:
+                # Meeting IDs should beat other heuristics when labeled (broad match)
+                add.append(RecognizerResult("MEETING_ID", s, e, 1.05))
             else:
-                if len(re.sub(r"\D", "", m.group())) >= 7:
+                digits = re.sub(r"\D", "", m.group())
+                if len(digits) >= 7:
+                    # Avoid tagging address/postal fragments as PHONEs: if street-like tokens are near the number
+                    # or if a postal-like number begins immediately to the right, skip treating as PHONE
+                    left_ctx = left
+                    right_ctx = right
+                    if any(sb in left_ctx for sb in self.STREET_BLOCKERS) or any(sb in right_ctx for sb in self.STREET_BLOCKERS):
+                        continue
+                    # If right context starts with a postal-like fragment (e.g., '- 10115' or ' 10115'), skip
+                    if re.match(r"^\s*[-–]?\s*\d{3,6}\b", right_ctx):
+                        continue
+                    # If ID-like label tokens appear near the number, this is more likely an ID than a phone
+                    if any(k in left or k in right for k in self.ID_KEYWORDS):
+                        continue
                     add.append(RecognizerResult("PHONE_NUMBER", s, e, 0.90))
 
         # Fax (label-led)
@@ -1463,24 +1749,38 @@ class PIIFilter:
             if m:
                 s = start + m.start()
                 e = start + m.end()
-                add.append(RecognizerResult("FAX_NUMBER", s, e, 0.88))
+                add.append(RecognizerResult("FAX_NUMBER", s, e, 1.05))
 
         # Dates
         for patt in (self.DATE_REGEX_1, self.DATE_REGEX_2, self.DATE_REGEX_3):
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
                 add.append(RecognizerResult("DATE", m.start(), m.end(), 0.93))
+        # Filter out common relative date words (e.g., 'today') which are not PII in noisy text
+        RELATIVE_DATE_WORDS = {"today","yesterday","tomorrow","tonight","this morning","this afternoon","this evening"}
+        add = [r for r in add if not (r.entity_type in ("DATE","DATE_TIME") and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS)]
 
         # IDs
         for patt, _name in self.ID_PATTERNS:
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
                 s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-                add.append(RecognizerResult("ID_NUMBER", s, e, 0.92))
+                left = text[max(0, s - 24):s].lower()
+                # If the left context indicates this is an account/routing number, skip generic ID injection
+                is_account_label = any(k in left for k in self.ACCOUNT_LABELS)
+                if is_account_label:
+                    continue
+                # If ID label cues appear immediately to the left, boost the score so ID beats PHONE
+                is_labeled = any(k in left for k in self.ID_KEYWORDS)
+                score = 1.03 if is_labeled else 0.92
+                add.append(RecognizerResult("ID_NUMBER", s, e, score))
 
-        # TAX strict
+        # TAX strict - boost labeled priority
         for patt, _name in self.TAX_PATTERNS_STRICT:
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
                 s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-                add.append(RecognizerResult("TAX_ID", s, e, 0.92))
+                left = text[max(0, m.start() - 24):m.start()].lower()
+                is_labeled = any(k in left for k in ["steuer", "tax id", "tin", "vat"])
+                score = 1.0 if is_labeled else 0.92
+                add.append(RecognizerResult("TAX_ID", s, e, score))
 
         # TAX loose (optional + guarded)
         if self.ENABLE_LOOSE_TAX:
@@ -1501,10 +1801,11 @@ class PIIFilter:
         # Label-based IDs & TAX
         for m in self.LABELED_ID_VALUE_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("ID_NUMBER", s, e, 0.93))
+            # Labeled IDs should beat phone matches; raise score above PHONE_NUMBER
+            add.append(RecognizerResult("ID_NUMBER", s, e, 1.02))
         for m in self.LABELED_TAX_VALUE_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("TAX_ID", s, e, 0.93))
+            add.append(RecognizerResult("TAX_ID", s, e, 1.0))
 
         # US SSN/ITIN/EIN label-led
         for m in self.SSN_LABEL_RX.finditer(text):
@@ -1517,37 +1818,88 @@ class PIIFilter:
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             add.append(RecognizerResult("ID_NUMBER", s, e, 0.93))
 
+        # Government/Legal IDs - labeled (BEFORE Passports to win overlaps)
+        for m in self.DRIVER_LICENSE_LABEL_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            # Labeled identity documents should outrank generic passport pattern matches
+            add.append(RecognizerResult("DRIVER_LICENSE", s, e, 1.05))
+        for m in self.VOTER_ID_LABEL_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("VOTER_ID", s, e, 1.05))
+        for m in self.RESIDENCE_PERMIT_LABEL_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("RESIDENCE_PERMIT", s, e, 1.05))
+        for m in self.BENEFIT_ID_LABEL_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("BENEFIT_ID", s, e, 1.05))
+        for m in self.MILITARY_ID_LABEL_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("MILITARY_ID", s, e, 1.05))
+
         # Passports
         for m in re.finditer(self.US_PASSPORT_REGEX, text):
-            add.append(RecognizerResult("PASSPORT", m.start(), m.end(), 0.95))
+            s, e = m.start(), m.end()
+            left = text[max(0, s - 24):s].lower()
+            # Only boost passport score when explicit passport-like keywords are present
+            score = 1.05 if any(k in left for k in set(self.PASSPORT_KEYWORDS)) else 0.95
+            add.append(RecognizerResult("PASSPORT", s, e, score))
         for m in re.finditer(self.EU_PASSPORT_REGEX, text):
-            add.append(RecognizerResult("PASSPORT", m.start(), m.end(), 0.90))
+            s, e = m.start(), m.end()
+            left = text[max(0, s - 24):s].lower()
+            score = 1.05 if any(k in left for k in set(self.PASSPORT_KEYWORDS)) else 0.90
+            add.append(RecognizerResult("PASSPORT", s, e, score))
 
         # IP
         for patt in (self.IPV4_REGEX, self.IPV6_REGEX):
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
                 add.append(RecognizerResult("IP_ADDRESS", m.start(), m.end(), 0.95))
 
-        # Credit Cards
+        # Credit Cards - labeled gets highest score. Prefer card when brand or label present.
+        # Skip candidate if it overlaps a validated IBAN/BIC span to avoid splitting IBANs.
+        def _overlaps(spans, s, e):
+            return any(not (e <= ss or s >= ee) for (ss, ee) in spans)
         for m in re.finditer(r"(?:(?<!\w)(?:\d[ -]?){13,19}\d(?!\w))", text, flags=re.I | re.UNICODE):
             raw = m.group()
             digits = re.sub(r"[^\d]", "", raw)
             if self._luhn_ok(digits):
-                add.append(RecognizerResult("CREDIT_CARD", m.start(), m.end(), 0.96))
+                s, e = m.start(), m.end()
+                # avoid hijacking validated IBAN or BIC spans
+                if _overlaps(validated_iban_spans, s, e) or _overlaps(validated_bic_spans, s, e):
+                    continue
+                left = text[max(0, s - 24):s].lower()
+                if re.search(r"\b(visa|mastercard|master card|amex|american express|diners|jcb)\b", left):
+                    # Brand/left-context detected — ensure credit card beats IMEI and other device-like matches
+                    score = 1.14
+                else:
+                    score = 1.02
+                add.append(RecognizerResult("CREDIT_CARD", s, e, score))
         for m in self.LABELED_CC_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             raw = text[s:e]
             digits = re.sub(r"[^\d]", "", raw)
             if self._luhn_ok(digits):
-                add.append(RecognizerResult("CREDIT_CARD", s, e, 0.97))
+                add.append(RecognizerResult("CREDIT_CARD", s, e, 1.08))
 
-        # IBAN (validated)
+        # IMEI (validated) — handled in the Devices section below with label-aware scoring
+        # (kept out of the earlier injection list to avoid duplicate entries)
+
+        # IBAN (validated) - high score to win overlaps
         for m in self.IBAN_RX.finditer(text):
+            # Skip spans that are clearly part of an email
+            if self._span_inside_email(text, m.start(), m.end()):
+                continue
+            # Avoid false positives where a common short preposition (e.g., 'at', 'in', 'am') looks like a country code
+            m_left = re.search(r"(\b\w+)\s*$", text[:m.start()])
+            if m_left and m_left.group(1).lower() in ("at", "in", "on", "am", "an", "im", "bei", "auf"):
+                continue
             if self._iban_ok(m.group()):
-                add.append(RecognizerResult("BANK_ACCOUNT", m.start(), m.end(), 0.97))
+                # Make validated IBANs win numeric overlaps (e.g., prevent CREDIT_CARD inside IBAN)
+                add.append(RecognizerResult("BANK_ACCOUNT", m.start(), m.end(), 1.12))
 
         # BIC (uppercase + ISO check)
         for m in self.BIC_RX.finditer(text):
+            if self._span_inside_email(text, m.start(), m.end()):
+                continue
             if m.group(2) in self.ISO_COUNTRIES:
                 add.append(RecognizerResult("BANK_ACCOUNT", m.start(), m.end(), 0.90))
 
@@ -1557,11 +1909,23 @@ class PIIFilter:
             val = text[s:e].strip()
             if '@' in val:
                 continue
+            if self._span_inside_email(text, s, e):
+                continue
             if re.match(r'^[A-Za-z]{5,}$', val) and ' ' not in val:
                 if not (self._iban_ok(val) or self.BIC_RX.fullmatch(val) or re.search(r'\d', val)):
                     continue
+            # DEBUG: guard against accidental plain-word bank matches
+            if re.match(r'^[A-Za-z]{3,}$', val) and not re.search(r'\d', val):
+                # If the candidate is a short/all-alpha token without IBAN/BIC/digits, skip – avoid "beispiel"→BANK
+                # (This avoids bank labels capturing nearby words like email domains or stray tokens)
+                continue
+            # If the label explicitly mentions IBAN, treat as BANK_ACCOUNT even if not checksum-valid
+            label_prefix = text[m.start():m.start(1)].lower()
+            if "iban" in label_prefix:
+                add.append(RecognizerResult("BANK_ACCOUNT", s, e, 1.02))
+                continue
             if self._iban_ok(val):
-                add.append(RecognizerResult("BANK_ACCOUNT", s, e, 0.98))
+                add.append(RecognizerResult("BANK_ACCOUNT", s, e, 0.99))
                 continue
             m2 = self.BIC_RX.fullmatch(val)
             if m2 and m2.group(2) in self.ISO_COUNTRIES:
@@ -1569,14 +1933,19 @@ class PIIFilter:
                 continue
             compact = re.sub(r"[^\w]", "", val)
             if 8 <= len(compact) <= 34 and re.match(r"^[A-Za-z0-9]+$", compact):
-                add.append(RecognizerResult("ACCOUNT_NUMBER", s, e, 0.84))
+                # Labeled account numbers should beat common phone/other matches
+                # Boost score above typical PHONE/OTHER matches so labeled account wins overlap resolution
+                add.append(RecognizerResult("ACCOUNT_NUMBER", s, e, 1.02))
 
-        # Routing numbers (ABA)
+        # Routing numbers (ABA) - boost labeled priority
         for m in self.ROUTING_RX.finditer(text):
             nine = m.group(1) if m.lastindex else m.group(0)
             s1, e1 = (m.start(1), m.end(1)) if m.lastindex else (m.start(0), m.end(0))
             if self._aba_ok(nine):
-                add.append(RecognizerResult("ROUTING_NUMBER", s1, e1, 0.95))
+                left = text[max(0, s1 - 24):s1].lower()
+                is_labeled = "routing" in left or "aba" in left or "bankleitzahl" in left
+                score = 1.0 if is_labeled else 0.95
+                add.append(RecognizerResult("ROUTING_NUMBER", s1, e1, score))
 
         # Payment/API tokens
         for m in self.PAYMENT_TOKEN_RX.finditer(text):
@@ -1605,7 +1974,7 @@ class PIIFilter:
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             add.append(RecognizerResult("INSURANCE_ID", s, e, 0.90))
         for m in self.HEALTH_INFO_RX.finditer(text):
-            add.append(RecognizerResult("HEALTH_INFO", m.start(), m.end(), 0.80))
+            add.append(RecognizerResult("HEALTH_INFO", m.start(), m.end(), 1.0))
 
         # Education/Employment
         for m in self.STUDENT_NUMBER_RX.finditer(text):
@@ -1634,35 +2003,61 @@ class PIIFilter:
         for m in self.MEET_CODE_RX.finditer(text):
             add.append(RecognizerResult("MEETING_ID", m.start(1), m.end(1), 0.86))
 
-        # Devices
+        # Devices - boost label-led priorities
         for m in self.MAC_RX.finditer(text):
             add.append(RecognizerResult("MAC_ADDRESS", m.start(), m.end(), 0.90))
         for m in self.IMEI_RX.finditer(text):
+            left = text[max(0, m.start() - 24):m.start()].lower()
+            is_labeled = bool(re.search(r"\bimei\b", left))
             if self._imei_luhn_ok(m.group()):
-                add.append(RecognizerResult("IMEI", m.start(), m.end(), 0.94))
+                # Ensure valid IMEIs outrank generic credit-card matches; label presence gives slight boost
+                score = 1.12 if is_labeled else 1.10
+                add.append(RecognizerResult("IMEI", m.start(), m.end(), score))
         for m in self.AD_ID_LABEL_RX.finditer(text):
-            add.append(RecognizerResult("ADVERTISING_ID", m.start(1), m.end(1), 0.92))
+            add.append(RecognizerResult("ADVERTISING_ID", m.start(1), m.end(1), 1.0))
         for m in self.DEVICE_ID_LABEL_RX.finditer(text):
-            add.append(RecognizerResult("DEVICE_ID", m.start(1), m.end(1), 0.88))
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("DEVICE_ID", s, e, 0.88))
 
-        # Location extras
+        # Geographic coordinates, plus codes and what3words
         for m in self.GEO_COORDS_RX.finditer(text):
             try:
-                lat = float(m.group(1)); lon = float(m.group(2))
+                lat = float(m.group(1))
+                lon = float(m.group(2))
                 if self._geo_in_bounds(lat, lon):
                     add.append(RecognizerResult("GEO_COORDINATES", m.start(), m.end(), 0.90))
             except Exception:
                 pass
+
         for m in self.PLUS_CODE_RX.finditer(text):
-            add.append(RecognizerResult("PLUS_CODE", m.start(), m.end(), 0.86))
+            add.append(RecognizerResult("PLUS_CODE", m.start(), m.end(), 0.90))
+
         for m in self.W3W_RX.finditer(text):
             add.append(RecognizerResult("W3W", m.start(), m.end(), 0.85))
+
+        # License plate labels
         for m in self.PLATE_LABEL_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             plate = re.sub(r"\s+", " ", text[s:e]).strip()
             comp = re.sub(r"[\s\-]", "", plate)
-            if 4 <= len(comp) <= 10:
+            if 4 <= len(comp) <= 12:
                 add.append(RecognizerResult("LICENSE_PLATE", s, e, 0.85))
+
+        # Remove relative DATE/DATE_TIME tokens from both base results and injected matches (e.g., 'today')
+        RELATIVE_DATE_WORDS = {"today","yesterday","tomorrow","tonight","this morning","this afternoon","this evening"}
+        def _is_relative_date(r):
+            return r.entity_type in ("DATE", "DATE_TIME") and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS
+        results = [r for r in results if not _is_relative_date(r)]
+        add = [r for r in add if not _is_relative_date(r)]
+
+        # Remove BANK/ACCOUNT spans that overlap explicit email matches — prevent splitting emails
+        email_spans = [(r.start, r.end) for r in add if r.entity_type in ("EMAIL", "EMAIL_ADDRESS")]
+        if email_spans:
+            def _overlaps_any(s, e, spans):
+                return any(not (e <= ss or s >= ee) for (ss, ee) in spans)
+            # Filter base results and newly injected candidates
+            results = [r for r in results if not (r.entity_type in ("BANK_ACCOUNT", "ACCOUNT_NUMBER") and _overlaps_any(r.start, r.end, email_spans))]
+            add = [r for r in add if not (r.entity_type in ("BANK_ACCOUNT", "ACCOUNT_NUMBER") and _overlaps_any(r.start, r.end, email_spans))]
 
         merged = self._resolve_overlaps(text, results + add)
         merged = self._filter_label_leading_locations(text, merged)
@@ -1675,6 +2070,7 @@ class PIIFilter:
         i = 0
         while i < len(items):
             cur = items[i]
+            # Direct adjacent ADDRESS <-> LOCATION (existing behavior)
             if i + 1 < len(items):
                 nxt = items[i + 1]
                 between = text[cur.end:nxt.start]
@@ -1686,6 +2082,24 @@ class PIIFilter:
                         merged.append(RecognizerResult("ADDRESS", s, e, max(cur.score, nxt.score)))
                         i += 2
                         continue
+            # Extended: allow a single numeric filler (DATE/DATE_TIME/PHONE) between ADDRESS and LOCATION
+            if cur.entity_type == "ADDRESS":
+                j = i + 1
+                interim_ok = True
+                while j < len(items) and items[j].entity_type in ("DATE", "DATE_TIME", "PHONE_NUMBER"):
+                    span_text = text[items[j].start:items[j].end].strip()
+                    # accept numeric-only fillers that look like postcodes or house numbers
+                    if not re.fullmatch(r"\d{1,6}", span_text):
+                        interim_ok = False
+                        break
+                    j += 1
+                if interim_ok and j < len(items) and items[j].entity_type == "LOCATION":
+                    # Merge across numeric fillers (postal code / house number-like tokens)
+                    s = min(cur.start, items[j].start)
+                    e = max(cur.end, items[j].end)
+                    merged.append(RecognizerResult("ADDRESS", s, e, max(cur.score, items[j].score)))
+                    i = j + 1
+                    continue
             merged.append(cur)
             i += 1
         return self._resolve_overlaps(text, merged)
@@ -1732,6 +2146,19 @@ class PIIFilter:
         # PERSON cleanup
         filtered = []
         for r in base:
+            # Drop BANK/ACCOUNT results that are clearly contained in emails or contain no digits
+            if r.entity_type in ("BANK_ACCOUNT", "ACCOUNT_NUMBER"):
+                span_text = text[r.start:r.end]
+                if self._span_inside_email(text, r.start, r.end):
+                    continue
+                if not re.search(r"\d", span_text):
+                    continue
+                # Additional guard: require IBAN validation or an explicit nearby bank/account label
+                if not (self._iban_ok(span_text) or self.BIC_RX.fullmatch(span_text)):
+                    left_ctx = text[max(0, r.start - 28):r.start].lower()
+                    if not re.search(r"\b(iban|bic|swift|account|acct|konto|kontonummer|bank|kontonr)\b", left_ctx):
+                        # Reject likely false-positive bank spans like short words or adjectives
+                        continue
             if r.entity_type == "PERSON":
                 span = text[r.start:r.end]
                 trimmed, offset = self._trim_intro(span)
@@ -1740,6 +2167,22 @@ class PIIFilter:
                     if (r.end - ns) >= 2:
                         r = RecognizerResult("PERSON", ns, r.end, r.score)
                         span = trimmed
+                # If the PERSON span contains a strict-address with a house number, pull it out as ADDRESS
+                addr_m = self.STRICT_ADDRESS_RX.search(span)
+                if addr_m and re.search(r"\d", addr_m.group()):
+                    # address coordinates in original text
+                    addr_s = r.start + (addr_m.start() + (offset if offset else 0))
+                    addr_e = r.start + (addr_m.end() + (offset if offset else 0))
+                    # keep only the leading person part if it's a plausible person
+                    leading = span[:addr_m.start()].strip()
+                    if leading and self._plausible_person(leading, text, r.start):
+                        new_end = r.start + (addr_m.start() + (offset if offset else 0))
+                        if new_end - r.start >= 2:
+                            r = RecognizerResult("PERSON", r.start, new_end, r.score)
+                            filtered.append(r)
+                    # inject address
+                    filtered.append(RecognizerResult("ADDRESS", addr_s, addr_e, 1.02))
+                    continue
                 if not self._plausible_person(span, text, r.start):
                     continue
             filtered.append(r)
@@ -1749,7 +2192,59 @@ class PIIFilter:
 
         # Custom injections
         final = self._inject_custom_matches(text, filtered)
+
+        # Remove BANK/ACCOUNT spans that overlap with EMAIL spans (avoid replacing parts of emails)
+        email_spans = [(r.start, r.end) for r in final if r.entity_type in ("EMAIL", "EMAIL_ADDRESS")]
+        if email_spans:
+            preserved = []
+            for r in final:
+                if r.entity_type in ("BANK_ACCOUNT", "ACCOUNT_NUMBER"):
+                    # if overlaps any email span, drop
+                    if any(not (r.end <= s or r.start >= e) for (s, e) in email_spans):
+                        continue
+                preserved.append(r)
+            final = preserved
         
+        # Drop PERSON spans that are clearly non-person single tokens (e.g., Gewerbe)
+        pruned = []
+        for r in final:
+            if r.entity_type == 'PERSON':
+                span = text[r.start:r.end].strip()
+                if re.fullmatch(r"[A-Za-zÄÖÜäöüßÀ-ÿ]+", span) and span.lower() in self.NON_PERSON_SINGLE_TOKENS:
+                    continue
+            pruned.append(r)
+        final = pruned
+
+        # Filter out PERSON followed by a DATE/DATE_TIME via connecting prepositions (e.g., 'unter 01.01')
+        def _filter_person_before_date_with_prep(text, items):
+            out = []
+            for r in items:
+                if r.entity_type != 'PERSON':
+                    out.append(r)
+                    continue
+                # If a DATE or DATE_TIME follows within 24 chars and the intervening text contains a preposition like 'unter', drop PERSON
+                dropped = False
+                # Check for a DATE/DATE_TIME entity following with a connecting 'unter'
+                for d in items:
+                    if d.entity_type in ("DATE", "DATE_TIME") and 0 <= d.start - r.end <= 24:
+                        mid = text[r.end:d.start].lower()
+                        if re.search(r"\bunter\b", mid):
+                            dropped = True
+                            break
+                # Also check raw right-context like 'unter 12.04' even if no DATE entity was produced
+                if not dropped:
+                    right = text[r.end:r.end+24].lower()
+                    if re.search(r"\bunter\b\s*\d{1,2}[./-]\d{1,2}\b", right):
+                        dropped = True
+                if dropped:
+                    # debug: print reason
+                    print(f"DEBUG: Dropping PERSON {text[r.start:r.end]!r} because of right-context {text[r.end:r.end+24]!r}")
+                    pass
+                else:
+                    out.append(r)
+            return out
+        final = _filter_person_before_date_with_prep(text, final)
+
         # Drop LOCATION when a label keyword is inline or adjacent
         final = self._filter_locations_with_inline_or_near_labels(text, final, window=28)
 
@@ -1777,13 +2272,16 @@ class PIIFilter:
         # ID false-positive filter
         final = self._filter_idnumber_false_positives(text, final)
 
+        # Promote phone-like spans to ACCOUNT_NUMBER when a bank label is immediately left
+        final = self._promote_phone_to_account_if_labeled(text, final)
+
         # Merge address/location
         final = self._merge_address_location(text, final)
 
-        print("DEBUG ENTITIES:")
-        for rr in final:
-            print(rr.entity_type, repr(text[rr.start:rr.end]), rr.start, rr.end)
-        print("----- END DEBUG -----")
+        ##print("DEBUG ENTITIES:")
+        #for rr in final:
+         #   print(rr.entity_type, repr(text[rr.start:rr.end]), rr.start, rr.end)
+        #print("----- END DEBUG -----")
 
         # Replacements: single-escaped HTML tokens
         operators = {
@@ -1794,6 +2292,7 @@ class PIIFilter:
     "ADDRESS":          OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
     "LOCATION":         OperatorConfig("replace", {"new_value": "<LOCATION>"}),
     "DATE":             OperatorConfig("replace", {"new_value": "<DATE>"}),
+    "DATE_TIME":        OperatorConfig("replace", {"new_value": "<DATE>"}),
     "PASSPORT":         OperatorConfig("replace", {"new_value": "<PASSPORT>"}),
     "ID_NUMBER":        OperatorConfig("replace", {"new_value": "<ID_NUMBER>"}),
     "TAX_ID":           OperatorConfig("replace", {"new_value": "<TAX_ID>"}),

@@ -25,8 +25,21 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Email: hans@test.de-<EMAIL_ADDRESS>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Correo: marie@gmail.com-<EMAIL_ADDRESS>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-\\u0628\\u0631\\u064a\\u062f\\u064a ahmed@example.com-<EMAIL_ADDRESS>]": true,
-  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-US Passport: A12345678-<PASSPORT>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-EU Passport: X1Y2Z3A4B-<PASSPORT>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-ID: 12345678Z-<PASSPORT>]": true,
-  "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-Personalausweis: T22000129-<PASSPORT>]": true
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-PO Box 123, Springfield, IL 62701-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-Empire State Building, 350 5th Ave, New York-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-\\u6771\\u4eac\\u90fd\\u6e0b\\u8c37\\u533a\\u6e0b\\u8c371-1-1-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-Karl-Marx-Allee 1, 10243 Berlin-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-Lange Reihe 15, 20099 Hamburg-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-K\\xf6nigsberger Feld 4, 69120 Heidelberg-<ADDRESS>]": true,
+  "tests/unit/test_entity_coverage.py::test_address_false_positives[The store on \\u0634\\u0627\\u0631\\u0639 \\u0627\\u0644\\u0645\\u0644\\u0643 \\u0641\\u064a\\u0635\\u0644.]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PASSPORT-US Passport: A12345678-<ID_NUMBER>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-Personalausweis: T22000129-<ID_NUMBER>]": true,
+  "tests/unit/test_ids_tax.py::test_vat_tax_positive[RO VAT: RO12345678]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[VOTER_ID-Meine W\\xe4hlerausweisnummer ist V9876543-<VOTER_ID>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[BENEFIT_ID-Meine Sozialhilfekarte ist B11223344-<BENEFIT_ID>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[MILITARY_ID-Meine Milit\\xe4rausweis ist M55667788-<MILITARY_ID>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-Personalausweis: T22000129-<PASSPORT>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[CRYPTO_ADDRESS-Senden Sie an BTC-Adresse 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa-<CRYPTO_ADDRESS>]": true
 }
