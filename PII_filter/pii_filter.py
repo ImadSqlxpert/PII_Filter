@@ -99,7 +99,7 @@ class PIIFilter:
         "SOCIAL_HANDLE", "MESSAGING_ID", "MEETING_ID",
         "MAC_ADDRESS", "IMEI", "ADVERTISING_ID", "DEVICE_ID",
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
-        "API_KEY",
+        "API_KEY", "SESSION_ID", "ACCESS_TOKEN", "REFRESH_TOKEN", "ACCESS_CODE", "OTP_CODE",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -904,7 +904,35 @@ class PIIFilter:
         # Compile API Key patterns
         self.API_KEY_RXS = [(re.compile(patt, re.UNICODE), name) for patt, name in self.API_KEY_PATTERNS]
 
-        self.CRYPTO_BTC_LEGACY = re.compile(r"\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b")
+        # Session, Access Token, Refresh Token patterns
+        # ORDER MATTERS - more specific patterns should come first
+        self.TOKEN_PATTERNS = [
+            # SESSION_ID patterns (must come before generic "token")
+            (r"(?i)sessionid\s*=\s*([A-Za-z0-9_\-]{12,})", "session_id_labeled"),
+            (r"(?i)session_token\s*=\s*([A-Za-z0-9_\-]{12,})", "session_token_labeled"),
+            (r"(?i)session_id\s*=\s*([A-Za-z0-9_\-]{12,})", "session_id_alt"),
+            (r"(?i)sid\s*=\s*([A-Za-z0-9_\-]{12,})", "sid_labeled"),
+            # REFRESH_TOKEN patterns (must come before generic "token")
+            (r"(?i)refresh_token\s*=\s*([A-Za-z0-9_\-\.]{12,})", "refresh_token_labeled"),
+            (r"(?i)refreshtoken\s*=\s*([A-Za-z0-9_\-\.]{12,})", "refresh_token_alt"),
+            # ACCESS_TOKEN patterns (generic last, with word boundary to avoid being inside refresh_token)
+            (r"(?i)access_token\s*=\s*([A-Za-z0-9_\-\.]{12,})", "access_token_labeled"),
+            (r"(?i)bearer\s+([A-Za-z0-9_\-\.]{16,})", "bearer_token"),
+            (r"(?i)\btoken\s*=\s*([A-Za-z0-9_\-\.]{12,})", "token_labeled"),
+            # OTP_CODE patterns (must come before generic "code" to avoid false matches)
+            (r"(?i)(?:otp|one.?time|2fa|two.?factor)[\s\w]*[:=]\s*([0-9]{4,8})", "otp_code_labeled"),
+            (r"(?i)verification[\s\w]*code\s*[:=]\s*([0-9]{4,8})", "verification_code"),
+            (r"(?i)mfa[\s\w]*code\s*[:=]\s*([0-9]{4,8})", "mfa_code"),
+            # ACCESS_CODE patterns
+            (r"(?i)(?:access|auth)[\s\w]*code\s*[:=]\s*([A-Za-z0-9]{4,8})", "access_code_labeled"),
+            (r"(?i)pin[\s\w]*[:=]\s*([0-9]{4,6})", "pin_code"),
+            # Generic "code" pattern (must come after specific OTP patterns to avoid overlap)
+            (r"(?i)\bcode[\s\w]*[:=]\s*([A-Za-z0-9]{4,8})", "code_labeled"),
+        ]
+        # Compile Token patterns
+        self.TOKEN_RXS = [(re.compile(patt, re.UNICODE), name) for patt, name in self.TOKEN_PATTERNS]
+        # Crypto patterns
+        self.CRYPTO_BTC_LEGACY = re.compile(r"\b[13][a-km-zA-HJ-NP-Z1-9]{26,33}\b")
         self.CRYPTO_BTC_BECH32 = re.compile(r"\b(?:bc1)[0-9a-z]{11,71}\b")
         self.CRYPTO_ETH = re.compile(r"\b0x[a-fA-F0-9]{40}\b")
 
@@ -1705,6 +1733,26 @@ class PIIFilter:
                     # High score so API_KEY wins overlaps with PHONE, ADDRESS, etc.
                     add.append(RecognizerResult("API_KEY", s, e, 1.05))
 
+        # SESSION_ID, ACCESS_TOKEN, REFRESH_TOKEN, ACCESS_CODE, OTP_CODE — inject early with high scores
+        for rx, ent_name in self.TOKEN_RXS:
+            for m in rx.finditer(text):
+                s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+                token_val = text[s:e].strip()
+                if len(token_val) >= 4:  # Minimum length for tokens/codes
+                    # Check specific patterns first (before generic "code")
+                    if "otp" in ent_name.lower() or "mfa" in ent_name.lower() or "verification" in ent_name.lower():
+                        add.append(RecognizerResult("OTP_CODE", s, e, 1.03))
+                    elif "session" in ent_name.lower() or "sid" in ent_name.lower():
+                        add.append(RecognizerResult("SESSION_ID", s, e, 1.04))
+                    elif "refresh" in ent_name.lower():
+                        add.append(RecognizerResult("REFRESH_TOKEN", s, e, 1.04))
+                    elif "access_token" in ent_name.lower() or "bearer" in ent_name.lower():
+                        add.append(RecognizerResult("ACCESS_TOKEN", s, e, 1.04))
+                    elif "access_code" in ent_name.lower() or "pin" in ent_name.lower() or (ent_name.lower() == "code_labeled"):
+                        add.append(RecognizerResult("ACCESS_CODE", s, e, 1.03))
+                    elif "token" in ent_name.lower():
+                        add.append(RecognizerResult("ACCESS_TOKEN", s, e, 1.04))
+
         # Addresses
         for m in self.STRICT_ADDRESS_RX.finditer(text):
             s, e = m.start(), m.end()
@@ -2380,7 +2428,13 @@ class PIIFilter:
     "PLUS_CODE":        OperatorConfig("replace", {"new_value": "<PLUS_CODE>"}),
     "W3W":              OperatorConfig("replace", {"new_value": "<W3W>"}),
     "LICENSE_PLATE":    OperatorConfig("replace", {"new_value": "<LICENSE_PLATE>"}),
+
     "API_KEY":          OperatorConfig("replace", {"new_value": "<API_KEY>"}),
+    "SESSION_ID":       OperatorConfig("replace", {"new_value": "<SESSION_ID>"}),
+    "ACCESS_TOKEN":     OperatorConfig("replace", {"new_value": "<ACCESS_TOKEN>"}),
+    "REFRESH_TOKEN":    OperatorConfig("replace", {"new_value": "<REFRESH_TOKEN>"}),
+    "ACCESS_CODE":      OperatorConfig("replace", {"new_value": "<ACCESS_CODE>"}),
+    "OTP_CODE":         OperatorConfig("replace", {"new_value": "<OTP_CODE>"}),
         }       
 
         out = self.anonymizer.anonymize(text=text, analyzer_results=final, operators=operators)
