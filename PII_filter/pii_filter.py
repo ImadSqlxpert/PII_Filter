@@ -100,6 +100,7 @@ class PIIFilter:
         "MAC_ADDRESS", "IMEI", "ADVERTISING_ID", "DEVICE_ID",
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
         "API_KEY", "SESSION_ID", "ACCESS_TOKEN", "REFRESH_TOKEN", "ACCESS_CODE", "OTP_CODE",
+        "EORI",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -562,6 +563,10 @@ class PIIFilter:
             (r"\b(\d{8})\b", "mt_vat_unlabeled"),
             (r"\b(\d{8})\b", "lu_vat_unlabeled"),
         ]
+
+        # EORI — explicitly labeled forms (e.g., 'EORI: DE123456789000' or 'EORI DE123456789')
+        # We'll match a two-letter country code followed by 6-20 alphanumeric/ dash characters
+        self.EORI_RX = re.compile(r"(?i)\bEORI[:\s]*([A-Z]{2}\s?[A-Z0-9\-]{6,20})")
 
         # Label-based ID/TAX capture
         self.LABELED_ID_VALUE_RX = re.compile(
@@ -1878,6 +1883,12 @@ class PIIFilter:
                 score = 1.0 if is_labeled else 0.92
                 add.append(RecognizerResult("TAX_ID", s, e, score))
 
+        # EORI explicit labeled matches (prefer EORI when label present)
+        for m in self.EORI_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            # Prefer EORI as distinct entity (higher than generic TAX_ID)
+            add.append(RecognizerResult("EORI", s, e, 1.03))
+
         # TAX loose (optional + guarded)
         if self.ENABLE_LOOSE_TAX:
             for patt, _name in self.TAX_PATTERNS_LOOSE:
@@ -2380,61 +2391,62 @@ class PIIFilter:
 
         # Replacements: single-escaped HTML tokens
         operators = {
-    "PERSON":           OperatorConfig("replace", {"new_value": "<PERSON>"}),
-    "EMAIL_ADDRESS":    OperatorConfig("replace", {"new_value": "<EMAIL>"}),
-    "PHONE_NUMBER":     OperatorConfig("replace", {"new_value": "<PHONE>"}),
-    "FAX_NUMBER":       OperatorConfig("replace", {"new_value": "<FAX>"}),
-    "ADDRESS":          OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
-    "LOCATION":         OperatorConfig("replace", {"new_value": "<LOCATION>"}),
-    "DATE":             OperatorConfig("replace", {"new_value": "<DATE>"}),
-    "DATE_TIME":        OperatorConfig("replace", {"new_value": "<DATE>"}),
-    "PASSPORT":         OperatorConfig("replace", {"new_value": "<PASSPORT>"}),
-    "ID_NUMBER":        OperatorConfig("replace", {"new_value": "<ID_NUMBER>"}),
-    "TAX_ID":           OperatorConfig("replace", {"new_value": "<TAX_ID>"}),
-    "IP_ADDRESS":       OperatorConfig("replace", {"new_value": "<IP_ADDRESS>"}),
+            "PERSON":           OperatorConfig("replace", {"new_value": "<PERSON>"}),
+            "EMAIL_ADDRESS":    OperatorConfig("replace", {"new_value": "<EMAIL>"}),
+            "PHONE_NUMBER":     OperatorConfig("replace", {"new_value": "<PHONE>"}),
+            "FAX_NUMBER":       OperatorConfig("replace", {"new_value": "<FAX>"}),
+            "ADDRESS":          OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
+            "LOCATION":         OperatorConfig("replace", {"new_value": "<LOCATION>"}),
+            "DATE":             OperatorConfig("replace", {"new_value": "<DATE>"}),
+            "DATE_TIME":        OperatorConfig("replace", {"new_value": "<DATE>"}),
+            "PASSPORT":         OperatorConfig("replace", {"new_value": "<PASSPORT>"}),
+            "ID_NUMBER":        OperatorConfig("replace", {"new_value": "<ID_NUMBER>"}),
+            "TAX_ID":           OperatorConfig("replace", {"new_value": "<TAX_ID>"}),
+            "IP_ADDRESS":       OperatorConfig("replace", {"new_value": "<IP_ADDRESS>"}),
+            "EORI":             OperatorConfig("replace", {"new_value": "<EORI>"}),
 
-    "CREDIT_CARD":      OperatorConfig("replace", {"new_value": "<CREDIT_CARD>"}),
-    "BANK_ACCOUNT":     OperatorConfig("replace", {"new_value": "<BANK_ACCOUNT>"}),
-    "ROUTING_NUMBER":   OperatorConfig("replace", {"new_value": "<ROUTING_NUMBER>"}),
-    "ACCOUNT_NUMBER":   OperatorConfig("replace", {"new_value": "<ACCOUNT_NUMBER>"}),
-    "PAYMENT_TOKEN":    OperatorConfig("replace", {"new_value": "<PAYMENT_TOKEN>"}),
-    "CRYPTO_ADDRESS":   OperatorConfig("replace", {"new_value": "<CRYPTO_ADDRESS>"}),
+            "CREDIT_CARD":      OperatorConfig("replace", {"new_value": "<CREDIT_CARD>"}),
+            "BANK_ACCOUNT":     OperatorConfig("replace", {"new_value": "<BANK_ACCOUNT>"}),
+            "ROUTING_NUMBER":   OperatorConfig("replace", {"new_value": "<ROUTING_NUMBER>"}),
+            "ACCOUNT_NUMBER":   OperatorConfig("replace", {"new_value": "<ACCOUNT_NUMBER>"}),
+            "PAYMENT_TOKEN":    OperatorConfig("replace", {"new_value": "<PAYMENT_TOKEN>"}),
+            "CRYPTO_ADDRESS":   OperatorConfig("replace", {"new_value": "<CRYPTO_ADDRESS>"}),
 
-    "DRIVER_LICENSE":   OperatorConfig("replace", {"new_value": "<DRIVER_LICENSE>"}),
-    "VOTER_ID":         OperatorConfig("replace", {"new_value": "<VOTER_ID>"}),
-    "RESIDENCE_PERMIT": OperatorConfig("replace", {"new_value": "<RESIDENCE_PERMIT>"}),
-    "BENEFIT_ID":       OperatorConfig("replace", {"new_value": "<BENEFIT_ID>"}),
-    "MILITARY_ID":      OperatorConfig("replace", {"new_value": "<MILITARY_ID>"}),
+            "DRIVER_LICENSE":   OperatorConfig("replace", {"new_value": "<DRIVER_LICENSE>"}),
+            "VOTER_ID":         OperatorConfig("replace", {"new_value": "<VOTER_ID>"}),
+            "RESIDENCE_PERMIT": OperatorConfig("replace", {"new_value": "<RESIDENCE_PERMIT>"}),
+            "BENEFIT_ID":       OperatorConfig("replace", {"new_value": "<BENEFIT_ID>"}),
+            "MILITARY_ID":      OperatorConfig("replace", {"new_value": "<MILITARY_ID>"}),
 
-    "HEALTH_ID":        OperatorConfig("replace", {"new_value": "<HEALTH_ID>"}),
-    "MRN":              OperatorConfig("replace", {"new_value": "<MRN>"}),
-    "INSURANCE_ID":     OperatorConfig("replace", {"new_value": "<INSURANCE_ID>"}),
-    "HEALTH_INFO":      OperatorConfig("replace", {"new_value": "<HEALTH_INFO>"}),
+            "HEALTH_ID":        OperatorConfig("replace", {"new_value": "<HEALTH_ID>"}),
+            "MRN":              OperatorConfig("replace", {"new_value": "<MRN>"}),
+            "INSURANCE_ID":     OperatorConfig("replace", {"new_value": "<INSURANCE_ID>"}),
+            "HEALTH_INFO":      OperatorConfig("replace", {"new_value": "<HEALTH_INFO>"}),
 
-    "STUDENT_NUMBER":   OperatorConfig("replace", {"new_value": "<STUDENT_NUMBER>"}),
-    "EMPLOYEE_ID":      OperatorConfig("replace", {"new_value": "<EMPLOYEE_ID>"}),
-    "PRO_LICENSE":      OperatorConfig("replace", {"new_value": "<PRO_LICENSE>"}),
+            "STUDENT_NUMBER":   OperatorConfig("replace", {"new_value": "<STUDENT_NUMBER>"}),
+            "EMPLOYEE_ID":      OperatorConfig("replace", {"new_value": "<EMPLOYEE_ID>"}),
+            "PRO_LICENSE":      OperatorConfig("replace", {"new_value": "<PRO_LICENSE>"}),
 
-    "SOCIAL_HANDLE":    OperatorConfig("replace", {"new_value": "<SOCIAL_HANDLE>"}),
-    "MESSAGING_ID":     OperatorConfig("replace", {"new_value": "<MESSAGING_ID>"}),
-    "MEETING_ID":       OperatorConfig("replace", {"new_value": "<MEETING_ID>"}),
+            "SOCIAL_HANDLE":    OperatorConfig("replace", {"new_value": "<SOCIAL_HANDLE>"}),
+            "MESSAGING_ID":     OperatorConfig("replace", {"new_value": "<MESSAGING_ID>"}),
+            "MEETING_ID":       OperatorConfig("replace", {"new_value": "<MEETING_ID>"}),
 
-    "MAC_ADDRESS":      OperatorConfig("replace", {"new_value": "<MAC_ADDRESS>"}),
-    "IMEI":             OperatorConfig("replace", {"new_value": "<IMEI>"}),
-    "ADVERTISING_ID":   OperatorConfig("replace", {"new_value": "<ADVERTISING_ID>"}),
-    "DEVICE_ID":        OperatorConfig("replace", {"new_value": "<DEVICE_ID>"}),
+            "MAC_ADDRESS":      OperatorConfig("replace", {"new_value": "<MAC_ADDRESS>"}),
+            "IMEI":             OperatorConfig("replace", {"new_value": "<IMEI>"}),
+            "ADVERTISING_ID":   OperatorConfig("replace", {"new_value": "<ADVERTISING_ID>"}),
+            "DEVICE_ID":        OperatorConfig("replace", {"new_value": "<DEVICE_ID>"}),
 
-    "GEO_COORDINATES":  OperatorConfig("replace", {"new_value": "<GEO_COORDINATES>"}),
-    "PLUS_CODE":        OperatorConfig("replace", {"new_value": "<PLUS_CODE>"}),
-    "W3W":              OperatorConfig("replace", {"new_value": "<W3W>"}),
-    "LICENSE_PLATE":    OperatorConfig("replace", {"new_value": "<LICENSE_PLATE>"}),
+            "GEO_COORDINATES":  OperatorConfig("replace", {"new_value": "<GEO_COORDINATES>"}),
+            "PLUS_CODE":        OperatorConfig("replace", {"new_value": "<PLUS_CODE>"}),
+            "W3W":              OperatorConfig("replace", {"new_value": "<W3W>"}),
+            "LICENSE_PLATE":    OperatorConfig("replace", {"new_value": "<LICENSE_PLATE>"}),
 
-    "API_KEY":          OperatorConfig("replace", {"new_value": "<API_KEY>"}),
-    "SESSION_ID":       OperatorConfig("replace", {"new_value": "<SESSION_ID>"}),
-    "ACCESS_TOKEN":     OperatorConfig("replace", {"new_value": "<ACCESS_TOKEN>"}),
-    "REFRESH_TOKEN":    OperatorConfig("replace", {"new_value": "<REFRESH_TOKEN>"}),
-    "ACCESS_CODE":      OperatorConfig("replace", {"new_value": "<ACCESS_CODE>"}),
-    "OTP_CODE":         OperatorConfig("replace", {"new_value": "<OTP_CODE>"}),
+            "API_KEY":          OperatorConfig("replace", {"new_value": "<API_KEY>"}),
+            "SESSION_ID":       OperatorConfig("replace", {"new_value": "<SESSION_ID>"}),
+            "ACCESS_TOKEN":     OperatorConfig("replace", {"new_value": "<ACCESS_TOKEN>"}),
+            "REFRESH_TOKEN":    OperatorConfig("replace", {"new_value": "<REFRESH_TOKEN>"}),
+            "ACCESS_CODE":      OperatorConfig("replace", {"new_value": "<ACCESS_CODE>"}),
+            "OTP_CODE":         OperatorConfig("replace", {"new_value": "<OTP_CODE>"}),
         }       
 
         out = self.anonymizer.anonymize(text=text, analyzer_results=final, operators=operators)

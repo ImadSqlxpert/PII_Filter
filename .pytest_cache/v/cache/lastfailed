@@ -48,5 +48,6 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-My API key is sk_live_abc123def456-<PAYMENT_TOKEN>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-Mein API-Schl\\xfcssel ist sk_live_abc123def456-<PAYMENT_TOKEN>]": true,
   "tests/unit/test_regex_patterns.py": true,
-  "tests/unit/test_false_positives.py": true
+  "tests/unit/test_false_positives.py": true,
+  "tests/unit/test_entity_coverage.py": true
 }
