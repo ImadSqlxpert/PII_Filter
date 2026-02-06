@@ -99,6 +99,7 @@ class PIIFilter:
         "SOCIAL_HANDLE", "MESSAGING_ID", "MEETING_ID",
         "MAC_ADDRESS", "IMEI", "ADVERTISING_ID", "DEVICE_ID",
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
+        "API_KEY",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -865,6 +866,43 @@ class PIIFilter:
         self.PAYMENT_TOKEN_RX = re.compile(
             r"(?i)\b(?:token|payment\s*token|client\s*secret|api\s*key|api\s*token|secret(?:\s*key)?|bearer\s*token|stripe\s*key|pk_(?:live|test)_[A-Za-z0-9]{10,}|sk_(?:live|test)_[A-Za-z0-9]{10,})\b[:=\s\-]*([A-Za-z0-9_\-]{16,128})"
         )
+
+        # API Keys - common formats (prioritize by pattern specificity, inject even without labels for better coverage)
+        self.API_KEY_PATTERNS = [
+            # Standalone AWS patterns
+            (r"\b(AKIA[0-9A-Z]{14,})\b", "aws_access_key_id"),
+            (r"(?i)aws_secret_access_key\s*=\s*([A-Za-z0-9+/]{30,})", "aws_secret_key"),
+            # GitHub tokens
+            (r"\b(github_pat_[A-Za-z0-9_]{34,})\b", "github_pat_token"),
+            (r"\b(ghp_[A-Za-z0-9_]{36,255})\b", "github_ghp_token"),
+            (r"\b(gho_[A-Za-z0-9_]{36,255})\b", "github_oauth_token"),
+            (r"\b(ghu_[A-Za-z0-9_]{36,255})\b", "github_user_to_server_token"),
+            # Stripe tokens
+            (r"\b(sk_live_[A-Za-z0-9]{10,})\b", "stripe_live_secret_key"),
+            (r"\b(sk_test_[A-Za-z0-9]{10,})\b", "stripe_test_secret_key"),
+            (r"\b(pk_live_[A-Za-z0-9]{10,})\b", "stripe_live_public_key"),
+            (r"\b(pk_test_[A-Za-z0-9]{10,})\b", "stripe_test_public_key"),
+            # Slack tokens
+            (r"\b(xoxb-[A-Za-z0-9\-]{10,48})\b", "slack_bot_token"),
+            (r"\b(xoxp-[A-Za-z0-9\-]{10,48})\b", "slack_user_token"),
+            # SendGrid, MailChimp, DigitalOcean, OpenAI
+            (r"\b(SG\.[A-Za-z0-9_\-]{20,})\b", "sendgrid_api_key"),
+            (r"\b([a-f0-9]{32}-us[0-9]{1,2})\b", "mailchimp_api_key"),
+            (r"\b(dop_v1_[A-Za-z0-9_\-]{20,})\b", "digitalocean_api_token"),
+            (r"\b(sk-[A-Za-z0-9\-]{20,})\b", "openai_secret_key"),
+            # Google and Firebase API keys (start with AIza)
+            (r"\b(AIza[A-Za-z0-9\-_]{35,})\b", "google_api_key"),
+            # JWT tokens (can contain dots, so don't use \b at end)
+            (r"\b(eyJ[A-Za-z0-9_\-\.]{100,})", "jwt_bearer_token"),
+            # Webhook secrets
+            (r"\b(whsec_[A-Za-z0-9]{30,})\b", "webhook_secret"),
+            # Labeled patterns (key=value format)
+            (r"(?i)twilio_auth_token\s*=\s*([A-Za-z0-9]{26,})", "twilio_labeled_token"),
+            (r"(?i)cloudflare_token\s*=\s*([A-Za-z0-9_\-]{30,})", "cloudflare_labeled_token"),
+            (r"(?i)azure_api_key\s*=\s*([A-Za-z0-9\-]{36})", "azure_api_labeled"),
+        ]
+        # Compile API Key patterns
+        self.API_KEY_RXS = [(re.compile(patt, re.UNICODE), name) for patt, name in self.API_KEY_PATTERNS]
 
         self.CRYPTO_BTC_LEGACY = re.compile(r"\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b")
         self.CRYPTO_BTC_BECH32 = re.compile(r"\b(?:bc1)[0-9a-z]{11,71}\b")
@@ -1657,6 +1695,16 @@ class PIIFilter:
         for m in self.EMAIL_RX.finditer(text):
             add.append(RecognizerResult("EMAIL", m.start(), m.end(), 1.0))
 
+        # API Keys — inject early (before PHONE/ADDRESS/etc) so they win overlaps
+        for rx, _name in self.API_KEY_RXS:
+            for m in rx.finditer(text):
+                s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+                api_key = text[s:e].strip()
+                # Avoid very short strings or common false positives
+                if len(api_key) >= 12 and not re.match(r'^[A-Za-z\-_\.]{1,5}$', api_key):
+                    # High score so API_KEY wins overlaps with PHONE, ADDRESS, etc.
+                    add.append(RecognizerResult("API_KEY", s, e, 1.05))
+
         # Addresses
         for m in self.STRICT_ADDRESS_RX.finditer(text):
             s, e = m.start(), m.end()
@@ -2237,8 +2285,7 @@ class PIIFilter:
                     if re.search(r"\bunter\b\s*\d{1,2}[./-]\d{1,2}\b", right):
                         dropped = True
                 if dropped:
-                    # debug: print reason
-                    print(f"DEBUG: Dropping PERSON {text[r.start:r.end]!r} because of right-context {text[r.end:r.end+24]!r}")
+                    # PERSON followed by date with preposition - skip it
                     pass
                 else:
                     out.append(r)
@@ -2333,6 +2380,7 @@ class PIIFilter:
     "PLUS_CODE":        OperatorConfig("replace", {"new_value": "<PLUS_CODE>"}),
     "W3W":              OperatorConfig("replace", {"new_value": "<W3W>"}),
     "LICENSE_PLATE":    OperatorConfig("replace", {"new_value": "<LICENSE_PLATE>"}),
+    "API_KEY":          OperatorConfig("replace", {"new_value": "<API_KEY>"}),
         }       
 
         out = self.anonymizer.anonymize(text=text, analyzer_results=final, operators=operators)

@@ -41,5 +41,10 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[BENEFIT_ID-Meine Sozialhilfekarte ist B11223344-<BENEFIT_ID>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[MILITARY_ID-Meine Milit\\xe4rausweis ist M55667788-<MILITARY_ID>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[ID_NUMBER-Personalausweis: T22000129-<PASSPORT>]": true,
-  "tests/unit/test_entity_coverage.py::test_entity_coverage[CRYPTO_ADDRESS-Senden Sie an BTC-Adresse 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa-<CRYPTO_ADDRESS>]": true
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[CRYPTO_ADDRESS-Senden Sie an BTC-Adresse 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa-<CRYPTO_ADDRESS>]": true,
+  "tests/benchmarks/test_benchmarks.py": true,
+  "tests/integration/test_anonymization_output.py": true,
+  "tests/integration/test_language_samples.py": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-My API key is sk_live_abc123def456-<PAYMENT_TOKEN>]": true,
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-Mein API-Schl\\xfcssel ist sk_live_abc123def456-<PAYMENT_TOKEN>]": true
 }
