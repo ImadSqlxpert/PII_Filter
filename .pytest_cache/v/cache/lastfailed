@@ -47,7 +47,8 @@
   "tests/integration/test_language_samples.py": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-My API key is sk_live_abc123def456-<PAYMENT_TOKEN>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PAYMENT_TOKEN-Mein API-Schl\\xfcssel ist sk_live_abc123def456-<PAYMENT_TOKEN>]": true,
-  "tests/unit/test_regex_patterns.py": true,
   "tests/unit/test_false_positives.py": true,
-  "tests/unit/test_entity_coverage.py": true
+  "tests/unit/test_entity_coverage.py": true,
+  "tests/unit/test_regex_patterns.py::test_commercial_register_regex_positive[Abteilung A]": true,
+  "tests/unit/test_regex_patterns.py::test_commercial_register_regex_positive[L'entreprise est immatricul\\xe9e au RCS Paris, section B sous le num\\xe9ro 789012.]": true
 }

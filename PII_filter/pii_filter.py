@@ -71,6 +71,7 @@ class PIIFilter:
         "PLUS_CODE": 9,
         "W3W": 4,
         "LICENSE_PLATE": 5,
+        "COMMERCIAL_REGISTER": 9,
     }
 
     NATURAL_SUFFIXES = ("berg", "tal", "thal", "wald", "feld", "see", "bach")
@@ -100,7 +101,7 @@ class PIIFilter:
         "MAC_ADDRESS", "IMEI", "ADVERTISING_ID", "DEVICE_ID",
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
         "API_KEY", "SESSION_ID", "ACCESS_TOKEN", "REFRESH_TOKEN", "ACCESS_CODE", "OTP_CODE",
-        "EORI",
+        "EORI", "COMMERCIAL_REGISTER",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -567,6 +568,45 @@ class PIIFilter:
         # EORI — explicitly labeled forms (e.g., 'EORI: DE123456789000' or 'EORI DE123456789')
         # We'll match a two-letter country code followed by 6-20 alphanumeric/ dash characters
         self.EORI_RX = re.compile(r"(?i)\bEORI[:\s]*([A-Z]{2}\s?[A-Z0-9\-]{6,20})")
+
+        # Handelsregister / Commercial Register — multilingual European support
+        # Captures: Register Court + Division A/B + optional register number
+        # Supports: German (Handelsregister, Abteilung A/B, HRB/HRA)
+        #          French (Tribunal de Commerce, Registre A/B, RCS)
+        #          Spanish (Registro Mercantil, Sección A/B)
+        #          Italian (Registro delle Imprese, Sezione A/B, REA)
+        #          Dutch (Handelsregister, Afdeling A/B)
+        self.COMMERCIAL_REGISTER_RX = re.compile(
+            r"(?i)(?:"
+            # German: Amtsgericht/Registergericht City, Handelsregister/Abteilung [AB] [numbers]
+            r"(?:amtsgericht|registergericht)\s+[\w\-äöüß\s]+[,;]?\s*(?:handelsregister|abteilung|abt\.?)\s+[AB]\s*(?:\s*[,;]?\s*(?:hr[ab]|number|nr\.?)\s*[:\-]?\s*\d+)?"
+            r"|"
+            # German: Registergericht variations with HRB/HRA numbers (complete capture)
+            r"registergericht\s+[\w\-äöüß\s]+\s*[,;]\s*(?:abteilung|abt\.?)\s+[AB]\s*[,;]?\s*(?:hr[ab])\s+\d+"
+            r"|"
+            # French: Tribunal de Commerce CityName, Registre [AB] [optional numbers]
+            r"tribunal\s+de\s+commerce\s+[\w\-àâäç\s']+\s*[,;]?\s*(?:registre|section|sect\.?)\s+[AB]\s*(?:\s*[,;]?\s*\d+)?"
+            r"|"
+            # French: RCS CityName [AB] [optional numbers] - shorthand form
+            r"rcs\s+[\w\-àâäç\s']+\s+[AB](?:\s+\d+)?"
+            r"|"
+            # Spanish: Registro Mercantil CityName, Sección [AB] [optional numbers]
+            r"(?:registro\s+mercantil|reg\.?\s+merc\.?)\s+[\w\s\-áéíóúñ]+\s*[,;]?\s*(?:sección|secc\.?|sect\.?)\s+[AB]\s*(?:\s*[,;]?\s*\d+)?"
+            r"|"
+            # Italian: Registro delle Imprese CityName, Sezione [AB] [optional numbers]
+            r"registro\s+dell[e']?\s+imprese\s+[\w\s\-àèéìòù]+\s*[,;]?\s*(?:sezione|sez\.?)\s+[AB]\s*(?:\s*[,;]?\s*\d+)?"
+            r"|"
+            # Italian: REA CityName [optional numbers] - shorthand form
+            r"rea\s+[\w\-àèéìòù\s]+(?:\s+\d+)?"
+            r"|"
+            # Dutch: Handelsregister CityName, Afdeling [AB] [optional numbers]
+            r"handelsregister\s+[\w\s\-]+\s*[,;]?\s*(?:afdeling|afd\.?)\s+[AB]\s*(?:\s*[,;]?\s*\d+)?"
+            r"|"
+            # Dutch: KVK CityName [AB] [optional numbers] - shorthand form (with or without section letter)
+            r"kvk\s+[\w\s\-]+(?:\s+[AB])?\s*(?:\s+\d+)?"
+            r")",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
 
         # Label-based ID/TAX capture
         self.LABELED_ID_VALUE_RX = re.compile(
@@ -1888,6 +1928,12 @@ class PIIFilter:
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             # Prefer EORI as distinct entity (higher than generic TAX_ID)
             add.append(RecognizerResult("EORI", s, e, 1.03))
+
+        # Commercial Register / Handelsregister — multilingual European support
+        for m in self.COMMERCIAL_REGISTER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            # High score to ensure commercial register captures are not misclassified
+            add.append(RecognizerResult("COMMERCIAL_REGISTER", s, e, 1.04))
 
         # TAX loose (optional + guarded)
         if self.ENABLE_LOOSE_TAX:

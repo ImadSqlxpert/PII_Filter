@@ -215,6 +215,33 @@ Meeting ID: 987 654 321, Meet code: abc-defg-hij.
 MAC 00:1A:2B:3C:4D:5E, IMEI 490154203237518, IDFA: 123e4567-e89b-12d3-a456-426614174000.
 Coords: 52.5200, 13.4050; Plus Code: 9C3W9QCJ+2V; w3w: ///index.home.raft; Kennzeichen: B-AB 1234
 """,
+
+    "Commercial Register (European)": """
+# German
+Amtsgericht München, Handelsregister B 123456
+Registergericht Dresden, Abteilung B, HRB 234567
+Das Unternehmen ist eingetragen im Handelsregister beim Amtsgericht München, Abteilung B, HRA 345678.
+
+# French
+Tribunal de Commerce Paris, Registre B 567890
+RCS Paris B 678901
+L'entreprise est immatriculée au RCS Paris, section B sous le numéro 789012.
+
+# Spanish
+Registro Mercantil Madrid, Sección B 890123
+Reg. Merc. Barcelona, Secc. A 901234
+La sociedad está inscrita en el Registro Mercantil de Madrid, sección B, número 012345.
+
+# Italian
+Registro delle Imprese Roma, Sezione B 123456
+REA Roma 234567
+L'impresa è iscritta nel Registro delle Imprese di Roma, sezione B, numero 345678.
+
+# Dutch
+Handelsregister Amsterdam, Afdeling B 456789
+KVK Amsterdam 567890
+Het bedrijf staat ingeschreven in het Handelsregister van Amsterdam, afdeling B, nummer 678901.
+""",
 }
 
 
