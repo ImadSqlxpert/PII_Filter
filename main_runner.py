@@ -297,8 +297,220 @@ Servicekonto: 123456789
 Konto-ID: account_gov_12345
 Government-Account: gov_12345678
 """,
-}
+    "Authentication Secrets": """
+# English passwords
+Password: MySecureP@ss2024!
+pwd: Complex$Pass#123
+User password: AlphaNum3r1c@Secure
+Password is SuperStr0ng!Key#2025
 
+# English PINs
+PIN: 1234
+PIN: 5678
+PIN: 9012
+Personal ID Number: 3456
+
+# English TANs
+TAN: 654321
+transaction-authentication-number: 789012
+TAN code: 345678
+
+# English PUKs
+PUK: 12345678
+pin-unlock-key: 87654321
+PUK-code: 55555555
+
+# English Recovery codes
+recovery-code: ABC-DEF-123-456
+backup-code: XYZ-ABC-789-012
+recovery: ABCD-EFGH-IJKL-MNOP
+recovery-code: 1234-5678-9012-3456
+
+# German passwords
+Passwort: SicherP@ssw0rt2024!
+Kennwort: KomplexesK3nnw0rt#GmbH
+pwd: Deutsch$Pass123Sicher
+Passwort ist GesamterW@rt!Schutz
+
+# German PINs
+PIN: 4567
+PIN-Code: 8901
+PIN: 2345
+personal id number: 6789
+
+# German TANs
+TAN: 765432
+TAN: 098765
+TAN-Code: 456789
+TAN: 012345
+
+# German PUKs
+PUK: 23456789
+PUK: 98765432
+PUK-Code: 66666666
+PUK: 22222222
+
+# German Recovery codes
+recovery-code: DEF-GHI-234-567
+backup-code: BCD-EFG-890-123
+recovery: BCDE-FGHI-JKLM-NOPQ
+recovery-code: 2345-6789-0123-4567
+
+# French passwords
+Mot de passe: MotDePasse@Secure2024
+Mot de passe: ComplicedPass#456French
+pwd: French$Pass789Secure
+Mot de passe est ComplexeFrEnc@Protected
+
+# French PINs
+PIN: 1111
+code-secret: 2222
+Code PIN: 3333
+personal identification number: 4444
+
+# French TANs
+TAN: 654987
+TAN: 321654
+Numero TAN: 789123
+Code Authentification: 456789
+
+# French PUKs
+PUK: 34567890
+PUK: 09876543
+Code PUK: 77777777
+PUK: 33333333
+
+# French Recovery codes
+recovery-code: GHI-JKL-345-678
+backup-code: HIJ-KLM-901-234
+recovery: CDEF-GHIJ-KLMN-OPQR
+recovery-code: 3456-7890-1234-5678
+
+# Spanish passwords
+pwd: SpanishPass@Segura2024!
+pwd: SpanishComplex#789Pass
+pwd: Spanish$Pass456Secure
+pwd: SpanishComplete@Protected
+
+# Spanish PINs
+PIN: 5555
+code-secret: 6666
+Codigo PIN: 7777
+personal identification number: 8888
+
+# Spanish TANs
+TAN: 543216
+TAN: 210543
+Numero TAN: 678912
+Codigo Autenticacion: 345678
+
+# Spanish PUKs
+PUK: 45678901
+PUK: 10987654
+Codigo PUK: 88888888
+Codigo Desbloqueo: 44444444
+
+# Spanish Recovery codes
+recovery-code: JKL-MNO-456-789
+backup-code: KLM-NOP-012-345
+recovery: DEFG-HIJK-LMNO-PQRS
+recovery-code: 4567-8901-2345-6789
+
+# Italian passwords
+pwd: ItalianSecure@2024!
+pwd: ItalianComplex#789Pass
+pwd: Italiano$Pass123Secure
+pwd: ItalianComplete@Protected
+
+# Italian PINs
+PIN: 9999
+code-secret: 1010
+Codice PIN: 1111
+personal identification number: 1212
+
+# Italian TANs
+TAN: 432109
+TAN: 109432
+Numero TAN: 567891
+Codice Autenticazione: 234567
+
+# Italian PUKs
+PUK: 56789012
+PUK: 21098765
+Codice PUK: 99999999
+Chiave Sblocco: 55555555
+
+# Italian Recovery codes
+recovery-code: MNO-PQR-567-890
+backup-code: NOP-QRS-123-456
+recovery: EFGH-IJKL-MNOP-QRST
+recovery-code: 5678-9012-3456-7890
+
+# Turkish passwords
+pwd: TurkishSecure2024@Pass
+pwd: TurkishComplex#890Pass
+pwd: Turkish$Pass789Secure
+pwd: TurkishComplete@Protected
+
+# Turkish PINs
+PIN: 1313
+PIN: 1414
+PIN: 1515
+personal id: 1616
+
+# Turkish TANs
+TAN: 321098
+TAN: 098321
+TAN: 456789
+TAN: 123456
+
+# Turkish PUKs
+PUK: 67890123
+PUK: 32109876
+PUK: 1010101
+PUK: 66666666
+
+# Turkish Recovery codes
+recovery-code: PQR-STU-678-901
+backup-code: QRS-TUV-234-567
+recovery: FGHI-JKLM-NOPQ-RSTU
+recovery-code: 6789-0123-4567-8901
+
+# Arabic passwords
+pwd: SecurePass2024@Arabic
+pwd: ComplexPass#789Arabic
+pwd: Arabic$Pass789Secure
+pwd: ArabicSecurePass@Protected
+
+# Arabic PINs
+PIN: 1717
+PIN: 1818
+PIN: 1919
+PIN: 2020
+
+# Arabic TANs
+TAN: 210987
+TAN: 987210
+TAN: 345678
+TAN: 012345
+
+# Arabic PUKs
+PUK: 78901234
+مفتاح-فتح-الحظر: 43210987
+# Arabic PUKs
+PUK: 78901234
+PUK: 43210987
+PUK: 1111111
+PUK: 77777777
+
+# Arabic Recovery codes
+recovery-code: STU-VWX-789-012
+backup-code: TUV-WXY-345-678
+recovery: GHIJ-KLMN-OPQR-STUV
+recovery-code: 7890-1234-5678-9012
+""",
+
+}
 
 # -------------------------------------------------------------
 # Runner class

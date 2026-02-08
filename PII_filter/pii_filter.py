@@ -72,11 +72,22 @@ class PIIFilter:
         "W3W": 4,
         "LICENSE_PLATE": 5,
         "COMMERCIAL_REGISTER": 9,
-        "CASE_REFERENCE": 8,
+        "CASE_REFERENCE": 10,
         
         "BUND_ID": 8,
         "ELSTER_ID": 8,
         "SERVICEKONTO": 7,
+        
+        "PASSWORD": 8,
+        "PIN": 9,
+        "TAN": 7,
+        "PUK": 9,
+        "RECOVERY_CODE": 8,
+        
+        "FILE_NUMBER": 9,
+        "TRANSACTION_NUMBER": 9,
+        "CUSTOMER_NUMBER": 8,
+        "TICKET_ID": 8,
     }
 
     NATURAL_SUFFIXES = ("berg", "tal", "thal", "wald", "feld", "see", "bach")
@@ -108,6 +119,8 @@ class PIIFilter:
         "API_KEY", "SESSION_ID", "ACCESS_TOKEN", "REFRESH_TOKEN", "ACCESS_CODE", "OTP_CODE",
         "EORI", "COMMERCIAL_REGISTER", "CASE_REFERENCE",
         "BUND_ID", "ELSTER_ID", "SERVICEKONTO",
+        "PASSWORD", "PIN", "TAN", "PUK", "RECOVERY_CODE",
+        "FILE_NUMBER", "TRANSACTION_NUMBER", "CUSTOMER_NUMBER", "TICKET_ID",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -710,6 +723,79 @@ class PIIFilter:
             re.UNICODE | re.MULTILINE | re.IGNORECASE
         )
 
+        # Authentication Secrets — multilingual support
+        # PASSWORD: requires explicit label to avoid false positives
+        self.PASSWORD_RX = re.compile(
+            r"(?:password|pwd|passwort|kennwort|mot\s+de\s+passe|contraseña|parola|wachtwoord|şifre|كلمة\s+المرور)"
+            r"(?:\s+(?:is|ist|est))?[\s:#\-=]+"
+            r"[A-Za-z0-9!@#$%^&*()_+\-=[\]{}|;':\"<>,.?/~`]{6,}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # PIN: numeric or alphanumeric, usually 4-8 digits
+        self.PIN_RX = re.compile(
+            r"(?:pin|pin[\s\-]?code|pin[\s\-]?number|personal\s+id\s+number|personal\s+identification\s+number|personal\s+id|geheimzahl|code[\s\-]?secret|código[\s\-]?secreto|رمز)"
+            r"[\s:#\-=]+"
+            r"[0-9A-Z]{4,8}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # TAN: transaction authentication number, usually 6-8 digits/alphanumeric
+        self.TAN_RX = re.compile(
+            r"(?:tan|tan[\s\-]?code|transaction[\s\-]?authentication[\s\-]?number|authentifizierungsnummer|numéro[\s\-]?authentification|número[\s\-]?autenticación|numero[\s\-]?autenticazione|رقم\s+المصادقة)"
+            r"[\s:#\-=]+"
+            r"[0-9A-Z]{6,8}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # PUK: PIN unblocking key, usually 8-10 digits
+        self.PUK_RX = re.compile(
+            r"(?:puk|puk[\s\-]?code|pin[\s\-]?unlock[\s\-]?key|entsperrcode|clé[\s\-]?déblocage|clave[\s\-]?desbloqueo|chiave[\s\-]?sblocco|kilit[\s\-]?açma[\s\-]?kodu|رمز\s+فتح\s+الحظر)"
+            r"[\s:#\-=]+"
+            r"[0-9]{8,10}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # RECOVERY_CODE / BACKUP_CODE: Alphanumeric with hyphens, usually 6-20 chars
+        self.RECOVERY_CODE_RX = re.compile(
+            r"(?:recovery|recovery[\s\-]?code|backup[\s\-]?code|wiederherstellungscode|sicherungscode|code[\s\-]?de[\s\-]?récupération|código[\s\-]?de[\s\-]?recuperación|codice[\s\-]?di[\s\-]?recupero|herstelcode|kurtarma[\s\-]?kodu|رمز\s+الاسترجاع)"
+            r"(?:\s+is)?[\s:#\-=]+"
+            r"[A-Z0-9\-]{6,20}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+
+        # FILE_NUMBER: Labeled file identifiers (multilingual)
+        self.FILE_NUMBER_RX = re.compile(
+            r"(?:file[\s\-]?(?:number|no|id|no\.)|dossier[\s\-]?(?:number|no|id|no\.)|dossier-number|fichier[\s\-]?(?:number|no|id|no\.)|expediente[\s\-]?(?:number|no|id|no\.)|aktenzeich|fascicolo[\s\-]?(?:number|no|id|no\.)|dossier[\s\-]?(?:numéro|numero)|numero[\s\-]?fascicolo)"
+            r"[\s:#\-=]+"
+            r"(?:[A-Z]{2}[\s\-]?)?[A-Z0-9][\w\-\.]{4,24}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+
+        # TRANSACTION_NUMBER: Labeled transaction identifiers (multilingual)
+        self.TRANSACTION_NUMBER_RX = re.compile(
+            r"(?:transaction[\s\-]?(?:number|no|id|no\.)|trans(?:action)?[\s\-]?(?:number|no|id|no\.)?|txn[\s\-]?(?:number|no|id|no\.)?|transacción|transacion|transacion[\s\-]?(?:número|numero|no|id)|transazione[\s\-]?(?:numero|no|id)|transactie[\s\-]?(?:nummer|no|id)|transaktions[\s\-]?(?:nummer|no|id)|transactional|numéro[\s\-]?transaction|numero[\s\-]?transaci|transact\-id|ref[\s\-]?(?:number|no)[\s\-]?trans)"
+            r"[\s:#\-=]+"
+            r"(?:[A-Z0-9]{2,4}[\s\-]?)?[0-9A-Z]{4,20}(?:[\s\-]?[0-9]{2,4})?",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+
+        # CUSTOMER_NUMBER: Labeled customer identifiers (multilingual)
+        self.CUSTOMER_NUMBER_RX = re.compile(
+            r"(?:customer[\s\-]?(?:number|no|id|no\.)|cust(?:omer)?[\s\-]?(?:number|no|id|no\.)?|client[\s\-]?(?:number|no|id|no\.)?|numero[\s\-]?(?:client|cliente)|numéro[\s\-]?(?:client|cliente)|kundennummer|kundenid|klientennummer|client[\-\s]?id|cliente[\s\-]?(?:numero|no|id)|codice[\s\-]?cliente|klantennummer|klantnummer|customer[\s\-]?id|clnumber|custid|cust[\s\-]?number)"
+            r"[\s:#\-=]+"
+            r"(?:[A-Z0-9]{2,4}[\s\-]?)?[A-Z0-9]{4,20}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+
+        # TICKET_ID: Labeled ticket/issue/task identifiers (multilingual)
+        self.TICKET_ID_RX = re.compile(
+            r"(?:issue[\s\-]?(?:number|no|id|no\.)|task[\s\-]?(?:number|no|id|no\.)|tâche[\s\-]?(?:numéro|numero|no|id)|tarea[\s\-]?(?:numero|no|id)|compito[\s\-]?(?:numero|no|id)|ticketnummer|ticket[\-\s]?id|issue[\-\s]?id|ticket\-number|tkt[\s\-]?(?:number|no|id|no\.)|problem[\s\-]?(?:id|number)|problem[\-\s]?id)"
+            r"[\s:#\-=]+"
+            r"(?:[A-Z]{2,4}[\s\-]?)?[A-Z0-9][\w\-\.]{4,24}",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+
         # IP regexes
         self.IPV4_REGEX = r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b"
         ipv6_core = (
@@ -1004,19 +1090,31 @@ class PIIFilter:
             (r"\b(ghp_[A-Za-z0-9_]{36,255})\b", "github_ghp_token"),
             (r"\b(gho_[A-Za-z0-9_]{36,255})\b", "github_oauth_token"),
             (r"\b(ghu_[A-Za-z0-9_]{36,255})\b", "github_user_to_server_token"),
-            # Stripe tokens
-            (r"\b(sk_live_[A-Za-z0-9]{10,})\b", "stripe_live_secret_key"),
-            (r"\b(sk_test_[A-Za-z0-9]{10,})\b", "stripe_test_secret_key"),
-            (r"\b(pk_live_[A-Za-z0-9]{10,})\b", "stripe_live_public_key"),
-            (r"\b(pk_test_[A-Za-z0-9]{10,})\b", "stripe_test_public_key"),
+            # Stripe tokens handled by PAYMENT_TOKEN_RX (avoid mislabeling as API_KEY)
             # Slack tokens
             (r"\b(xoxb-[A-Za-z0-9\-]{10,48})\b", "slack_bot_token"),
             (r"\b(xoxp-[A-Za-z0-9\-]{10,48})\b", "slack_user_token"),
+            # Labeled tokens/keys for common providers (capture labelled forms like slack_token=...)
+            (r"(?i)slack[_\s-]?token\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "slack_labeled"),
+            (r"(?i)mailchimp[_\s-]?api[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "mailchimp_labeled"),
+            (r"(?i)mailchimp[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "mailchimp_key_labeled"),
+            (r"(?i)sendgrid[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-\.]{8,128})", "sendgrid_labeled"),
+            (r"(?i)google[_\s-]?api[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "google_labeled"),
+            # Stripe labeled patterns (only match when provider label is present so unlabeled sk_/pk_ remain PAYMENT_TOKEN)
+            (r"(?i)stripe[_\s\-]?(?:secret[_\s\-]?key|secret|key)\s*[:=]\s*(sk_live_[A-Za-z0-9]{10,})", "stripe_live_secret_key_labeled"),
+            (r"(?i)stripe[_\s\-]?(?:secret[_\s\-]?key|secret|key)\s*[:=]\s*(sk_test_[A-Za-z0-9]{10,})", "stripe_test_secret_key_labeled"),
+            (r"(?i)stripe[_\s\-]?(?:public[_\s\-]?key|pk)\s*[:=]\s*(pk_live_[A-Za-z0-9]{10,})", "stripe_live_public_key_labeled"),
+            (r"(?i)stripe[_\s\-]?(?:public[_\s\-]?key|pk)\s*[:=]\s*(pk_test_[A-Za-z0-9]{10,})", "stripe_test_public_key_labeled"),
             # SendGrid, MailChimp, DigitalOcean, OpenAI
             (r"\b(SG\.[A-Za-z0-9_\-]{20,})\b", "sendgrid_api_key"),
             (r"\b([a-f0-9]{32}-us[0-9]{1,2})\b", "mailchimp_api_key"),
             (r"\b(dop_v1_[A-Za-z0-9_\-]{20,})\b", "digitalocean_api_token"),
             (r"\b(sk-[A-Za-z0-9\-]{20,})\b", "openai_secret_key"),
+            # Stripe generic patterns (allow API_KEY detection for provider-specific contexts)
+            (r"\b(sk_live_[A-Za-z0-9]{10,})\b", "stripe_live_secret_key"),
+            (r"\b(sk_test_[A-Za-z0-9]{10,})\b", "stripe_test_secret_key"),
+            (r"\b(pk_live_[A-Za-z0-9]{10,})\b", "stripe_live_public_key"),
+            (r"\b(pk_test_[A-Za-z0-9]{10,})\b", "stripe_test_public_key"),
             # Google and Firebase API keys (start with AIza)
             (r"\b(AIza[A-Za-z0-9\-_]{35,})\b", "google_api_key"),
             # JWT tokens (can contain dots, so don't use \b at end)
@@ -1857,6 +1955,12 @@ class PIIFilter:
                 api_key = text[s:e].strip()
                 # Avoid very short strings or common false positives
                 if len(api_key) >= 12 and not re.match(r'^[A-Za-z\-_\.]{1,5}$', api_key):
+                    # If left context is a generic 'api key' phrase, prefer PAYMENT_TOKEN matching later
+                    left_ctx = text[max(0, s - 32):s].lower()
+                    # Only treat as generic API key when left context contains API key phrasing
+                    # (support simple multilingual variants, avoid underscored labels like 'google_api_key')
+                    if ("api" in left_ctx) and any(syn in left_ctx for syn in ("key", "schl", "schlu", "schluessel", "schlüssel")):
+                        continue
                     # High score so API_KEY wins overlaps with PHONE, ADDRESS, etc.
                     add.append(RecognizerResult("API_KEY", s, e, 1.05))
 
@@ -1879,6 +1983,27 @@ class PIIFilter:
                         add.append(RecognizerResult("ACCESS_CODE", s, e, 1.03))
                     elif "token" in ent_name.lower():
                         add.append(RecognizerResult("ACCESS_TOKEN", s, e, 1.04))
+
+        # Reference/Tracking Identifiers — business/legal/government context (inject after CASE_REFERENCE)
+        # FILE_NUMBER: Labeled file identifiers
+        for m in self.FILE_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("FILE_NUMBER", s, e, 1.00))
+
+        # TRANSACTION_NUMBER: Labeled transaction identifiers
+        for m in self.TRANSACTION_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("TRANSACTION_NUMBER", s, e, 1.00))
+
+        # CUSTOMER_NUMBER: Labeled customer identifiers
+        for m in self.CUSTOMER_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("CUSTOMER_NUMBER", s, e, 0.99))
+
+        # TICKET_ID: Labeled ticket/case identifiers
+        for m in self.TICKET_ID_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("TICKET_ID", s, e, 0.99))
 
         # Addresses
         for m in self.STRICT_ADDRESS_RX.finditer(text):
@@ -1991,10 +2116,12 @@ class PIIFilter:
                 is_account_label = any(k in left for k in self.ACCOUNT_LABELS)
                 if is_account_label:
                     continue
-                # If ID label cues appear immediately to the left, boost the score so ID beats PHONE
+                # If ID label cues appear immediately to the left, boost the score so labeled IDs beat PHONE
                 is_labeled = any(k in left for k in self.ID_KEYWORDS)
                 score = 1.03 if is_labeled else 0.92
-                add.append(RecognizerResult("ID_NUMBER", s, e, score))
+                # Map specific ID formats to more precise entities when known (e.g., German Personalausweis -> PASSPORT)
+                ent_type = "PASSPORT" if "personalausweis" in _name.lower() else "ID_NUMBER"
+                add.append(RecognizerResult(ent_type, s, e, score))
 
         # TAX strict - boost labeled priority
         for patt, _name in self.TAX_PATTERNS_STRICT:
@@ -2043,6 +2170,53 @@ class PIIFilter:
         for m in self.SERVICEKONTO_RX.finditer(text):
             s, e = m.start(), m.end()
             add.append(RecognizerResult("SERVICEKONTO", s, e, 1.01))
+
+        # Authentication secrets — high priority to prevent false negatives
+        # PASSWORD: User account password with label
+        for m in self.PASSWORD_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("PASSWORD", s, e, 1.06))
+
+        # PIN: Personal identification number with label
+        for m in self.PIN_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("PIN", s, e, 1.06))
+
+        # TAN: Transaction authentication number with label
+        for m in self.TAN_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("TAN", s, e, 1.04))
+
+        # PUK: PIN unlock key with label
+        for m in self.PUK_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("PUK", s, e, 1.06))
+
+        # RECOVERY_CODE: Account recovery code with label
+        for m in self.RECOVERY_CODE_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("RECOVERY_CODE", s, e, 1.03))
+
+        # Reference/Tracking Identifiers — business/legal/government context (inject early with high scores)
+        # FILE_NUMBER: Labeled file identifiers
+        for m in self.FILE_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("FILE_NUMBER", s, e, 1.08))
+
+        # TRANSACTION_NUMBER: Labeled transaction identifiers
+        for m in self.TRANSACTION_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("TRANSACTION_NUMBER", s, e, 1.08))
+
+        # CUSTOMER_NUMBER: Labeled customer identifiers
+        for m in self.CUSTOMER_NUMBER_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("CUSTOMER_NUMBER", s, e, 1.07))
+
+        # TICKET_ID: Labeled ticket/case identifiers
+        for m in self.TICKET_ID_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("TICKET_ID", s, e, 1.07))
 
         # TAX loose (optional + guarded)
         if self.ENABLE_LOOSE_TAX:
@@ -2214,12 +2388,46 @@ class PIIFilter:
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             token = text[s:e]
             if len(token) >= 16:
-                add.append(RecognizerResult("PAYMENT_TOKEN", s, e, 0.92))
+                # If left context explicitly mentions 'api key' (or localizations), prefer PAYMENT_TOKEN
+                left_ctx = text[max(0, s - 128):s].lower()
+                # Simplified multilingual heuristic: look for 'api' + key/schl variants nearby
+                if ("api" in left_ctx) and any(syn in left_ctx for syn in ("key", "schl", "schlu", "schluessel", "schlüssel", "schlussen")):
+                    # Remove any overlapping API_KEY injections so PAYMENT_TOKEN wins
+                    add = [r for r in add if not (r.entity_type == "API_KEY" and not (e <= r.start or s >= r.end))]
+                    add.append(RecognizerResult("PAYMENT_TOKEN", s, e, 1.07))
+                else:
+                    add.append(RecognizerResult("PAYMENT_TOKEN", s, e, 0.92))
 
         # Crypto
         for rx in (self.CRYPTO_BTC_LEGACY, self.CRYPTO_BTC_BECH32, self.CRYPTO_ETH):
             for m in rx.finditer(text):
-                add.append(RecognizerResult("CRYPTO_ADDRESS", m.start(), m.end(), 0.90))
+                s, e = m.start(), m.end()
+                left_ctx = text[max(0, s - 40):s].lower()
+                # If labeled with BTC/ETH or nearby 'Adresse' cue, boost score so CRYPTO wins
+                if any(k in left_ctx for k in ("btc", "bitcoin", "bech32", "eth", "ethereum", "adresse")):
+                    score = 1.20
+                else:
+                    score = 0.90
+                add.append(RecognizerResult("CRYPTO_ADDRESS", s, e, score))
+
+        # Post-process: convert unlabeled stripe-like API_KEY injections to PAYMENT_TOKEN
+        # when left context indicates 'api key' (multilingual). This makes classification deterministic.
+        transformed = []
+        for r in list(add):
+            if r.entity_type == "API_KEY":
+                span_text = text[r.start:r.end]
+                # stripe/openai-like tokens
+                if re.search(r"\b(?:sk_(?:live|test)_|pk_(?:live|test)_|sk-[A-Za-z0-9\-]{6,})", span_text, flags=re.I):
+                    left_ctx = text[max(0, r.start - 128):r.start].lower()
+                    if ("api" in left_ctx) and any(syn in left_ctx for syn in ("key", "schl", "schlu", "schluessel", "schlüssel")):
+                        # remove existing API_KEY entry
+                        try:
+                            add.remove(r)
+                        except ValueError:
+                            pass
+                        # add PAYMENT_TOKEN with high score
+                        add.append(RecognizerResult("PAYMENT_TOKEN", r.start, r.end, 1.07))
+        # end post-process
 
         # Health IDs & Info
         for m in self.HEALTH_ID_RX.finditer(text):

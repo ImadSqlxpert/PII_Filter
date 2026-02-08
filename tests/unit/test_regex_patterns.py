@@ -529,3 +529,258 @@ def test_german_gov_ids_priority():
     assert "<SERVICEKONTO>" in out, "Should detect SERVICEKONTO"
     assert "<PHONE>" in out, "Should detect phone"
     assert "<EMAIL>" in out, "Should detect email"
+
+
+# Authentication Secrets tests
+# Covers: PASSWORD, PIN, TAN, PUK, RECOVERY_CODE
+# -----------------------------------------------
+
+@pytest.mark.parametrize("text", [
+    # PASSWORD variations (English + multilingual)
+    "Password: MySecureP@ss2024!",
+    "pwd: Complex$Pass#123",
+    "User password: AlphaNum3r1c@Secure",
+    "Passwort: SicherP@ssw0rt2024!",
+    "Kennwort: KomplexesK3nnw0rt#GmbH",
+    "Mot de passe: MotDePasse@Sécurisé2024",
+    "Contraseña: Contraseña@Segura2024!",
+    "Parola: ParolaChiave@Sicura2024!",
+])
+def test_password_regex_positive(f, text):
+    """Test PASSWORD regex matches valid password identifiers."""
+    match_found = bool(f.PASSWORD_RX.search(text))
+    assert match_found, f"Should match password: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # PIN variations (English + multilingual)
+    "PIN: 1234",
+    "pin-code: 5678",
+    "PIN-number: 9012",
+    "PIN-Code: 8901",
+    "Geheimzahl: 2345",
+    "code-secret: 2222",
+    "Código PIN: 7777",
+    "Codice PIN: 1111",
+])
+def test_pin_regex_positive(f, text):
+    """Test PIN regex matches valid PIN identifiers."""
+    match_found = bool(f.PIN_RX.search(text))
+    assert match_found, f"Should match PIN: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # TAN variations (English + multilingual)
+    "TAN: 654321",
+    "transaction-authentication-number: 789012",
+    "Authentifizierungsnummer: 098765",
+    "numéro-authentification: 321654",
+    "Número TAN: 789123",
+    "Numero TAN: 567891",
+    "Doğrulama TAN: 456789",
+])
+def test_tan_regex_positive(f, text):
+    """Test TAN regex matches valid TAN identifiers."""
+    match_found = bool(f.TAN_RX.search(text))
+    assert match_found, f"Should match TAN: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # PUK variations (English + multilingual)
+    "PUK: 12345678",
+    "pin-unlock-key: 87654321",
+    "PUK-code: 55555555",
+    "Entsperrcode: 98765432",
+    "PUK-Code: 66666666",
+    "clé-déblocage: 09876543",
+    "Código PUK: 88888888",
+    "Codice PUK: 99999999",
+])
+def test_puk_regex_positive(f, text):
+    """Test PUK regex matches valid PUK identifiers."""
+    match_found = bool(f.PUK_RX.search(text))
+    assert match_found, f"Should match PUK: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # RECOVERY_CODE variations (English + multilingual)
+    "recovery-code: ABC-DEF-123-456",
+    "backup-code: XYZ-ABC-789-012",
+    "Wiederherstellungscode: DEF-GHI-234-567",
+    "Sicherungscode: BCD-EFG-890-123",
+    "code-de-récupération: GHI-JKL-345-678",
+    "código-de-recuperación: JKL-MNO-456-789",
+    "codice-di-recupero: MNO-PQR-567-890",
+])
+def test_recovery_code_regex_positive(f, text):
+    """Test RECOVERY_CODE regex matches valid recovery code identifiers."""
+    match_found = bool(f.RECOVERY_CODE_RX.search(text))
+    assert match_found, f"Should match recovery code: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # Should not match passwords without labels
+    "RandomP@ssw0rd123",
+    "MySecret!Passkey",
+    "12345678",  # just numbers
+    "Password alone",  # label only, no value
+])
+def test_password_regex_negative(f, text):
+    """Test PASSWORD regex doesn't match invalid patterns."""
+    match_found = bool(f.PASSWORD_RX.search(text))
+    assert not match_found, f"Should NOT match as password: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # Should not match PINs without labels
+    "1234",  # just 4 digits
+    "5678",  # just 4 digits
+    "Call me at 1234",
+    "Version 123456",
+])
+def test_pin_regex_negative(f, text):
+    """Test PIN regex doesn't match invalid patterns."""
+    match_found = bool(f.PIN_RX.search(text))
+    assert not match_found, f"Should NOT match as PIN: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # Should not match TANs without labels
+    "654321",  # just 6 digits
+    "789012",  # just 6 digits
+    "Code 345678",  # generic code
+])
+def test_tan_regex_negative(f, text):
+    """Test TAN regex doesn't match invalid patterns."""
+    match_found = bool(f.TAN_RX.search(text))
+    assert not match_found, f"Should NOT match as TAN: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # Should not match PUKs without labels
+    "12345678",  # just numbers
+    "87654321",  # just numbers
+])
+def test_puk_regex_negative(f, text):
+    """Test PUK regex doesn't match invalid patterns."""
+    match_found = bool(f.PUK_RX.search(text))
+    assert not match_found, f"Should NOT match as PUK: {text}"
+
+
+@pytest.mark.parametrize("text", [
+    # Should not match recovery codes without labels
+    "ABC-DEF-123-456",  # just code without label
+    "ABCD-EFGH-IJKL",  # just code
+])
+def test_recovery_code_regex_negative(f, text):
+    """Test RECOVERY_CODE regex doesn't match invalid patterns."""
+    match_found = bool(f.RECOVERY_CODE_RX.search(text))
+    assert not match_found, f"Should NOT match as recovery code: {text}"
+
+
+@pytest.mark.parametrize("text,expected_entity", [
+    ("Password: MySecureP@ss2024!", "<PASSWORD>"),
+    ("PIN: 1234", "<PIN>"),
+    ("TAN: 654321", "<TAN>"),
+    ("PUK: 12345678", "<PUK>"),
+    ("recovery-code: ABC-DEF-123-456", "<RECOVERY_CODE>"),
+])
+def test_auth_secrets_anonymization(f, text, expected_entity):
+    """Test authentication secrets are properly anonymized."""
+    out = f.anonymize_text(text)
+    assert expected_entity in out, f"Should anonymize and contain {expected_entity}: {text}"
+
+
+def test_auth_secrets_with_context():
+    """Test authentication secrets in realistic document context."""
+    f = PIIFilter()
+    
+    document = """
+    User Account Setup:
+    Username: john.doe@example.com
+    Password: SecureP@ssw0rd2024!
+    PIN: 1234
+    
+    Two-Factor Authentication:
+    TAN: 654321
+    PUK: 12345678
+    Recovery code: ABC-DEF-123-456
+    """
+    
+    out = f.anonymize_text(document)
+    assert "<PASSWORD>" in out, "Should detect password"
+    assert "<PIN>" in out, "Should detect PIN"
+    assert "<TAN>" in out, "Should detect TAN"
+    assert "<PUK>" in out, "Should detect PUK"
+    assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
+    assert "<EMAIL>" in out, "Should also detect email"
+
+
+def test_auth_secrets_multilingual():
+    """Test authentication secrets across multiple languages."""
+    f = PIIFilter()
+    
+    multilingual_examples = [
+        ("Passwort: SicherP@ssw0rt2024!", "<PASSWORD>"),  # German
+        ("PIN-Code: 8901", "<PIN>"),  # German
+        ("Authentifizierungsnummer: 098765", "<TAN>"),  # German
+        ("Entsperrcode: 98765432", "<PUK>"),  # German  
+        ("Wiederherstellungscode: DEF-GHI-234-567", "<RECOVERY_CODE>"),  # German
+        ("Mot de passe: MotDePasse@Sécurisé2024", "<PASSWORD>"),  # French
+        ("code-secret: 2222", "<PIN>"),  # French
+        ("numéro-authentification: 321654", "<TAN>"),  # French
+        ("Contraseña: Contraseña@Segura2024!", "<PASSWORD>"),  # Spanish
+        ("Código PIN: 7777", "<PIN>"),  # Spanish
+        ("número-autenticación: 210543", "<TAN>"),  # Spanish
+    ]
+    
+    for text, expected_entity in multilingual_examples:
+        out = f.anonymize_text(text)
+        assert expected_entity in out, f"Should detect {expected_entity} in: {text}"
+
+
+def test_auth_secrets_no_false_positives():
+    """Test authentication secrets avoid false positives."""
+    f = PIIFilter()
+    
+    false_positive_texts = [
+        "The password was incorrect.",
+        "He got a PIN for his bowling shirt.",
+        "TAN lines from the beach",
+        "The PUK corporation is public.",
+        "I recovered my data.",
+    ]
+    
+    for text in false_positive_texts:
+        out = f.anonymize_text(text)
+        # Should not have auth secret markers
+        assert "<PASSWORD>" not in out, f"False positive for PASSWORD: {text}"
+        assert "<PIN>" not in out, f"False positive for PIN: {text}"
+        assert "<TAN>" not in out, f"False positive for TAN: {text}"
+        assert "<PUK>" not in out, f"False positive for PUK: {text}"
+
+
+def test_auth_secrets_priority():
+    """Test that authentication secrets don't conflict with other entities."""
+    f = PIIFilter()
+    
+    document = """
+    Login Credentials:
+    Email: user@example.com
+    Password: SecureP@ss@2024!
+    PIN: 1234
+    Phone: +49 30 12345678
+    
+    Recovery Information:
+    Recovery code: ABC-DEF-123-456
+    PUK: 87654321
+    """
+    
+    out = f.anonymize_text(document)
+    assert "<PASSWORD>" in out, "Should detect password"
+    assert "<PIN>" in out, "Should detect PIN"
+    assert "<PUK>" in out, "Should detect PUK"
+    assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
+    assert "<EMAIL>" in out, "Should detect email"
+    assert "<PHONE>" in out, "Should detect phone"
+
