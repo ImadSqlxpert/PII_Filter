@@ -72,6 +72,11 @@ class PIIFilter:
         "W3W": 4,
         "LICENSE_PLATE": 5,
         "COMMERCIAL_REGISTER": 9,
+        "CASE_REFERENCE": 8,
+        
+        "BUND_ID": 8,
+        "ELSTER_ID": 8,
+        "SERVICEKONTO": 7,
     }
 
     NATURAL_SUFFIXES = ("berg", "tal", "thal", "wald", "feld", "see", "bach")
@@ -101,7 +106,8 @@ class PIIFilter:
         "MAC_ADDRESS", "IMEI", "ADVERTISING_ID", "DEVICE_ID",
         "GEO_COORDINATES", "PLUS_CODE", "W3W", "LICENSE_PLATE",
         "API_KEY", "SESSION_ID", "ACCESS_TOKEN", "REFRESH_TOKEN", "ACCESS_CODE", "OTP_CODE",
-        "EORI", "COMMERCIAL_REGISTER",
+        "EORI", "COMMERCIAL_REGISTER", "CASE_REFERENCE",
+        "BUND_ID", "ELSTER_ID", "SERVICEKONTO",
     ]
 
     def __init__(self, person_false_positive_samples=None):
@@ -608,6 +614,35 @@ class PIIFilter:
             re.UNICODE | re.MULTILINE | re.IGNORECASE
         )
 
+        # Case / Reference / Ticket / Customer Number — multilingual support
+        # Require an identifier that contains at least one digit to avoid false positives
+        self.CASE_REFERENCE_RX = re.compile(
+            r"(?i)(?:\b(?:"
+            # English
+            r"(?:case\s*(?:id|no|number)|reference\s*(?:number|no|nr)|ticket\s*(?:id|no|number)|customer\s*(?:number|id)|ref\.?))\b[ \t:#\-]*"
+            r"(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r"|"
+            # German
+            r"\b(?:aktenzeichen|vorgangsnummer|kundennummer|az|vn|kn)\b[ \t:#\-]*(?=(?:[A-Z0-9\-/äöüÄÖÜß]*\d))[A-Z0-9\-/äöüÄÖÜß]{3,40}"
+            r"|"
+            # French
+            r"\b(?:num(?:e|é)ro\s+(?:de\s+)?dossier|dossier)\b[ \t:#\-]*(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r"|"
+            # Spanish
+            r"\b(?:n[úu]mero\s+(?:de\s+)?expediente|expediente)\b[ \t:#\-]*(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r"|"
+            # Italian
+            r"\b(?:numero\s+(?:di\s+)?pratica|pratica)\b[ \t:#\-]*(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r"|"
+            # Turkish
+            r"\b(?:dosya\s+numaras[ıi]|dosya)\b[ \t:#\-]*(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r"|"
+            # Arabic (expect Latin-style identifiers after Arabic label)
+            r"\b(?:رقم\s+(?:القضية|الملف|الدعوى))\b[ \t:#\-]*(?=(?:[A-Z0-9\-/]*\d))[A-Z0-9\-/]{3,40}"
+            r")",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE,
+        )
+
         # Label-based ID/TAX capture
         self.LABELED_ID_VALUE_RX = re.compile(
             r"(?i)\b(?:personalausweis(?:nummer|nr\.?)|identity\s*card|id\s*(?:no\.?|number)|dni|nif|nie|bsn|pesel|egn|cnp|amka|cpr|rodné\s*číslo|rodne\s*cislo|jmbg|emšo|emso)"
@@ -627,6 +662,53 @@ class PIIFilter:
         self.SSN_LABEL_RX = re.compile(r"(?i)\bssn\b[:#\-]?\s*(\d{3}-\d{2}-\d{4}|\d{9})")
         self.ITIN_LABEL_RX = re.compile(r"(?i)\bitin\b[:#\-]?\s*(\d{3}-\d{2}-\d{4}|\d{9})")
         self.EIN_LABEL_RX = re.compile(r"(?i)\bein\b[:#\-]?\s*(\d{2}-\d{7})")
+
+        # German e-government identifiers
+        # BundID: German Federal Digital Identity — format: BUND-XXXXXXXX-XXXX or similar
+        self.BUND_ID_RX = re.compile(
+            r"(?i)\b(?:"
+            r"(?:bundid|bund[ \t]+id|bundidentität|bundes?ausweis|digital\s+identity\s+(?:number|id))[ \t:#\-]*"
+            r"(?=(?:[A-Z0-9\-]{8,20})[^A-Z0-9\-]|[A-Z0-9\-]{8,20}$)"
+            r"[A-Z0-9\-]{8,20}"
+            r"|"
+            r"BUND-[A-Z0-9]{8}-[A-Z0-9]{4}"
+            r")",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # ELSTER_ID: German Tax Authority Login System (Elektronische Steuererklärung)
+        # Formats: elster_username_12345, ELST-12345, elster_id_abc123, etc.
+        self.ELSTER_ID_RX = re.compile(
+            r"(?i)\b(?:"
+            r"(?:elster(?:\s+|[\-_])?(?:id|login|benutzername|user(?:name)?|konto))[ \t:#\-]*"
+            r"(?=(?:[A-Za-z0-9\-_.]{6,30})[^A-Za-z0-9\-_.]|[A-Za-z0-9\-_.]{6,30}$)"
+            r"[A-Za-z0-9\-_.]{6,30}"
+            r"|"
+            r"ELST-[A-Z0-9]{5,8}"
+            r"|"
+            r"elster_[A-Za-z0-9]{8,20}"
+            r"|"
+            r"(?:steuerkennung|steuernummer)\s*[:#\-]\s*[A-Z0-9\-]{10,30}"
+            r")",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
+        
+        # SERVICEKONTO: German government service account identifier
+        # Formats: servicekonto_56789, SK-2024-001234, Service-Konto: 123456789, etc.
+        self.SERVICEKONTO_RX = re.compile(
+            r"(?i)\b(?:"
+            r"(?:servicekonto|service[\s\-]?konto|service[\s\-]?account|government[\s\-]?account|state[\s\-]?service)[ \t:#\-]*"
+            r"(?=(?:[A-Za-z0-9\-_.]{6,30})[^A-Za-z0-9\-_.]|[A-Za-z0-9\-_.]{6,30}$)"
+            r"[A-Za-z0-9\-_.]{6,30}"
+            r"|"
+            r"SK-\d{4}-[A-Z0-9]{6,8}"
+            r"|"
+            r"servicekonto[ \t:#\-]*[A-Z0-9]{8,20}"
+            r"|"
+            r"(?:konto|account)(?:\s+id|[\-_]id)?[ \t:#\-]*[A-Z0-9\-]{6,30}"
+            r")",
+            re.UNICODE | re.MULTILINE | re.IGNORECASE
+        )
 
         # IP regexes
         self.IPV4_REGEX = r"\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b"
@@ -1934,6 +2016,33 @@ class PIIFilter:
             s, e = m.start(), m.end()
             # High score to ensure commercial register captures are not misclassified
             add.append(RecognizerResult("COMMERCIAL_REGISTER", s, e, 1.04))
+
+        # Case Reference / Case ID / Reference Number — multilingual support
+        for m in self.CASE_REFERENCE_RX.finditer(text):
+            s, e = m.start(), m.end()
+            # Score 1.02 to win overlaps with PHONE (0.90) and DATE (0.93)
+            add.append(RecognizerResult("CASE_REFERENCE", s, e, 1.02))
+
+        # Labeled customer name — capture 'Customer Name: John Smith' patterns
+        for m in re.finditer(r"(?i)\bcustomer\s+name\s*[:#\-]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})", text):
+            s, e = m.start(1), m.end(1)
+            add.append(RecognizerResult("PERSON", s, e, 1.01))
+
+        # German e-government identifiers
+        # BundID: German Federal Digital Identity
+        for m in self.BUND_ID_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("BUND_ID", s, e, 1.05))
+
+        # ELSTER_ID: German tax authority login system (Elektronische Steuererklärung)
+        for m in self.ELSTER_ID_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("ELSTER_ID", s, e, 1.05))
+
+        # SERVICEKONTO: German government service account
+        for m in self.SERVICEKONTO_RX.finditer(text):
+            s, e = m.start(), m.end()
+            add.append(RecognizerResult("SERVICEKONTO", s, e, 1.01))
 
         # TAX loose (optional + guarded)
         if self.ENABLE_LOOSE_TAX:

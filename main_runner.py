@@ -242,6 +242,61 @@ Handelsregister Amsterdam, Afdeling B 456789
 KVK Amsterdam 567890
 Het bedrijf staat ingeschreven in het Handelsregister van Amsterdam, afdeling B, nummer 678901.
 """,
+
+    "Case Reference (Multilingual)": """
+# English
+Case ID: CASE-2023-001234
+Reference Number: REF-2024-567890
+Ticket ID: TKT-2024-999
+Customer Number: CUST-2023-55555
+
+# German
+Aktenzeichen: AZ-2023-123456
+Vorgangsnummer: VN-2024-789012
+Kundennummer: KN-2023-456789
+
+# French
+Numéro de dossier: ND-2024-001
+Dossier #DOSS-2023-999
+
+# Spanish
+Número de expediente: EXP-2023-999
+Expediente #EXP-2024-111
+
+# Italian
+Numero pratica: PR-2024-555
+Pratica #PRT-2023-222
+
+# Turkish
+Dosya numarası: DN-2023-777
+Dosya #DOS-2024-333
+
+# Arabic
+رقم القضية: RQ-2024-333
+رقم القضية #RQ-2023-444
+""",
+
+    "German E-Government IDs": """
+# BundID (German Federal Digital Identity)
+BundID: BUND-12345678-ABCD
+Bundidentität BUND-87654321-WXYZ
+Bundesausweis-ID: BUND-11111111-1111
+Digital Identity: BUND-99999999-ZYXW
+
+# ELSTER (Elektronische Steuererklärung - German tax system)
+ELSTER-ID: ELST-12345
+ELSTER Login: elster_user_12345
+ELSTER-Benutzername: user.name@example
+elster_konto_abcd1234
+
+# Servicekonto (German government service account)
+Servicekonto-ID: SK-2024-001234
+Service-Konto: servicekonto_56789
+Service Account: SK-2025-009876
+Servicekonto: 123456789
+Konto-ID: account_gov_12345
+Government-Account: gov_12345678
+""",
 }
 
 
