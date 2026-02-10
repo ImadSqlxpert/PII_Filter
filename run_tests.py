@@ -1,14 +1,29 @@
 #!/usr/bin/env python
-"""Run tests and report summary."""
+"""
+Run all unit tests in tests/unit/ directory.
+"""
 import subprocess
 import sys
 
-result = subprocess.run(
-    [sys.executable, "-m", "pytest", "tests/unit/test_entity_coverage.py", "-q", "--tb=no"],
-    cwd=".",
-    capture_output=True,
-    text=True
-)
-print(result.stdout)
-print(result.stderr)
-sys.exit(result.returncode)
+def main():
+    """Run all tests and show output."""
+    print("=" * 80)
+    print("Running ALL Unit Tests from tests/unit/...")
+    print("=" * 80)
+    print()
+    
+    # Run tests with pytest
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/unit/", "-v", "--tb=short"],
+        cwd="."
+    )
+    
+    print()
+    print("=" * 80)
+    print(f"Tests completed with exit code: {result.returncode}")
+    print("=" * 80)
+    
+    sys.exit(result.returncode)
+
+if __name__ == '__main__':
+    main()

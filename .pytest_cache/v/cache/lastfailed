@@ -62,7 +62,5 @@
   "tests/unit/test_tokens.py::TestOTPCode::test_one_time_password_format": true,
   "tests/unit/test_reference_identifiers.py::TestFileNumberDetection::test_file_number_french": true,
   "tests/unit/test_reference_identifiers.py::TestFileNumberDetection::test_file_number_spanish": true,
-  "tests/unit/test_reference_identifiers.py::TestFileNumberDetection::test_unrelated_numbers_untouched": true,
-  "tests/unit/test_regex_patterns.py::test_case_reference_language_coverage": true,
-  "tests/unit/test_regex_patterns.py::test_case_reference_no_conflict_with_phone": true
+  "tests/unit/test_reference_identifiers.py::TestFileNumberDetection::test_unrelated_numbers_untouched": true
 }

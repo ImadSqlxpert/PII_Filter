@@ -108,7 +108,7 @@ class PIIFilter:
 
     ALLOWED_ENTITIES = [
         "PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "FAX_NUMBER", "ADDRESS", "LOCATION",
-        "DATE", "DATE_TIME", "PASSPORT", "ID_NUMBER", "TAX_ID", "IP_ADDRESS",
+        "DATE", "PASSPORT", "ID_NUMBER", "TAX_ID", "IP_ADDRESS",
         "CREDIT_CARD", "BANK_ACCOUNT", "ROUTING_NUMBER", "ACCOUNT_NUMBER", "PAYMENT_TOKEN", "CRYPTO_ADDRESS",
         "DRIVER_LICENSE", "VOTER_ID", "RESIDENCE_PERMIT", "BENEFIT_ID", "MILITARY_ID",
         "HEALTH_ID", "MRN", "INSURANCE_ID", "HEALTH_INFO",
@@ -2105,7 +2105,7 @@ class PIIFilter:
                 add.append(RecognizerResult("DATE", m.start(), m.end(), 0.93))
         # Filter out common relative date words (e.g., 'today') which are not PII in noisy text
         RELATIVE_DATE_WORDS = {"today","yesterday","tomorrow","tonight","this morning","this afternoon","this evening"}
-        add = [r for r in add if not (r.entity_type in ("DATE","DATE_TIME") and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS)]
+        add = [r for r in add if not (r.entity_type in ("DATE",) and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS)]
 
         # IDs
         for patt, _name in self.ID_PATTERNS:
@@ -2513,10 +2513,10 @@ class PIIFilter:
             if 4 <= len(comp) <= 12:
                 add.append(RecognizerResult("LICENSE_PLATE", s, e, 0.85))
 
-        # Remove relative DATE/DATE_TIME tokens from both base results and injected matches (e.g., 'today')
+        # Remove relative DATE tokens from both base results and injected matches (e.g., 'today')
         RELATIVE_DATE_WORDS = {"today","yesterday","tomorrow","tonight","this morning","this afternoon","this evening"}
         def _is_relative_date(r):
-            return r.entity_type in ("DATE", "DATE_TIME") and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS
+            return r.entity_type in ("DATE",) and text[r.start:r.end].strip().lower() in RELATIVE_DATE_WORDS
         results = [r for r in results if not _is_relative_date(r)]
         add = [r for r in add if not _is_relative_date(r)]
 
@@ -2552,11 +2552,11 @@ class PIIFilter:
                         merged.append(RecognizerResult("ADDRESS", s, e, max(cur.score, nxt.score)))
                         i += 2
                         continue
-            # Extended: allow a single numeric filler (DATE/DATE_TIME/PHONE) between ADDRESS and LOCATION
+            # Extended: allow a single numeric filler (DATE/PHONE) between ADDRESS and LOCATION
             if cur.entity_type == "ADDRESS":
                 j = i + 1
                 interim_ok = True
-                while j < len(items) and items[j].entity_type in ("DATE", "DATE_TIME", "PHONE_NUMBER"):
+                while j < len(items) and items[j].entity_type in ("DATE", "PHONE_NUMBER"):
                     span_text = text[items[j].start:items[j].end].strip()
                     # accept numeric-only fillers that look like postcodes or house numbers
                     if not re.fullmatch(r"\d{1,6}", span_text):
@@ -2685,18 +2685,18 @@ class PIIFilter:
             pruned.append(r)
         final = pruned
 
-        # Filter out PERSON followed by a DATE/DATE_TIME via connecting prepositions (e.g., 'unter 01.01')
+        # Filter out PERSON followed by a DATE via connecting prepositions (e.g., 'unter 01.01')
         def _filter_person_before_date_with_prep(text, items):
             out = []
             for r in items:
                 if r.entity_type != 'PERSON':
                     out.append(r)
                     continue
-                # If a DATE or DATE_TIME follows within 24 chars and the intervening text contains a preposition like 'unter', drop PERSON
+                # If a DATE follows within 24 chars and the intervening text contains a preposition like 'unter', drop PERSON
                 dropped = False
-                # Check for a DATE/DATE_TIME entity following with a connecting 'unter'
+                # Check for a DATE entity following with a connecting 'unter'
                 for d in items:
-                    if d.entity_type in ("DATE", "DATE_TIME") and 0 <= d.start - r.end <= 24:
+                    if d.entity_type in ("DATE",) and 0 <= d.start - r.end <= 24:
                         mid = text[r.end:d.start].lower()
                         if re.search(r"\bunter\b", mid):
                             dropped = True
@@ -2761,7 +2761,6 @@ class PIIFilter:
             "ADDRESS":          OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
             "LOCATION":         OperatorConfig("replace", {"new_value": "<LOCATION>"}),
             "DATE":             OperatorConfig("replace", {"new_value": "<DATE>"}),
-            "DATE_TIME":        OperatorConfig("replace", {"new_value": "<DATE>"}),
             "PASSPORT":         OperatorConfig("replace", {"new_value": "<PASSPORT>"}),
             "ID_NUMBER":        OperatorConfig("replace", {"new_value": "<ID_NUMBER>"}),
             "TAX_ID":           OperatorConfig("replace", {"new_value": "<TAX_ID>"}),

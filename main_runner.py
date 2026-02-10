@@ -95,7 +95,7 @@ U.S. Passport: K12345678
 My office IPs are 192.168.1.10 and 2001:0db8:85a3::8a2e:0370:7334.
 """,
 
-    "German (expanded)": """
+    "German - Basics": """
 Mein Name ist Max Mustermann, geboren am 31.12.1990.
 Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).
 Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
@@ -103,8 +103,9 @@ Personalausweisnummer: T22000129
 Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
 ich will Gewerbe anmelden.
+""",
 
-# Deutsche Straßenvarianten (Suffixe, Präfixe, Komposita)
+    "German - Street Variants": """
 Adresse: Am Waldrand 12, 50667 Köln.
 Ich wohne Im Tal 7; An der See 3 (OH).
 Unter den Linden 77, 10117 Berlin.
@@ -112,38 +113,45 @@ Karl-Marx-Allee 1, 10243 Berlin.
 Lange Reihe 15, 20099 Hamburg.
 Gänsemarkt 2, 20354 Hamburg.
 Königsberger Feld 4, 69120 Heidelberg.
+""",
 
-# Wohnungstails (DE/AT-Stil gemischt)
+    "German - Apartment/Unit Suffixes": """
 Musterstraße 10, Whg. 5, 2. Etage, 01067 Dresden.
 Hauptstraße 12, Stiege 2, Top 14, 2. OG, 1010 Wien.
+""",
 
-# PLZ → LOCATION
+    "German - Postal & Location": """
 DE-10115 Berlin (Mitte)
 50667 Köln
 20095 Hamburg (Altstadt)
+""",
 
-# Zahlungen/Bank
+    "German - Payments/Bank": """
 Visa 4111 1111 1111 1111
 IBAN: DE44 5001 0517 5407 3249 31, BIC: COBADEFFXXX
 Kontonummer: 1234-567890-12
+""",
 
-# Comms/Meeting
+    "German - Communications": """
 Fax: +49 30 1234567
 Meeting ID: 987 654 321
 Twitter @hans_muell3r
 Discord hans#1234
 Google Meet: abc-defg-hij
+""",
 
-# Devices/Netz
+    "German - Devices/Network": """
 IP: 192.168.1.10 und IPv6: 2001:db8::1
 MAC 00:1A:2B:3C:4D:5E; IMEI 490154203237518
 IDFA: 123e4567-e89b-12d3-a456-426614174000, Gerät-ID: 123e4567-e89b-12d3-a456-426614174001
+""",
 
-# Geo/Extras
+    "German - Geo/Locations": """
 Koordinaten: 52.5200, 13.4050; Plus Code: 9C3W9QCJ+2V; w3w: ///index.home.raft
 Kennzeichen: B-AB 1234
+""",
 
-# Edge cases für Guards
+    "German - Edge Cases": """
 Ich wohne in Müritzsee.
 Meine Adresse: Schwabental
 Ich heiße Anna Gasse.
@@ -510,6 +518,284 @@ recovery: GHIJ-KLMN-OPQR-STUV
 recovery-code: 7890-1234-5678-9012
 """,
 
+    "API & Authentication Tokens": """
+# API Keys
+API Key: sk_live_abcDEF1234567890ghijkl
+api_key: sk_test_9876543210fedcbaZYXW
+AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+GitHub Token: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+Stripe API: rk_live_abcd1234efgh5678ijkl9012mnop3456
+Google API Key: AIzaSyDxKmE5R4L9JqR7vJlR3V9p8q9r0s1t2u3v
+
+# Access Tokens (OAuth, JWT, Bearer)
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U
+access_token: ya29.a0AfH6SMBx1234567890abcdefghijklmnopqrstuvwxyz
+OAuth Token: ac2220a67b28eb907d90d07f051875275cab6b20
+Auth Token: 4517d1f2-4f81-4e1d-a6a8-c5c9d1b3f5d7
+
+# Refresh Tokens
+refresh_token: 1//0gxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+refresh_token: AQAB5Hxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+rt_live_abcdef1234567890ghijklmnop9876543210
+
+# Session IDs
+PHPSESSID: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d
+session_id: sess_1234567890abcdefghijklmnop
+jsessionid: D1C1234567890ABCDEF1234567890AB
+
+# OTP & 2FA Codes
+OTP Code: 123456
+2FA Code: 987654
+Time-based OTP: 546374
+One-time password: 234567
+Authentication code: 765432
+verification_code: 654321
+
+# Device/Client IDs
+Device ID: 12345a6b-78cd-90ef-ghij-klmnopqrst12
+client_id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+IDFA: 550e8400-e29b-41d4-a716-446655440000
+Android ID: 7a1b8c9d0e1f2a3b4c5d6e7f
+Device Identifier: AABBCCDDEE11223344556677
+""",
+
+    "Government & Official IDs": """
+# Driver Licenses
+Driver License: D12345678
+DL: CA1234567
+Driving License: 1234567/ABC/2015/00123
+License Number: SMITH121080A1A2
+EU Driver License: 1234567/19/AB/CD
+
+# Voter ID
+Voter ID: VID123456789
+Voter Registration: VOT-2024-987654
+Electoral Card: 123-456-789-012
+Voter Number: VN-2024-554433
+
+# Residence Permit / Visa
+Residence Permit: RP-2024-123456
+Visa Number: V123456789
+Permit Number: P-2024-999888
+Aufenthaltserlaubnis: AE-2024-555666
+Travel Document: TD-2024-111222
+
+# Military ID
+Military ID: MIL-2024-777888
+Service Number: SN-2024-333444
+Armed Forces ID: AF-2024-666777
+Military Service Number: MSN-1990-234567
+Defence ID: DEF-2024-888999
+
+# Professional & Education IDs
+Employee ID: EMP-2024-123456
+Staff Number: STF-2024-555666
+Mitarbeiternummer: MIT-2024-778899
+Student Number: STU-2024-456789
+Student ID: 20240987654
+Enrollment Number: ENR-2024-112233
+University ID: UNI-2024-334455
+
+# Professional Licenses
+Professional License: LIC-2024-567890
+License Number: PROF-000123456
+Contractor License: CTR-2024-777888
+Medical License: MED-2024-999000
+Architect License: ARC-2024-111222
+Professional Registration: PRF-2024-333444
+
+# Benefit & Social IDs
+Benefit ID: BEN-2024-123456
+Social Security: SOC-2024-654321
+Unemployment Benefit: UNE-2024-987654
+Welfare ID: WEL-2024-456789
+Child Benefit: CHB-2024-321456
+Pension ID: PEN-2024-654987
+""",
+
+    "Location & Geographic Codes": """
+# Geographic Coordinates
+Coordinates: 40.7128, -74.0060
+Lat/Long: 51.5074, -0.1278
+GPS: 35.6892, 139.6917
+Location: 48.8566, 2.3522
+
+# Plus Codes (Google)
+Plus Code: 9C3W9QCJ+2V
+plus_code: 8QQH+RR Lagos
+location_code: 7PHWJ4WJ+M2
+
+# What3Words Addresses
+w3w: ///index.home.raft
+what3words: ///filled.count.soap
+w3w address: ///puffin.limits.jugs
+what3words location: ///sorted.magic.spanned
+
+# Postal Codes as Location
+Postcode: SW1A 2AA
+Zip Code: 94105
+PLZ: 10115
+Code Postal: 75001
+Postal: 28013
+""",
+
+    "Financial & Routing": """
+# Routing Numbers
+Routing Number: 021000021
+ABA: 123456789
+Bank Routing: 061000146
+Transit Number: 001005124
+
+# File & Reference Numbers
+File Number: FILE-2024-123456
+Case Number: CASE-2024-987654
+Reference Number: REF-2024-555666
+Document Number: DOC-2024-777888
+Ticket Number: TKT-2024-111222
+Dossier Number: DOSS-2024-333444
+Invoice Number: INV-2024-999000
+Order Number: ORD-2024-456789
+Transaction ID: TXN-2024-654321
+""",
+
+    "Extended Government & Education IDs": """
+# Voter ID (V + 7 digits)
+My voter ID is V1234567
+Voter ID: V9876543
+Wählerausweis: V1122334
+Meine Wählerausweinnummer: V4455667
+Voter card: V7788990
+
+# Residence Permit (RP + 6 digits)
+Residence permit: RP123456
+My residence permit is RP654321
+Aufenthaltserlaubnis: RP999888
+Aufenthaltstitel: RP333444
+Titre de séjour: RP777888
+Permiso de residencia: RP666777
+
+# Benefit ID (B + 8 digits)
+My benefit ID is B12345678
+Sozialhilfe: B65432100
+Carte d'allocataire: C98765432
+Allocations familiales: A55566677
+
+# Military ID (M + 8 digits)
+Military ID: M45678901
+Service number: M99900011
+Militärausweis: M33344455
+Meine Militärnummer: M66677788
+Carte militaire: M88899900
+
+# Student Number (STU- + 5 digits)
+Student number: STU-12345
+My student ID is STU-54321
+Matrikelnummer: STU-55666
+Immatriculación: STU-77888
+Numero di matricola: STU-99000
+
+# Employee ID (EMP- + 5 digits)
+Employee ID: EMP-78901
+Staff ID: EMP-45678
+Personalnummer: EMP-12345
+Numéro d'employé: EMP-33444
+Número de empleado: EMP-66677
+
+# Device ID (DEV- + 9 digits)
+Device ID: DEV-123456789
+My device ID is DEV-987654321
+UDID: DEV-555666777
+Device identifier: DEV-444555666
+
+# EORI (English, German, French, Spanish, Italian)
+EORI: DE123456789
+EORI DE 123456789
+My EORI is DE123456789000
+EORI: FR123456789
+EORI: IT987654321
+EORI ES 111222333
+Numéro d'établissement: NE ES 444555666
+""",
+
+    "Healthcare & Administrative IDs": """
+# Tax ID / VAT Numbers (European VAT formats)
+Steuer-ID: DE 123456789
+VAT: GB 987654321
+Tax Number: FR 1234567890
+Partita IVA: IT 12345678901
+NIF: ES A12345678
+Tax ID: CH CHE 123456789 TVA
+
+# Health ID / NHS Numbers (3-digit groups)
+Health ID: 943 476 5919
+NHS Number: 456 789 1234
+Patient ID: 123 456 7890
+Health record: 789 012 3456
+
+# Medical Record Number (MRN) (3 letters - 6 digits)
+MRN: ABC-123456
+Medical Record: DEF-456789
+MRN Number: GHI-789012
+Patient Record: JKL-234567
+Dossier Médical: MNO-567890
+
+# Insurance ID (label-based or POL-XXXXXXXXX format)
+INSURE123456789
+Insurance ID Policy123456
+Policy: INSURE987654321
+Insurance member: MYINSUR1234567
+
+
+# Health Information (medical conditions/terms)
+Diagnosed: Diabetes Type 2
+Patient has allergies: Penicillin and Latex
+Blood type: O positive
+Medications: Insulin, Metformin
+Prescription: Hypertension treatment
+Condition: Diagnosed with cancer
+
+# Social Media Handles (Twitter, Discord, etc.)
+Follow @john_smith on Twitter
+My handle is @mary_j_watson
+Contact me at @alex_dev_2024
+Discord user: @techie_coder_789
+
+# Messaging IDs (Discord user#0000, Telegram, Signal, etc.)
+Discord: john_doe#1234
+My Skype: user_123_skype
+Telegram: @signal_user_456
+Signal contact: wave_user_789
+Telegram ID: telegram_dev_2024
+Skype: alice.work.domain
+Line: line_user_9999
+
+# License Plates (Multilingual European formats)
+Kennzeichen: B-AB 1234
+License Plate: AB 12 CDE
+Immatriculation: AZ-123-AB
+Targa: CA 123 AB
+Registration: BA 1234 CD
+Plaque: YZ 234 XY
+
+# File Numbers (Dossier, Case, Expediente, Aktenzeichen)
+File Number: FILE2024001234
+Dossier: DOSS2024999888
+Case Number: CASE2024777666
+Reference: REF2024555444
+Aktenzeichen: AZ2024333222
+Dossier Number: DOSS2024111000
+Fascicolo: FASC2024456789
+
+# Ticket / Issue Numbers (Issue, Task, Ticket, Problem)
+Issue Number: ISSUE2024001
+Ticket ID: TKT2024999
+Task Number: TASK2024888
+Problem ID: PROB2024777
+Ticketnummer: TKT2024666
+Issue ID: ISSUE2024555
+Tâche: TASK2024444
+""",
+
 }
 
 # -------------------------------------------------------------
@@ -819,6 +1105,119 @@ def _guard_config_from_args(args: argparse.Namespace) -> dict:
     )
 
 
+def _generate_side_by_side_report(filter_instance, output_file="entity_demonstration_report.md"):
+    """
+    Generate a comprehensive side-by-side original vs anonymized text report
+    for all entity types in all supported languages.
+    """
+    from datetime import datetime
+    import re
+
+    # We'll build examples for every entity by scanning the existing TEST_TEXTS
+    # blocks. For each non-empty, non-comment line we run the filter and group
+    # original/anonymized pairs by the anonymizer placeholders (e.g. <EMAIL>). 
+    # This captures supported formats, edge cases and many false-positive
+    # scenarios already present in TEST_TEXTS. We also append a raw dump of
+    # the TEST_TEXTS blocks and their full anonymized output so you can see
+    # the runner results inline.
+
+    placeholder_to_entity = {
+        'PERSON': 'PERSON', 'EMAIL': 'EMAIL_ADDRESS', 'PHONE': 'PHONE_NUMBER',
+        'FAX': 'FAX_NUMBER', 'ADDRESS': 'ADDRESS', 'LOCATION': 'LOCATION',
+        'DATE': 'DATE', 'PASSPORT': 'PASSPORT', 'ID_NUMBER': 'ID_NUMBER',
+        'TAX_ID': 'TAX_ID', 'IP_ADDRESS': 'IP_ADDRESS', 'EORI': 'EORI',
+        'CREDIT_CARD': 'CREDIT_CARD', 'BANK_ACCOUNT': 'BANK_ACCOUNT',
+        'ROUTING_NUMBER': 'ROUTING_NUMBER', 'ACCOUNT_NUMBER': 'ACCOUNT_NUMBER',
+        'PAYMENT_TOKEN': 'PAYMENT_TOKEN', 'CRYPTO_ADDRESS': 'CRYPTO_ADDRESS',
+        'DRIVER_LICENSE': 'DRIVER_LICENSE', 'VOTER_ID': 'VOTER_ID',
+        'RESIDENCE_PERMIT': 'RESIDENCE_PERMIT', 'BENEFIT_ID': 'BENEFIT_ID',
+        'MILITARY_ID': 'MILITARY_ID', 'HEALTH_ID': 'HEALTH_ID', 'MRN': 'MRN',
+        'INSURANCE_ID': 'INSURANCE_ID', 'HEALTH_INFO': 'HEALTH_INFO',
+        'STUDENT_NUMBER': 'STUDENT_NUMBER', 'EMPLOYEE_ID': 'EMPLOYEE_ID',
+        'PRO_LICENSE': 'PRO_LICENSE', 'SOCIAL_HANDLE': 'SOCIAL_HANDLE',
+        'MESSAGING_ID': 'MESSAGING_ID', 'MEETING_ID': 'MEETING_ID',
+        'MAC_ADDRESS': 'MAC_ADDRESS', 'IMEI': 'IMEI', 'ADVERTISING_ID': 'ADVERTISING_ID',
+        'DEVICE_ID': 'DEVICE_ID', 'GEO_COORDINATES': 'GEO_COORDINATES',
+        'PLUS_CODE': 'PLUS_CODE', 'W3W': 'W3W', 'LICENSE_PLATE': 'LICENSE_PLATE',
+        'API_KEY': 'API_KEY', 'SESSION_ID': 'SESSION_ID', 'ACCESS_TOKEN': 'ACCESS_TOKEN',
+        'REFRESH_TOKEN': 'REFRESH_TOKEN', 'ACCESS_CODE': 'ACCESS_CODE', 'OTP_CODE': 'OTP_CODE',
+        'FILE_NUMBER': 'FILE_NUMBER', 'TRANSACTION_NUMBER': 'TRANSACTION_NUMBER',
+        'CUSTOMER_NUMBER': 'CUSTOMER_NUMBER', 'TICKET_ID': 'TICKET_ID',
+        'CASE_REFERENCE': 'CASE_REFERENCE', 'PASSWORD': 'PASSWORD', 'PIN': 'PIN',
+        'TAN': 'TAN', 'PUK': 'PUK', 'RECOVERY_CODE': 'RECOVERY_CODE'
+    }
+
+    examples = {e: {} for e in getattr(filter_instance, 'ALLOWED_ENTITIES', [])}
+
+    placeholder_rx = re.compile(r"<([A-Z0-9_]+)>")
+
+    # Walk TEST_TEXTS blocks and collect per-line examples
+    for block_label, block in TEST_TEXTS.items():
+        for raw_line in str(block).splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if line.startswith("#"):
+                continue
+
+            anonymized = filter_instance.anonymize_text(line)
+            tags = placeholder_rx.findall(anonymized)
+            # infer language using earlier detection helper if available
+            try:
+                lang = _detect_lang(line)
+            except Exception:
+                lang = 'en'
+
+            if not tags:
+                # keep a bucket for 'NO_ENTITY' examples (edge-cases / false negatives)
+                ent = 'NO_ENTITY'
+                examples.setdefault(ent, {})
+                examples[ent].setdefault(lang, [])
+                if len(examples[ent][lang]) < 50:
+                    examples[ent][lang].append((line, anonymized, block_label))
+                continue
+
+            for t in tags:
+                entity = placeholder_to_entity.get(t, t)
+                if entity not in examples:
+                    examples.setdefault(entity, {})
+                examples[entity].setdefault(lang, [])
+                if len(examples[entity][lang]) < 200:
+                    examples[entity][lang].append((line, anonymized, block_label))
+
+    # For any allowed entities with no examples, synthesize a small set
+    for ent in getattr(filter_instance, 'ALLOWED_ENTITIES', []):
+        if ent not in examples or not examples[ent]:
+            examples.setdefault(ent, {})
+            examples[ent].setdefault('en', [])
+            synth = f"Example {ent} placeholder: <{ent}>"
+            examples[ent]['en'].append((synth, filter_instance.anonymize_text(synth), 'synthesized'))
+
+    # Build report
+    lines = []
+    lines.append("# Comprehensive Entity Type Demonstration\n\n")
+    lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    lines.append("This document demonstrates all PII entity types found by the filter.\n")
+    lines.append("**Note**: Each entry shows the original text and the anonymized result produced by `PIIFilter.anonymize_text()`.\n\n---\n\n")
+
+    for entity_type in sorted(examples.keys()):
+        lines.append(f"## {entity_type}\n\n")
+        for lang in sorted(examples[entity_type].keys()):
+            lines.append(f"### {lang}\n\n")
+            for original, anonymized, source in examples[entity_type][lang]:
+                lines.append(f"**Source:** {source}  \n")
+                lines.append(f"**Original:** `{original}`  \n")
+                lines.append(f"**Anonymized:** `{anonymized}`  \n\n")
+            lines.append("---\n\n")
+
+    lines.append("*End of Report*\n")
+
+    output_path = Path(output_file)
+    output_path.write_text("".join(lines), encoding="utf-8")
+    print(f"\n✅ Report generated: {output_path.absolute()}")
+    return output_path
+
+
 def main():
     args = _build_arg_parser().parse_args()
     runner = PIIRunner()
@@ -863,7 +1262,7 @@ def main():
         )
         return
 
-    # Default: run built-in corpus
+    # Default: run built-in corpus + generate report
     runner.run_on_texts(
         TEST_TEXTS,
         show_entities=show_entities,
@@ -871,6 +1270,14 @@ def main():
         json_mode=args.json,
         **guard_kw
     )
+    
+    # Generate comprehensive side-by-side report
+    print("\n" + "="*80)
+    print("📊 GENERATING COMPREHENSIVE ENTITY DEMONSTRATION REPORT...")
+    print("="*80)
+    if pf_class:
+        filter_instance = pf_class()
+        _generate_side_by_side_report(filter_instance)
 
 
 if __name__ == "__main__":

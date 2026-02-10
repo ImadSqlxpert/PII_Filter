@@ -1,5 +1,0 @@
-﻿# Slack tokens (xoxb-, xoxp-, xoxa-, xoxs- etc.)
-regex:xox[bpsoa]-[A-Za-z0-9-]+==>SLACK_TOKEN_REDACTED
-
-# Mailchimp keys: 32 hex + -us<number>
-regex:[0-9a-fA-F]{32}-us[0-9]+==>MAILCHIMP_KEY_REDACTED
