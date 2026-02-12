@@ -1,6 +1,6 @@
 import re
 import pytest
-from pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 
 
 @pytest.fixture(scope="module")

@@ -815,42 +815,91 @@ class PIIFilter:
         self.IPV6_REGEX = r"(?i)(?<![A-F0-9:])" + ipv6_core + r"(?![A-F0-9:])"
 
         # PERSON intros (limit to max 2 tokens capture)
+
         intro_map = {
-            "en": [r"\bmy name is\s+"],
-            "de": [r"\bmein name ist\s+", r"\bich hei(?:ß|ss)e\s+"],
-            "fr": [r"\bje m(?:'|’| )appelle\s+", r"\bmon nom est\s+"],
-            "es": [r"\bme llamo\s+", r"\bmi nombre es\s+"],
-            "it": [r"\bmi chiamo\s+", r"\bil mio nome è\s+"],
-            "pt": [r"\bmeu nome é\s+", r"\bo meu nome é\s+", r"\bchamo-me\s+"],
-            "nl": [r"\bik heet\s+", r"\bmijn naam is\s+"],
+            "en": [
+                r"\bmy name is\s+",
+                r"\bi am called\s+",
+            ],
+
+            "de": [
+                r"\bmein name ist\s+",
+                r"\bich hei(?:ß|ss)e\s+",
+                # Safe variant: "ich bin" only when the next token looks like a name
+                r"\bich bin\s+(?=[A-ZÄÖÜ][a-zäöüß]+)",
+            ],
+
+            "fr": [
+                r"\bje m(?:'|’)?appelle\s+",
+                r"\bmon nom est\s+",
+            ],
+
+            "es": [
+                r"\bme llamo\s+",
+                r"\bmi nombre es\s+",
+            ],
+
+            "it": [
+                r"\bmi chiamo\s+",
+                r"\bil mio nome è\s+",
+            ],
+
+            "pt": [
+                r"\bmeu nome é\s+",
+                r"\bo meu nome é\s+",
+                r"\bchamo-me\s+",
+            ],
+
+            "nl": [
+                r"\bmijn naam is\s+",
+                r"\bik heet\s+",
+            ],
+
             "sv": [r"\bjag heter\s+"],
             "no": [r"\bjeg heter\s+"],
             "da": [r"\bjeg hedder\s+"],
-            "fi": [r"\bminun nimeni on\s+", r"\bnimeni on\s+"],
-            "is": [r"\bég heiti\s+"],
-            "pl": [r"\bnazywam si(?:ę|e)\s+"],
+
+            "fi": [
+                r"\bminun nimeni on\s+",
+                r"\bnimeni on\s+",
+            ],
+
+            "pl": [r"\bnazywam się\s+"],
             "cs": [r"\bjmenuji se\s+"],
-            "sk": [r"\bvol[aá]m sa\s+", r"\bvolám sa\s+"],
-            "hu": [r"\ba nevem\s+", r"\bh(?:í|i)vnak\s+"],
-            "ro": [r"\bnumele meu este\s+", r"\bm[ăa]\s+numesc\s+"],
+            "sk": [r"\bvolám sa\s+"],
+            "hu": [r"\ba nevem\s+", r"\bhívnak\s+"],
+
+            "ro": [
+                r"\bnumele meu este\s+",
+                r"\bm[ăa] numesc\s+",
+            ],
+
+            "ru": [r"\bменя зовут\s+"],
+            "uk": [r"\bмене звати\s+", r"\bмене звуть\s+"],
             "bg": [r"\bказвам се\s+"],
             "el": [r"\bμε λένε\s+", r"\bονομάζομαι\s+"],
-            "sq": [r"\bquhem\s+"],
-            "sl": [r"\bime mi je\s+"],
+
+            "tr": [
+                r"\bbenim ad[ıi]m\s+",
+                # This one stays *out* → r"\badım\s+" would be too risky
+            ],
+
+            "ar": [
+                r"(?:^|\b)(?:اسمي|أنا اسمي)\s+",
+            ],
+
             "hr": [r"\bzovem se\s+"],
             "bs": [r"\bzovem se\s+"],
             "sr": [r"\bzovem se\s+"],
+
             "lt": [r"\bmano vardas(?: yra)?\s+"],
             "lv": [r"\bmani sauc\s+"],
             "et": [r"\bminu nimi on\s+"],
+            "is": [r"\bég heiti\s+"],
             "mt": [r"\bjisimni\s+"],
             "ga": [r"\bis é mo ainm\s+"],
-            "ru": [r"\bменя зовут\s+"],
-            "uk": [r"\bмене звати\s+", r"\bмене звуть\s+"],
-            "be": [r"\bмяне завуць\s+"],
-            "tr": [r"\bbenim ad[ıi]m\s+"],
-            "ar": [r"(?:^|\b)(?:اسمي|انا اسمي|أنا اسمي)\s+"],
         }
+
         self.INTRO_PATTERNS = []
         for starters in intro_map.values():
             for s in starters:
@@ -1219,16 +1268,16 @@ class PIIFilter:
         ]
 
         self.address_recognizer = PatternRecognizer(
-            supported_entity="ADDRESS", supported_language="en",
+            supported_entity="ADDRESS", supported_language="all",
             patterns=[Pattern("strict_address", self.STRICT_ADDRESS_REGEX, 1.0)],
         )
         phone_compact = r"(?<!\w)\+?\d{1,3}[ -]?\d{1,4}[ -]?\d{4,}\b"
         self.phone_recognizer = PatternRecognizer(
-            supported_entity="PHONE_NUMBER", supported_language="en",
+            supported_entity="PHONE_NUMBER", supported_language="all",
             patterns=[Pattern("intl_phone", phone_compact, 1.0)],
         )
         self.date_recognizer = PatternRecognizer(
-            supported_entity="DATE", supported_language="en",
+            supported_entity="DATE", supported_language="all",
             patterns=[Pattern("dob_1", self.DATE_REGEX_1, 1.0),
                       Pattern("dob_2", self.DATE_REGEX_2, 1.0),
                       Pattern("dob_3", self.DATE_REGEX_3, 1.0),
@@ -1236,125 +1285,125 @@ class PIIFilter:
                       Pattern("us_date", r"\b[A-Z][a-z]+\s+\d{1,2},?\s+\d{4}\b", 1.0)],
         )
         self.passport_recognizer = PatternRecognizer(
-            supported_entity="PASSPORT", supported_language="en",
+            supported_entity="PASSPORT", supported_language="all",
             patterns=[Pattern("us_passport", self.US_PASSPORT_REGEX, 1.02),
                       Pattern("eu_passport_generic", self.EU_PASSPORT_REGEX, 1.02)],
         )
         self.id_recognizer = PatternRecognizer(
-            supported_entity="ID_NUMBER", supported_language="en",
+            supported_entity="ID_NUMBER", supported_language="all",
             patterns=[Pattern("de_personalausweis", r"\b(?=[A-Z0-9]{9}\b)(?=.*[A-Z])[A-Z0-9]{9}\b", 1.0),
                       Pattern("ssn", r"\b\d{3}-\d{2}-\d{4}\b", 1.0)],
         )
         self.ip_recognizer = PatternRecognizer(
-            supported_entity="IP_ADDRESS", supported_language="en",
+            supported_entity="IP_ADDRESS", supported_language="all",
             patterns=[Pattern("ipv4", self.IPV4_REGEX, 1.0),
                       Pattern("ipv6", self.IPV6_REGEX, 1.0)],
         )
         self.mac_recognizer = PatternRecognizer(
-            supported_entity="MAC_ADDRESS", supported_language="en",
+            supported_entity="MAC_ADDRESS", supported_language="all",
             patterns=[Pattern("mac", self.MAC_RX.pattern, 1.0)],
         )
         self.imei_recognizer = PatternRecognizer(
-            supported_entity="IMEI", supported_language="en",
+            supported_entity="IMEI", supported_language="all",
             patterns=[Pattern("imei", self.IMEI_RX.pattern, 1.0)],
         )
         self.cc_recognizer = PatternRecognizer(
-            supported_entity="CREDIT_CARD", supported_language="en",
+            supported_entity="CREDIT_CARD", supported_language="all",
             patterns=[Pattern("cc_pan", r"(?:(?<!\w)(?:\d[ -]?){13,19}\d(?!\w))", 1.0)],
         )
         self.bank_recognizer = PatternRecognizer(
-            supported_entity="BANK_ACCOUNT", supported_language="en",
+            supported_entity="BANK_ACCOUNT", supported_language="all",
             patterns=[Pattern("iban", self.IBAN_RX.pattern, 1.0),
                       Pattern("bic", self.BIC_RX.pattern, 1.0)],
         )
         self.health_recognizer = PatternRecognizer(
-            supported_entity="HEALTH_INFO", supported_language="en",
+            supported_entity="HEALTH_INFO", supported_language="all",
             patterns=[Pattern("health_terms", r"(?i)\b(?:allergic|diagnosed|blood\s*type|diabetes|hypertension|asthma|cancer|heart\s*disease|penicillin|insulin|medication)\b", 1.0)],
         )
 
         self.plate_recognizer = PatternRecognizer(
-            supported_entity="LICENSE_PLATE", supported_language="en",
+            supported_entity="LICENSE_PLATE", supported_language="all",
             patterns=[Pattern("plate", self.PLATE_LABEL_RX.pattern, 1.0)],
         )
 
         self.person_recognizer = PatternRecognizer(
-            supported_entity="PERSON", supported_language="en",
+            supported_entity="PERSON", supported_language="all",
             # Require at least two capitalized tokens by default to reduce single-token false positives
-            patterns=[Pattern("person", r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b", 1.0)],
+            patterns=[Pattern("person", r"\b[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]+){0,3}", 1.0)],
             deny_list=self.person_deny_list
         )
 
         additional_recognizers = [
             PatternRecognizer(
-                supported_entity="ACCOUNT_NUMBER", supported_language="en",
+                supported_entity="ACCOUNT_NUMBER", supported_language="all",
                 patterns=[Pattern("account_number", r"\b\d{10}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="PAYMENT_TOKEN", supported_language="en",
+                supported_entity="PAYMENT_TOKEN", supported_language="all",
                 patterns=[Pattern("payment_token", r"\bsk_live_[a-zA-Z0-9]{10,30}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="ADVERTISING_ID", supported_language="en",
+                supported_entity="ADVERTISING_ID", supported_language="all",
                 patterns=[Pattern("advertising_id", r"\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="MRN", supported_language="en",
+                supported_entity="MRN", supported_language="all",
                 patterns=[Pattern("mrn", r"\b[A-Z]{3}-\d{6}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="INSURANCE_ID", supported_language="en",
+                supported_entity="INSURANCE_ID", supported_language="all",
                 patterns=[Pattern("insurance_id", r"\bPOL-\d{9}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="STUDENT_NUMBER", supported_language="en",
+                supported_entity="STUDENT_NUMBER", supported_language="all",
                 patterns=[Pattern("student_number", r"\bSTU-\d{5}\b", 1.05)],
             ),
             PatternRecognizer(
-                supported_entity="EMPLOYEE_ID", supported_language="en",
+                supported_entity="EMPLOYEE_ID", supported_language="all",
                 patterns=[Pattern("employee_id", r"\bEMP-\d{5}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="PRO_LICENSE", supported_language="en",
+                supported_entity="PRO_LICENSE", supported_language="all",
                 patterns=[Pattern("pro_license", r"\bLIC-\d{5}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="HEALTH_ID", supported_language="en",
+                supported_entity="HEALTH_ID", supported_language="all",
                 patterns=[Pattern("health_id", r"\b\d{3} \d{3} \d{4}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="DRIVER_LICENSE", supported_language="en",
+                supported_entity="DRIVER_LICENSE", supported_language="all",
                 patterns=[Pattern("driver_license", r"\bD\d{7}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="VOTER_ID", supported_language="en",
+                supported_entity="VOTER_ID", supported_language="all",
                 patterns=[Pattern("voter_id", r"\bV\d{7}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="RESIDENCE_PERMIT", supported_language="en",
+                supported_entity="RESIDENCE_PERMIT", supported_language="all",
                 patterns=[Pattern("residence_permit", r"\bRP\d{6}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="MEETING_ID", supported_language="en",
+                supported_entity="MEETING_ID", supported_language="all",
                 patterns=[Pattern("meeting_id", r"\b\d{3} \d{3} \d{3}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="GEO_COORDINATES", supported_language="en",
+                supported_entity="GEO_COORDINATES", supported_language="all",
                 patterns=[Pattern("geo_coordinates", r"\b\d{1,3}\.\d{4}, \d{1,3}\.\d{4}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="FAX_NUMBER", supported_language="en",
+                supported_entity="FAX_NUMBER", supported_language="all",
                 patterns=[Pattern("fax", r"\b\+?\d{1,3} \d{2,4} \d{4,}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="BENEFIT_ID", supported_language="en",
+                supported_entity="BENEFIT_ID", supported_language="all",
                 patterns=[Pattern("benefit_id", r"\bB\d{8}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="MILITARY_ID", supported_language="en",
+                supported_entity="MILITARY_ID", supported_language="all",
                 patterns=[Pattern("military_id", r"\bM\d{8}\b", 1.0)],
             ),
             PatternRecognizer(
-                supported_entity="DEVICE_ID", supported_language="en",
+                supported_entity="DEVICE_ID", supported_language="all",
                 patterns=[Pattern("device_id", r"\bDEV-\d{9}\b", 1.05)],
             ),
         ]
@@ -1385,10 +1434,32 @@ class PIIFilter:
         s = span.strip()
         if not s:
             return False
+        # DO NOT allow digits inside a person name
+        if any(ch.isdigit() for ch in span):
+            return False
+
+        # Reject UUID/GUID patterns
+        if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", span):
+            return False
+
+        # Reject alphanumeric codes (MIT-2024-778899, RP333444, EMP-12345, etc.)
+        if re.fullmatch(r"[A-Za-z]{1,5}-?\d{3,}", span):
+            return False
+
+        # Reject 100% uppercase tokens
+        if span.isupper():
+            return False
+
+        # Reject tokens that look like OTP / PIN
+        if re.fullmatch(r"\d{4,10}", span):
+            return False      
+        
         if re.search(r"\b(mail|e-mail|email|correo|e-?posta|adresse|address|telefon|phone|tel)\b", s, re.I):
             return False
+       
         if re.search(r"\b(appelle|numero|nummer|número|policy|license|licence|kontonummer|passeport|passport)\b", s, re.I):
             return False
+       
         if re.match(r"^\s*(?:je\s+m['’]|j['’]|je m['’])", s.lower()):
             return False
 
@@ -1403,7 +1474,7 @@ class PIIFilter:
             return False
         if any(tok in self.PERSON_BLACKLIST_WORDS for tok in low):
             return False
-        if any(tok in self.STREET_BLOCKERS for tok in low):
+        if all(tok in self.STREET_BLOCKERS for tok in low):
             return False
         if any(tok in self.NON_PERSON_SINGLE_TOKENS for tok in low):
             return False

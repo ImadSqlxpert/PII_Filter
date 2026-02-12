@@ -1,4 +1,4 @@
-from PII_filter.pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 f=PIIFilter()
 print(f.anonymize_text('Customer Name: John Schmidt'))
 print('---')

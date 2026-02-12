@@ -1,5 +1,5 @@
 import pytest
-from pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 
 @pytest.fixture
 def f():

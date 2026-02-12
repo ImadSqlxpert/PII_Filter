@@ -97,12 +97,21 @@ My office IPs are 192.168.1.10 and 2001:0db8:85a3::8a2e:0370:7334.
 
     "German - Basics": """
 Mein Name ist Max Mustermann, geboren am 31.12.1990.
+ich Heisse Max Mustermann und ich bin am 31.12.1990 geboren.
+ich heisse Max Mustermann und ich bin am 31.12.1990 geboren.
+ich heisse max mustermann und ich bin am 31.12.1990 geboren.
 Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).
 Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
 Personalausweisnummer: T22000129
 Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
 ich will Gewerbe anmelden.
+ich bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
+Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. I will ein Gewerbe anmelden
+ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
+ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
+ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
+
 """,
 
     "German - Street Variants": """
@@ -794,6 +803,14 @@ Problem ID: PROB2024777
 Ticketnummer: TKT2024666
 Issue ID: ISSUE2024555
 Tâche: TASK2024444
+""",
+
+    "Failed": """
+one_time_password=987654
+Meine Geräte-ID ist DEV-999888777
+Meine Militärausweis ist M55667788
+Meine Sozialhilfekarte ist B11223344
+
 """,
 
 }

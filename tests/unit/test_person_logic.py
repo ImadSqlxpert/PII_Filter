@@ -1,5 +1,5 @@
 import pytest
-from pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 from tests.conftest import has_tag, count_tag, normalize_placeholders as norm
 
 

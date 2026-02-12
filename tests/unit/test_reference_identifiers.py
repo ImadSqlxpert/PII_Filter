@@ -4,7 +4,7 @@ Tests FILE_NUMBER, TRANSACTION_NUMBER, CUSTOMER_NUMBER, TICKET_ID.
 """
 
 import pytest
-from PII_filter.pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 
 
 class TestFileNumberDetection:

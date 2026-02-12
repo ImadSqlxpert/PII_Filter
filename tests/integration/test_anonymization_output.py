@@ -1,7 +1,7 @@
 import json
 import pytest
 from pathlib import Path
-from pii_filter import PIIFilter
+from pii_filter.pii_filter import PIIFilter
 
 @pytest.fixture(scope="module")
 def f():
