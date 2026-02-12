@@ -1,22 +1,22 @@
 # Test Execution Report
 
-Generated: **2026-02-12 14:05:30**
+Generated: **2026-02-12 22:57:28**
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
 | Total Tests | 1004 |
-| Passed | 972 |
-| Failed | 32 |
+| Passed | 969 |
+| Failed | 35 |
 | Skipped | 0 |
-| Pass Rate | 96.8% |
+| Pass Rate | 96.5% |
 
 ## Per‑File Results
 
 ### test_api_keys.py
-- Passed: 21
-- Failed: 7
+- Passed: 18
+- Failed: 10
 - Skipped: 0
 
 ### test_debug_address.py
@@ -78,11 +78,11 @@ Generated: **2026-02-12 14:05:30**
 
 ### ❌ test_api_keys.py
 
-#### ::TestAPIKeyDetection::test_google_api_key
+#### ::TestAPIKeyDetection::test_aws_access_key_id
 
 **Original:**
 ```
-google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456
+My AWS access key is AKIA2JFAKJ1234ABCD.
 ```
 
 **Expected:**
@@ -92,31 +92,31 @@ google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456
 
 **Actual:**
 ```
-google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456
+My AWS access key is AKIA2JFAKJ1234ABCD.
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A24190>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217B6868110>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E872968D0>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024EFF921550>
 
-    def test_google_api_key(self, filter_instance):
-        """Test Google API Key detection."""
-        text = "google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456"
+    def test_aws_access_key_id(self, filter_instance):
+        """Test AWS Access Key ID detection."""
+        text = "My AWS access key is AKIA2JFAKJ1234ABCD."
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456'
+E       AssertionError: assert '<API_KEY>' in 'My AWS access key is AKIA2JFAKJ1234ABCD.'
 
-tests\unit\test_api_keys.py:94: AssertionError
+tests\unit\test_api_keys.py:24: AssertionError
 ```
 </details>
 
-#### ::TestAPIKeyDetection::test_mailchimp_api_key
+#### ::TestAPIKeyDetection::test_stripe_live_secret_key
 
 **Original:**
 ```
-mailchimp_api_key=MAILCHIMP_KEY_REDACTED
+Stripe secret key: <PAYMENT_TOKEN>
 ```
 
 **Expected:**
@@ -126,31 +126,31 @@ mailchimp_api_key=MAILCHIMP_KEY_REDACTED
 
 **Actual:**
 ```
-mailchimp_api_key=MAILCHIMP_KEY_REDACTED
+Stripe secret key: <PAYMENT_TOKEN>
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A250D0>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217CD263890>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87253D90>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024E8708F3D0>
 
-    def test_mailchimp_api_key(self, filter_instance):
-        """Test Mailchimp API Key detection."""
-        text = "mailchimp_api_key=MAILCHIMP_KEY_REDACTED"
+    def test_stripe_live_secret_key(self, filter_instance):
+        """Test Stripe Live Secret Key detection."""
+        text = "Stripe secret key: sk_live_1234567890abcdefghijk"
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'mailchimp_api_key=MAILCHIMP_KEY_REDACTED'
+E       AssertionError: assert '<API_KEY>' in 'Stripe secret key: <PAYMENT_TOKEN>'
 
-tests\unit\test_api_keys.py:108: AssertionError
+tests\unit\test_api_keys.py:56: AssertionError
 ```
 </details>
 
-#### ::TestAPIKeyDetection::test_azure_api_key
+#### ::TestAPIKeyDetection::test_stripe_test_secret_key
 
 **Original:**
 ```
-azure_api_key=<ID_NUMBER>-<PHONE>-<MAC_ADDRESS>
+Test key <PAYMENT_TOKEN>
 ```
 
 **Expected:**
@@ -160,23 +160,91 @@ azure_api_key=<ID_NUMBER>-<PHONE>-<MAC_ADDRESS>
 
 **Actual:**
 ```
-azure_api_key=<ID_NUMBER>-<PHONE>-<MAC_ADDRESS>
+Test key <PAYMENT_TOKEN>
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A25FD0>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217C6D38310>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87258590>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024EB7706250>
 
-    def test_azure_api_key(self, filter_instance):
-        """Test Azure API Key detection."""
-        text = "azure_api_key=12345678-1234-1234-1234-123456789012"
+    def test_stripe_test_secret_key(self, filter_instance):
+        """Test Stripe Test Secret Key detection."""
+        text = "Test key sk_test_123456789abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'azure_api_key=<ID_NUMBER>-<PHONE>-<MAC_ADDRESS>'
+E       AssertionError: assert '<API_KEY>' in 'Test key <PAYMENT_TOKEN>'
 
-tests\unit\test_api_keys.py:122: AssertionError
+tests\unit\test_api_keys.py:62: AssertionError
+```
+</details>
+
+#### ::TestAPIKeyDetection::test_stripe_live_public_key
+
+**Original:**
+```
+Public key: <PAYMENT_TOKEN>
+```
+
+**Expected:**
+```
+<API_KEY>
+```
+
+**Actual:**
+```
+Public key: <PAYMENT_TOKEN>
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E8714EB10>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024F519E5C50>
+
+    def test_stripe_live_public_key(self, filter_instance):
+        """Test Stripe Live Public Key detection."""
+        text = "Public key: pk_live_1234567890abcdefghijk"
+        result = filter_instance.anonymize_text(text)
+>       assert "<API_KEY>" in result
+E       AssertionError: assert '<API_KEY>' in 'Public key: <PAYMENT_TOKEN>'
+
+tests\unit\test_api_keys.py:68: AssertionError
+```
+</details>
+
+#### ::TestAPIKeyDetection::test_stripe_test_public_key
+
+**Original:**
+```
+<PAYMENT_TOKEN>
+```
+
+**Expected:**
+```
+<API_KEY>
+```
+
+**Actual:**
+```
+<PAYMENT_TOKEN>
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87848110>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024ED3467110>
+
+    def test_stripe_test_public_key(self, filter_instance):
+        """Test Stripe Test Public Key detection."""
+        text = "pk_test_123456789abcdefghijklmnop"
+        result = filter_instance.anonymize_text(text)
+>       assert "<API_KEY>" in result
+E       AssertionError: assert '<API_KEY>' in '<PAYMENT_TOKEN>'
+
+tests\unit\test_api_keys.py:74: AssertionError
 ```
 </details>
 
@@ -184,7 +252,7 @@ tests\unit\test_api_keys.py:122: AssertionError
 
 **Original:**
 ```
-openai_api_key=sk-proj-1234567890abcdefghijklmnop
+openai_api_key=<PAYMENT_TOKEN>
 ```
 
 **Expected:**
@@ -194,31 +262,31 @@ openai_api_key=sk-proj-1234567890abcdefghijklmnop
 
 **Actual:**
 ```
-openai_api_key=sk-proj-1234567890abcdefghijklmnop
+openai_api_key=<PAYMENT_TOKEN>
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A26750>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217B738F250>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EE590>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024F52165550>
 
     def test_openai_api_key(self, filter_instance):
         """Test OpenAI API Key detection."""
         text = "openai_api_key=sk-proj-1234567890abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'openai_api_key=sk-proj-1234567890abcdefghijklmnop'
+E       AssertionError: assert '<API_KEY>' in 'openai_api_key=<PAYMENT_TOKEN>'
 
 tests\unit\test_api_keys.py:129: AssertionError
 ```
 </details>
 
-#### ::TestAPIKeyDetection::test_firebase_api_key
+#### ::TestAPIKeyDetection::test_cloudflare_api_token
 
 **Original:**
 ```
-firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567
+cloudflare_token=1234567890abcdef1234567890abcdef1234567890
 ```
 
 **Expected:**
@@ -228,57 +296,63 @@ firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567
 
 **Actual:**
 ```
-firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567
+cloudflare_token=1234567890abcdef1234567890abcdef1234567890
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A26ED0>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217E41E3C90>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EE9D0>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024E8E450290>
 
-    def test_firebase_api_key(self, filter_instance):
-        """Test Firebase API Key detection."""
-        text = "firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567"
+    def test_cloudflare_api_token(self, filter_instance):
+        """Test Cloudflare API Token detection."""
+        text = "cloudflare_token=1234567890abcdef1234567890abcdef1234567890"
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567'
+E       AssertionError: assert '<API_KEY>' in 'cloudflare_token=1234567890abcdef1234567890abcdef1234567890'
 
-tests\unit\test_api_keys.py:136: AssertionError
+tests\unit\test_api_keys.py:150: AssertionError
 ```
 </details>
 
-#### ::TestAPIKeyDetection::test_digitalocean_token
+#### ::TestAPIKeyDetection::test_multiple_api_keys
 
 **Original:**
 ```
-digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst
+(not found)
 ```
 
 **Expected:**
 ```
-<API_KEY>
+(not found)
 ```
 
 **Actual:**
 ```
-digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst
+(not found)
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A30590>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217C5677610>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EFE90>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024E962E0150>
 
-    def test_digitalocean_token(self, filter_instance):
-        """Test DigitalOcean API Token detection."""
-        text = "digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst"
+    def test_multiple_api_keys(self, filter_instance):
+        """Test detection of multiple API keys in single text."""
+        text = """
+        AWS: AKIA2JFAKJ1234ABCD
+        Stripe: sk_live_1234567890abcdefghijk
+        GitHub: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+        """
         result = filter_instance.anonymize_text(text)
->       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst'
+        # Count API_KEY occurrences
+        count = result.count("<API_KEY>")
+>       assert count >= 3
+E       assert 1 >= 3
 
-tests\unit\test_api_keys.py:157: AssertionError
+tests\unit\test_api_keys.py:191: AssertionError
 ```
 </details>
 
@@ -286,7 +360,7 @@ tests\unit\test_api_keys.py:157: AssertionError
 
 **Original:**
 ```
-https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop
+https://api.example.com?<PAYMENT_TOKEN>
 ```
 
 **Expected:**
@@ -296,23 +370,57 @@ https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop
 
 **Actual:**
 ```
-https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop
+https://api.example.com?<PAYMENT_TOKEN>
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A31290>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000217B58C5A90>
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878F4550>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024EB3EC00D0>
 
     def test_api_key_in_url(self, filter_instance):
         """Test API key detection in URLs."""
         text = "https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 >       assert "<API_KEY>" in result
-E       AssertionError: assert '<API_KEY>' in 'https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop'
+E       AssertionError: assert '<API_KEY>' in 'https://api.example.com?<PAYMENT_TOKEN>'
 
 tests\unit\test_api_keys.py:198: AssertionError
+```
+</details>
+
+#### ::TestAPIKeyDetection::test_api_key_with_colon
+
+**Original:**
+```
+stripe_secret_key: <PAYMENT_TOKEN>
+```
+
+**Expected:**
+```
+<API_KEY>
+```
+
+**Actual:**
+```
+stripe_secret_key: <PAYMENT_TOKEN>
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+self = <unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878F5250>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024E8E87EA90>
+
+    def test_api_key_with_colon(self, filter_instance):
+        """Test API key detection with : separator."""
+        text = "stripe_secret_key: sk_live_1234567890abcdefghijk"
+        result = filter_instance.anonymize_text(text)
+>       assert "<API_KEY>" in result
+E       AssertionError: assert '<API_KEY>' in 'stripe_secret_key: <PAYMENT_TOKEN>'
+
+tests\unit\test_api_keys.py:211: AssertionError
 ```
 </details>
 
@@ -338,7 +446,7 @@ EU Passport: <PASSPORT>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B22A354C10>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D609A876D0>
 entity = 'PASSPORT', text = 'EU Passport: X1Y2Z3A4B', expected = '<ID_NUMBER>'
 
     @pytest.mark.parametrize("entity,text,expected", entity_samples)
@@ -372,7 +480,7 @@ I was born on March 15, 1985
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20A14B750>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D584DD4090>
 entity = 'DATE', text = 'I was born on March 15, 1985', expected = '<DATE>'
 
     @pytest.mark.parametrize("entity,text,expected", entity_samples)
@@ -406,7 +514,7 @@ My social security number is 123-45-6789
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B24484D090>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5D5709E10>
 entity = 'ID_NUMBER', text = 'My social security number is 123-45-6789'
 expected = '<ID_NUMBER>'
 
@@ -441,7 +549,7 @@ My API key is sk_live_abc123def456
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20E29A550>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5B852AE10>
 entity = 'PAYMENT_TOKEN', text = 'My API key is sk_live_abc123def456'
 expected = '<PAYMENT_TOKEN>'
 
@@ -476,7 +584,7 @@ My medical record number is ABC-123456
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20C47F790>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5D8300D10>
 entity = 'MRN', text = 'My medical record number is ABC-123456'
 expected = '<MRN>'
 
@@ -511,7 +619,7 @@ My <PASSPORT> policy is POL-<ID_NUMBER>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20A206490>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5CB635210>
 entity = 'INSURANCE_ID', text = 'My insurance policy is POL-987654321'
 expected = '<INSURANCE_ID>'
 
@@ -546,7 +654,7 @@ My student ID is <ADDRESS>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B22A8A9910>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5E4C79F90>
 entity = 'STUDENT_NUMBER', text = 'My student ID is STU-12345'
 expected = '<STUDENT_NUMBER>'
 
@@ -581,7 +689,7 @@ My employee number is EMP-67890
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20BC8C9D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D587B683D0>
 entity = 'EMPLOYEE_ID', text = 'My employee number is EMP-67890'
 expected = '<EMPLOYEE_ID>'
 
@@ -616,7 +724,7 @@ My professional license is LIC-54321
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20A0AB550>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D60EF91C10>
 entity = 'PRO_LICENSE', text = 'My professional license is LIC-54321'
 expected = '<PRO_LICENSE>'
 
@@ -651,7 +759,7 @@ My NHS number is <PHONE>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B237DFBE50>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D633AF5290>
 entity = 'HEALTH_ID', text = 'My NHS number is 943 476 5919'
 expected = '<HEALTH_ID>'
 
@@ -686,7 +794,7 @@ My device ID is DEV-<ID_NUMBER>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B2454717D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5E8A750D0>
 entity = 'DEVICE_ID', text = 'My device ID is DEV-999888777'
 expected = '<DEVICE_ID>'
 
@@ -721,7 +829,7 @@ Ich bin am 15. März<LOCATION>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20A09CBD0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D584FB4DD0>
 entity = 'DATE', text = 'Ich bin am 15. März 1985 geboren', expected = '<DATE>'
 
     @pytest.mark.parametrize("entity,text,expected", entity_samples)
@@ -755,7 +863,7 @@ Meine Sozialversicherungsnummer ist <PHONE>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B22F9C91D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D583AD3310>
 entity = 'ID_NUMBER', text = 'Meine Sozialversicherungsnummer ist 123-45-6789'
 expected = '<ID_NUMBER>'
 
@@ -790,7 +898,7 @@ Mein API-Schlüssel ist sk_live_abc123def456
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B22FB8F7D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D58128DCD0>
 entity = 'PAYMENT_TOKEN', text = 'Mein API-Schlüssel ist sk_live_abc123def456'
 expected = '<PAYMENT_TOKEN>'
 
@@ -825,7 +933,7 @@ Meine Krankenaktennummer ist ABC-123456
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B21AC2FD10>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5BF1065D0>
 entity = 'MRN', text = 'Meine Krankenaktennummer ist ABC-123456'
 expected = '<MRN>'
 
@@ -860,7 +968,7 @@ Meine Versicherungspolice ist POL-<ID_NUMBER>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B218BA7290>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D58102BA90>
 entity = 'INSURANCE_ID', text = 'Meine Versicherungspolice ist POL-987654321'
 expected = '<INSURANCE_ID>'
 
@@ -895,7 +1003,7 @@ Meine Studentenausweisnummer ist <ADDRESS>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B246B57DD0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5CA0CC1D0>
 entity = 'STUDENT_NUMBER', text = 'Meine Studentenausweisnummer ist STU-12345'
 expected = '<STUDENT_NUMBER>'
 
@@ -930,7 +1038,7 @@ Meine Mitarbeiternummer ist EMP-67890
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B226D41ED0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5BF030190>
 entity = 'EMPLOYEE_ID', text = 'Meine Mitarbeiternummer ist EMP-67890'
 expected = '<EMPLOYEE_ID>'
 
@@ -965,7 +1073,7 @@ Meine Berufslizenz ist LIC-54321
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B2447478D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D609B1DD10>
 entity = 'PRO_LICENSE', text = 'Meine Berufslizenz ist LIC-54321'
 expected = '<PRO_LICENSE>'
 
@@ -1000,7 +1108,7 @@ Meine NHS-Nummer ist 943 476 5919
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B2285C82D0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D581029550>
 entity = 'HEALTH_ID', text = 'Meine NHS-Nummer ist 943 476 5919'
 expected = '<HEALTH_ID>'
 
@@ -1035,7 +1143,7 @@ Meine Wählerausweisnummer ist <PASSPORT>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B213FA8250>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5E60F6FD0>
 entity = 'VOTER_ID', text = 'Meine Wählerausweisnummer ist V9876543'
 expected = '<VOTER_ID>'
 
@@ -1070,7 +1178,7 @@ Meine Sozialhilfekarte ist <PASSPORT>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B20F4F0ED0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5E53C3210>
 entity = 'BENEFIT_ID', text = 'Meine Sozialhilfekarte ist B11223344'
 expected = '<BENEFIT_ID>'
 
@@ -1105,7 +1213,7 @@ Meine Militärausweis ist <PASSPORT>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B225277AD0>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D5E53C3D10>
 entity = 'MILITARY_ID', text = 'Meine Militärausweis ist M55667788'
 expected = '<MILITARY_ID>'
 
@@ -1140,7 +1248,7 @@ Meine Geräte-ID ist DEV-<ID_NUMBER>
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000002B24A3B3F90>
+f = <pii_filter.pii_filter.PIIFilter object at 0x000001D65A2C1350>
 entity = 'DEVICE_ID', text = 'Meine Geräte-ID ist DEV-999888777'
 expected = '<DEVICE_ID>'
 
@@ -1177,8 +1285,8 @@ one_time_<PASSWORD>
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_tokens.TestOTPCode object at 0x0000024B8840B390>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024B8C066550>
+self = <unit.test_tokens.TestOTPCode object at 0x00000175C771B950>
+filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x00000175CA7A4F10>
 
     def test_one_time_password_format(self, filter_instance):
         """Test one-time password format."""

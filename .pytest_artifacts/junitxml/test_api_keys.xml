@@ -1,71 +1,107 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="28" time="26.144" timestamp="2026-02-12T13:53:45.146449+01:00" hostname="SteffenXpert"><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_aws_access_key_id" time="1.352" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_aws_secret_access_key" time="0.867" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_personal_access_token" time="0.768" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_oauth_token" time="0.804" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_user_to_server_token" time="0.845" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_live_secret_key" time="1.187" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_test_secret_key" time="1.282" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_live_public_key" time="0.805" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_test_public_key" time="0.784" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_slack_bot_token" time="0.783" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_slack_user_token" time="0.860" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_google_api_key" time="1.228"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A24190&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217B6868110&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="28" time="35.787" timestamp="2026-02-12T22:44:28.402068+01:00" hostname="SteffenXpert"><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_aws_access_key_id" time="1.562"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'My AWS access key is AKIA2JFAKJ1234ABCD.'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E872968D0&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024EFF921550&gt;
 
-    def test_google_api_key(self, filter_instance):
-        """Test Google API Key detection."""
-        text = "google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456"
+    def test_aws_access_key_id(self, filter_instance):
+        """Test AWS Access Key ID detection."""
+        text = "My AWS access key is AKIA2JFAKJ1234ABCD."
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'google_api_key=AIzaSyDummyKeyForTestingPurposesOnly123456'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'My AWS access key is AKIA2JFAKJ1234ABCD.'
 
-tests\unit\test_api_keys.py:94: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_sendgrid_api_key" time="0.843" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_mailchimp_api_key" time="0.800"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'mailchimp_api_key=MAILCHIMP_KEY_REDACTED'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A250D0&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217CD263890&gt;
+tests\unit\test_api_keys.py:24: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_aws_secret_access_key" time="1.088" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_personal_access_token" time="1.297" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_oauth_token" time="1.112" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_github_user_to_server_token" time="1.125" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_live_secret_key" time="1.082"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'Stripe secret key: &lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87253D90&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024E8708F3D0&gt;
 
-    def test_mailchimp_api_key(self, filter_instance):
-        """Test Mailchimp API Key detection."""
-        text = "mailchimp_api_key=MAILCHIMP_KEY_REDACTED"
+    def test_stripe_live_secret_key(self, filter_instance):
+        """Test Stripe Live Secret Key detection."""
+        text = "Stripe secret key: sk_live_1234567890abcdefghijk"
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'mailchimp_api_key=MAILCHIMP_KEY_REDACTED'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'Stripe secret key: &lt;PAYMENT_TOKEN&gt;'
 
-tests\unit\test_api_keys.py:108: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_twilio_auth_token" time="0.795" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_azure_api_key" time="0.835"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'azure_api_key=&lt;ID_NUMBER&gt;-&lt;PHONE&gt;-&lt;MAC_ADDRESS&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A25FD0&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217C6D38310&gt;
+tests\unit\test_api_keys.py:56: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_test_secret_key" time="1.150"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'Test key &lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87258590&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024EB7706250&gt;
 
-    def test_azure_api_key(self, filter_instance):
-        """Test Azure API Key detection."""
-        text = "azure_api_key=12345678-1234-1234-1234-123456789012"
+    def test_stripe_test_secret_key(self, filter_instance):
+        """Test Stripe Test Secret Key detection."""
+        text = "Test key sk_test_123456789abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'azure_api_key=&lt;ID_NUMBER&gt;-&lt;PHONE&gt;-&lt;MAC_ADDRESS&gt;'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'Test key &lt;PAYMENT_TOKEN&gt;'
 
-tests\unit\test_api_keys.py:122: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_openai_api_key" time="1.053"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'openai_api_key=sk-proj-1234567890abcdefghijklmnop'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A26750&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217B738F250&gt;
+tests\unit\test_api_keys.py:62: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_live_public_key" time="1.423"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'Public key: &lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E8714EB10&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024F519E5C50&gt;
+
+    def test_stripe_live_public_key(self, filter_instance):
+        """Test Stripe Live Public Key detection."""
+        text = "Public key: pk_live_1234567890abcdefghijk"
+        result = filter_instance.anonymize_text(text)
+&gt;       assert "&lt;API_KEY&gt;" in result
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'Public key: &lt;PAYMENT_TOKEN&gt;'
+
+tests\unit\test_api_keys.py:68: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_stripe_test_public_key" time="1.090"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in '&lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E87848110&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024ED3467110&gt;
+
+    def test_stripe_test_public_key(self, filter_instance):
+        """Test Stripe Test Public Key detection."""
+        text = "pk_test_123456789abcdefghijklmnop"
+        result = filter_instance.anonymize_text(text)
+&gt;       assert "&lt;API_KEY&gt;" in result
+E       AssertionError: assert '&lt;API_KEY&gt;' in '&lt;PAYMENT_TOKEN&gt;'
+
+tests\unit\test_api_keys.py:74: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_slack_bot_token" time="1.111" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_slack_user_token" time="1.140" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_google_api_key" time="1.514" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_sendgrid_api_key" time="1.120" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_mailchimp_api_key" time="1.107" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_twilio_auth_token" time="1.079" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_azure_api_key" time="1.092" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_openai_api_key" time="1.550"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'openai_api_key=&lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EE590&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024F52165550&gt;
 
     def test_openai_api_key(self, filter_instance):
         """Test OpenAI API Key detection."""
         text = "openai_api_key=sk-proj-1234567890abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'openai_api_key=sk-proj-1234567890abcdefghijklmnop'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'openai_api_key=&lt;PAYMENT_TOKEN&gt;'
 
-tests\unit\test_api_keys.py:129: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_firebase_api_key" time="0.787"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A26ED0&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217E41E3C90&gt;
+tests\unit\test_api_keys.py:129: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_firebase_api_key" time="1.055" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_jwt_bearer_token" time="1.067" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_cloudflare_api_token" time="1.354"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'cloudflare_token=1234567890abcdef1234567890abcdef1234567890'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EE9D0&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024E8E450290&gt;
 
-    def test_firebase_api_key(self, filter_instance):
-        """Test Firebase API Key detection."""
-        text = "firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567"
+    def test_cloudflare_api_token(self, filter_instance):
+        """Test Cloudflare API Token detection."""
+        text = "cloudflare_token=1234567890abcdef1234567890abcdef1234567890"
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'firebase_api_key=AIzaSyDummyFirebaseKeyForTestingOnly1234567'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'cloudflare_token=1234567890abcdef1234567890abcdef1234567890'
 
-tests\unit\test_api_keys.py:136: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_jwt_bearer_token" time="0.766" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_cloudflare_api_token" time="0.809" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_digitalocean_token" time="0.838"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A30590&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217C5677610&gt;
+tests\unit\test_api_keys.py:150: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_digitalocean_token" time="1.403" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_webhook_secret" time="1.515" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_no_false_positive_short_strings" time="1.173" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_no_false_positive_common_words" time="1.110" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_multiple_api_keys" time="1.106"><failure message="assert 1 &gt;= 3">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878EFE90&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024E962E0150&gt;
 
-    def test_digitalocean_token(self, filter_instance):
-        """Test DigitalOcean API Token detection."""
-        text = "digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst"
+    def test_multiple_api_keys(self, filter_instance):
+        """Test detection of multiple API keys in single text."""
+        text = """
+        AWS: AKIA2JFAKJ1234ABCD
+        Stripe: sk_live_1234567890abcdefghijk
+        GitHub: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+        """
         result = filter_instance.anonymize_text(text)
-&gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'digitalocean_api_key=dop_v1_1234567890abcdefghijklmnopqrst'
+        # Count API_KEY occurrences
+        count = result.count("&lt;API_KEY&gt;")
+&gt;       assert count &gt;= 3
+E       assert 1 &gt;= 3
 
-tests\unit\test_api_keys.py:157: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_webhook_secret" time="1.102" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_no_false_positive_short_strings" time="0.808" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_no_false_positive_common_words" time="0.791" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_multiple_api_keys" time="0.787" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_in_url" time="0.818"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x00000217B2A31290&gt;
-filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x00000217B58C5A90&gt;
+tests\unit\test_api_keys.py:191: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_in_url" time="1.176"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'https://api.example.com?&lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878F4550&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024EB3EC00D0&gt;
 
     def test_api_key_in_url(self, filter_instance):
         """Test API key detection in URLs."""
         text = "https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop"
         result = filter_instance.anonymize_text(text)
 &gt;       assert "&lt;API_KEY&gt;" in result
-E       AssertionError: assert '&lt;API_KEY&gt;' in 'https://api.example.com?api_key=sk_test_1234567890abcdefghijklmnop'
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'https://api.example.com?&lt;PAYMENT_TOKEN&gt;'
 
-tests\unit\test_api_keys.py:198: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_with_equals_sign" time="0.756" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_with_colon" time="0.766" /></testsuite></testsuites>
+tests\unit\test_api_keys.py:198: AssertionError</failure></testcase><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_with_equals_sign" time="1.447" /><testcase classname="tests.unit.test_api_keys.TestAPIKeyDetection" name="test_api_key_with_colon" time="1.195"><failure message="AssertionError: assert '&lt;API_KEY&gt;' in 'stripe_secret_key: &lt;PAYMENT_TOKEN&gt;'">self = &lt;unit.test_api_keys.TestAPIKeyDetection object at 0x0000024E878F5250&gt;
+filter_instance = &lt;pii_filter.pii_filter.PIIFilter object at 0x0000024E8E87EA90&gt;
+
+    def test_api_key_with_colon(self, filter_instance):
+        """Test API key detection with : separator."""
+        text = "stripe_secret_key: sk_live_1234567890abcdefghijk"
+        result = filter_instance.anonymize_text(text)
+&gt;       assert "&lt;API_KEY&gt;" in result
+E       AssertionError: assert '&lt;API_KEY&gt;' in 'stripe_secret_key: &lt;PAYMENT_TOKEN&gt;'
+
+tests\unit\test_api_keys.py:211: AssertionError</failure></testcase></testsuite></testsuites>

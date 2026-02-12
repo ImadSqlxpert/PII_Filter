@@ -7,7 +7,7 @@ import re
 import warnings
 import logging
 import unicodedata
-
+import math
 
 class PIIFilter:
     """
@@ -427,6 +427,7 @@ class PIIFilter:
         self.CITY_TOKEN = r"[A-ZÀ-ÖØ-ÝÄÖÜ][A-Za-zÀ-ÖØ-öø-ÿĀ-ſ\u00C0-\u024F\u0370-\u03FF\u0400-\u04FFÄÖÜäöüß'’\.]+"
         self.CITY_OR_DISTRICT = rf"{self.CITY_TOKEN}(?:[-\s]{self.CITY_TOKEN})*"
 
+        
         self.POSTAL_EU_PATTERNS = [
             rf"\b(?:DE|D)?\s*[-–]?\s*(\d{{5}})\s+{self.CITY_OR_DISTRICT}{self.PAREN_DISTRICT}\b",
             rf"\b(?:AT|A)?\s*[-–]?\s*(\d{{4}})\s+{self.CITY_OR_DISTRICT}{self.PAREN_DISTRICT}\b",
@@ -1129,54 +1130,53 @@ class PIIFilter:
             r"(?i)\b(?:token|payment\s*token|client\s*secret|api\s*key|api\s*token|secret(?:\s*key)?|bearer\s*token|stripe\s*key|pk_(?:live|test)_[A-Za-z0-9]{10,}|sk_(?:live|test)_[A-Za-z0-9]{10,})\b[:=\s\-]*([A-Za-z0-9_\-]{16,128})"
         )
 
-        # API Keys - common formats (prioritize by pattern specificity, inject even without labels for better coverage)
-        self.API_KEY_PATTERNS = [
-            # Standalone AWS patterns
-            (r"\b(AKIA[0-9A-Z]{14,})\b", "aws_access_key_id"),
-            (r"(?i)aws_secret_access_key\s*=\s*([A-Za-z0-9+/]{30,})", "aws_secret_key"),
-            # GitHub tokens
-            (r"\b(github_pat_[A-Za-z0-9_]{34,})\b", "github_pat_token"),
-            (r"\b(ghp_[A-Za-z0-9_]{36,255})\b", "github_ghp_token"),
-            (r"\b(gho_[A-Za-z0-9_]{36,255})\b", "github_oauth_token"),
-            (r"\b(ghu_[A-Za-z0-9_]{36,255})\b", "github_user_to_server_token"),
-            # Stripe tokens handled by PAYMENT_TOKEN_RX (avoid mislabeling as API_KEY)
-            # Slack tokens
-            (r"\b(xoxb-[A-Za-z0-9\-]{10,48})\b", "slack_bot_token"),
-            (r"\b(xoxp-[A-Za-z0-9\-]{10,48})\b", "slack_user_token"),
-            # Labeled tokens/keys for common providers (capture labelled forms like slack_token=...)
-            (r"(?i)slack[_\s-]?token\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "slack_labeled"),
-            (r"(?i)mailchimp[_\s-]?api[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "mailchimp_labeled"),
-            (r"(?i)mailchimp[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "mailchimp_key_labeled"),
-            (r"(?i)sendgrid[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-\.]{8,128})", "sendgrid_labeled"),
-            (r"(?i)google[_\s-]?api[_\s-]?key\s*[:=]\s*([A-Za-z0-9_\-]{8,128})", "google_labeled"),
-            # Stripe labeled patterns (only match when provider label is present so unlabeled sk_/pk_ remain PAYMENT_TOKEN)
-            (r"(?i)stripe[_\s\-]?(?:secret[_\s\-]?key|secret|key)\s*[:=]\s*(sk_live_[A-Za-z0-9]{10,})", "stripe_live_secret_key_labeled"),
-            (r"(?i)stripe[_\s\-]?(?:secret[_\s\-]?key|secret|key)\s*[:=]\s*(sk_test_[A-Za-z0-9]{10,})", "stripe_test_secret_key_labeled"),
-            (r"(?i)stripe[_\s\-]?(?:public[_\s\-]?key|pk)\s*[:=]\s*(pk_live_[A-Za-z0-9]{10,})", "stripe_live_public_key_labeled"),
-            (r"(?i)stripe[_\s\-]?(?:public[_\s\-]?key|pk)\s*[:=]\s*(pk_test_[A-Za-z0-9]{10,})", "stripe_test_public_key_labeled"),
-            # SendGrid, MailChimp, DigitalOcean, OpenAI
-            (r"\b(SG\.[A-Za-z0-9_\-]{20,})\b", "sendgrid_api_key"),
-            (r"\b([a-f0-9]{32}-us[0-9]{1,2})\b", "mailchimp_api_key"),
-            (r"\b(dop_v1_[A-Za-z0-9_\-]{20,})\b", "digitalocean_api_token"),
-            (r"\b(sk-[A-Za-z0-9\-]{20,})\b", "openai_secret_key"),
-            # Stripe generic patterns (allow API_KEY detection for provider-specific contexts)
-            (r"\b(sk_live_[A-Za-z0-9]{10,})\b", "stripe_live_secret_key"),
-            (r"\b(sk_test_[A-Za-z0-9]{10,})\b", "stripe_test_secret_key"),
-            (r"\b(pk_live_[A-Za-z0-9]{10,})\b", "stripe_live_public_key"),
-            (r"\b(pk_test_[A-Za-z0-9]{10,})\b", "stripe_test_public_key"),
-            # Google and Firebase API keys (start with AIza)
-            (r"\b(AIza[A-Za-z0-9\-_]{35,})\b", "google_api_key"),
-            # JWT tokens (can contain dots, so don't use \b at end)
-            (r"\b(eyJ[A-Za-z0-9_\-\.]{100,})", "jwt_bearer_token"),
-            # Webhook secrets
-            (r"\b(whsec_[A-Za-z0-9]{30,})\b", "webhook_secret"),
-            # Labeled patterns (key=value format)
-            (r"(?i)twilio_auth_token\s*=\s*([A-Za-z0-9]{26,})", "twilio_labeled_token"),
-            (r"(?i)cloudflare_token\s*=\s*([A-Za-z0-9_\-]{30,})", "cloudflare_labeled_token"),
-            (r"(?i)azure_api_key\s*=\s*([A-Za-z0-9\-]{36})", "azure_api_labeled"),
+        # ============================================================
+        # Provider‑Specific API Key Patterns (clean + precise)
+        # ============================================================
+        self.API_KEY_PROVIDER_PATTERNS = [
+            # AWS Access Key
+            (r"\bA(KIA|SIA)[A-Z0-9]{16}\b", "aws_access_key"),
+
+            # AWS Secret Key (40 chars)
+            (r"\b[A-Za-z0-9/+=]{40}\b", "aws_secret_key"),
+
+            # GitHub Tokens
+            (r"\bgithub_pat_[A-Za-z0-9_]{20,}\b", "github_pat"),
+            (r"\bgh[pous]_[A-Za-z0-9]{20,}\b", "github_token"),
+
+            # Stripe Key Formats
+            (r"\b(sk|pk)_(live|test)_[0-9A-Za-z]{16,}\b", "stripe_key"),
+
+            # Google / Firebase
+            (r"\bAIza[0-9A-Za-z\-_]{20,}\b", "google_api"),
+
+            # SendGrid
+            (r"\bSG\.[A-Za-z0-9\-_]{20,}\b", "sendgrid"),
+
+            # DigitalOcean
+            (r"\bdop_v1_[A-Za-z0-9\-_]{20,}\b", "digitalocean"),
+
+            # OpenAI (sk-proj)
+            (r"\bsk-proj-[A-Za-z0-9\-_]{16,}\b", "openai_project"),
+
+            # Cloudflare (40-char hex/alnum)
+            (r"\b[A-Za-z0-9]{40}\b", "cloudflare_token"),
+
+            # Slack (labeled)
+            (r"(?i)\bslack[_\s-]*token\s*[:=]\s*([A-Za-z0-9_\-]{12,})", "slack_token"),
+
+            # Webhook Secrets
+            (r"\bwhsec_[A-Za-z0-9]{20,}\b", "webhook_secret"),
+
+            # JWT
+            (r"\beyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\b", "jwt"),
         ]
-        # Compile API Key patterns
-        self.API_KEY_RXS = [(re.compile(patt, re.UNICODE), name) for patt, name in self.API_KEY_PATTERNS]
+
+        # compile them
+        self.API_KEY_PROVIDER_RXS = [
+            (re.compile(patt, re.UNICODE), name)
+            for patt, name in self.API_KEY_PROVIDER_PATTERNS
+        ]
 
         # Session, Access Token, Refresh Token patterns
         # ORDER MATTERS - more specific patterns should come first
@@ -1993,6 +1993,29 @@ class PIIFilter:
     def _geo_in_bounds(lat: float, lon: float) -> bool:
         return -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0
 
+    def _looks_like_api_key(self, token: str) -> bool:
+        """Generic unseen-provider API key detector."""
+        if len(token) < 28:
+            return False
+
+        # reject UUID (big false positive)
+        if re.fullmatch(
+            r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-"
+            r"[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+            r"[0-9a-fA-F]{12}", token
+        ):
+            return False
+
+        # reject natural-language‑ish strings
+        if re.search(r"[aeiouAEIOU]", token) and len(set(token)) < len(token) * 0.6:
+            return False
+
+        # entropy score
+        p = {c: token.count(c) / len(token) for c in set(token)}
+        entropy = -sum(v * math.log2(v) for v in p.values())
+
+        return entropy >= 3.2
+
     # ====================
     # CUSTOM INJECTIONS
     # ====================
@@ -2019,22 +2042,34 @@ class PIIFilter:
         for m in self.EMAIL_RX.finditer(text):
             add.append(RecognizerResult("EMAIL", m.start(), m.end(), 1.0))
 
-        # API Keys — inject early (before PHONE/ADDRESS/etc) so they win overlaps
-        for rx, _name in self.API_KEY_RXS:
-            for m in rx.finditer(text):
-                s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-                api_key = text[s:e].strip()
-                # Avoid very short strings or common false positives
-                if len(api_key) >= 12 and not re.match(r'^[A-Za-z\-_\.]{1,5}$', api_key):
-                    # If left context is a generic 'api key' phrase, prefer PAYMENT_TOKEN matching later
-                    left_ctx = text[max(0, s - 32):s].lower()
-                    # Only treat as generic API key when left context contains API key phrasing
-                    # (support simple multilingual variants, avoid underscored labels like 'google_api_key')
-                    if ("api" in left_ctx) and any(syn in left_ctx for syn in ("key", "schl", "schlu", "schluessel", "schlüssel")):
-                        continue
-                    # High score so API_KEY wins overlaps with PHONE, ADDRESS, etc.
-                    add.append(RecognizerResult("API_KEY", s, e, 1.05))
+        # ============================================================
+        # EARLY API KEY DETECTION — PROVIDER KEYS + api_key=
+        # (Runs before ID/PHONE/MAC shredding – critical!)
+        # ============================================================
 
+        # --- Provider patterns (AWS, GitHub, OpenAI, Cloudflare, Slack…) ---
+        for rx, name in self.API_KEY_PROVIDER_RXS:
+            for m in rx.finditer(text):
+                s, e = m.start(), m.end()
+                add.append(RecognizerResult("API_KEY", s, e, 1.20))
+
+        # --- Labeled api_key= and <provider>_api_key= ---
+        for m in re.finditer(
+            r"(?i)\b[a-z0-9_]*api[_-]?key\b\s*[:=]\s*([A-Za-z0-9._\-+/=]{12,})",
+            text,
+        ):
+            s, e = m.start(1), m.end(1)
+            add.append(RecognizerResult("API_KEY", s, e, 1.18))
+
+        # --- Azure UUID-based API keys ---
+        for m in re.finditer(
+            r"(?i)\b[a-z0-9_]*api[_-]?key\b\s*[:=]\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+            text,
+        ):
+            s, e = m.start(1), m.end(1)
+            add.append(RecognizerResult("API_KEY", s, e, 1.19))
+    
+        # ============================================================
         # SESSION_ID, ACCESS_TOKEN, REFRESH_TOKEN, ACCESS_CODE, OTP_CODE — inject early with high scores
         for rx, ent_name in self.TOKEN_RXS:
             for m in rx.finditer(text):
@@ -2054,6 +2089,48 @@ class PIIFilter:
                         add.append(RecognizerResult("ACCESS_CODE", s, e, 1.03))
                     elif "token" in ent_name.lower():
                         add.append(RecognizerResult("ACCESS_TOKEN", s, e, 1.04))
+
+        # ============================================= #
+        # API KEY DETECTION                             #
+        # ============================================= #
+        # entropy fallback — AFTER token detectors only #
+        #---------------------------------------------- #
+
+        for m in re.finditer(r"\b[A-Za-z0-9._\-+/=]{28,}\b", text):
+            token = m.group(0)
+
+            # Do not override tokens
+            if any(
+                r.entity_type in (
+                    "SESSION_ID",
+                    "ACCESS_TOKEN",
+                    "REFRESH_TOKEN",
+                    "ACCESS_CODE",
+                    "OTP_CODE",
+                )
+                and not (m.end() <= r.start or m.start() >= r.end)
+                for r in add
+            ):
+                continue
+
+            if self._looks_like_api_key(token):
+                add.append(RecognizerResult("API_KEY", m.start(), m.end(), 1.05))
+
+        # ----- Stripe public/secret → PAYMENT_TOKEN -----
+        for r in list(add):
+            if r.entity_type == "API_KEY":
+                span = text[r.start:r.end]
+
+                # OpenAI sk-proj override
+                if "sk-proj-" in span.lower():
+                    continue
+
+                # Stripe only
+                if re.search(r"\b(?:sk|pk)_(live|test)_[A-Za-z0-9]{8,}\b", span):
+                    add.remove(r)
+                    add.append(RecognizerResult("PAYMENT_TOKEN", r.start, r.end, 1.07))
+
+                 
 
         # Reference/Tracking Identifiers — business/legal/government context (inject after CASE_REFERENCE)
         # FILE_NUMBER: Labeled file identifiers
