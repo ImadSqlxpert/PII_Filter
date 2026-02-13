@@ -45,9 +45,9 @@ class PIIFilter:
         "INSURANCE_ID": 6,
         "HEALTH_INFO": 5,
 
-        "STUDENT_NUMBER": 5,
-        "EMPLOYEE_ID": 6,
-        "PRO_LICENSE": 6,
+        "STUDENT_NUMBER": 11,
+        "EMPLOYEE_ID": 11,
+        "PRO_LICENSE": 11,
 
         "IP_ADDRESS": 5,
         "DATE": 5,
@@ -489,7 +489,10 @@ class PIIFilter:
         # Date
         self.DATE_REGEX_1 = r"\b\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}\b"
         self.DATE_REGEX_2 = r"\b\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}\b"
-        self.DATE_REGEX_3 = r"\b\d{1,2}\s+[A-Za-zÄÖÜäöüßÁÉÍÓÚáéíóúñç]+\s+\d{4}\b"
+        self.DATE_REGEX_3 = r"\b\d{1,2}\s+[A-Za-zÄÖÜäöüßÁÉÍÓÚáéíóúñç]+,?\s+\d{4}\b"  # Added ,? to handle commas
+        self.DATE_REGEX_4 = r"\b[A-Z][a-z]+\s+\d{1,2},?\s+\d{4}\b"  # US format: Month Day, Year
+        self.DATE_REGEX_5 = r"\b\d{1,2}\.\s+(?:Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember|Jan|Feb|Mär|Apr|Jun|Jul|Aug|Sep|Okt|Nov|Dez)\b\s+\d{4}\b"  # German format
+        self.SSN_REGEX = r"\b\d{3}-\d{2}-\d{4}\b"  # US Social Security Number format
 
         # Passports / IDs (generic)
         self.US_PASSPORT_REGEX = r"\b[A-Z][0-9]{8}\b"
@@ -523,6 +526,7 @@ class PIIFilter:
             (r"\b(\d{13})\b", "jmbg_like"),
             (r"\b(\d{11})\b", "gr_amka"),
             (r"\b(756(?:\.\d{4}\.\d{4}\.\d{2}|\d{10}))\b", "ch_ahv"),
+            (r"\b(\d{3}-\d{2}-\d{4})\b", "us_ssn"),
         ]
 
         # TAX split
@@ -1219,22 +1223,22 @@ class PIIFilter:
 
         # Health patterns
         self.NHS_CAND_RX = re.compile(r"\b(?:(\d{3})\s*(\d{3})\s*(\d{4}))\b")
-        self.MRN_RX = re.compile(r"(?i)\b(?:mrn|medical\s*record\s*number|numéro\s*de\s*dossier|aktenzeichen)\b[:#\-]?\s*([A-Z0-9\-]{6,18})")
-        self.INSURANCE_ID_RX = re.compile(r"(?i)\b(?:insurance\s*(?:id|policy|member)\b|versicherungsnummer|policen(?:nummer)?|nº\s*poliza)\b[:#\-]?\s*([A-Z0-9\-]{6,20})")
-        self.HEALTH_ID_RX = re.compile(r"(?i)\b(?:health\s*id|patient\s*id|nhs\s*number)\b[:#\-]?\s*([A-Z0-9 \-]{6,20})")
+        self.MRN_RX = re.compile(r"(?i)\b(?:mrn|medical\s*record\s*number|krankenaktennummer|numéro\s*de\s*dossier|aktenzeichen)\b[:#\-]?\s*(?:(?:is|ist)\s+)?([A-Z0-9\-]{6,18})")
+        self.INSURANCE_ID_RX = re.compile(r"(?i)\b(?:insurance\s*(?:id|policy|member)\b|versicherungspolice|versicherungsnummer|policen(?:nummer)?|nº\s*poliza)\b[:#\-]?\s*(?:(?:is|ist)\s+)?([A-Z0-9\-]{6,20})")
+        self.HEALTH_ID_RX = re.compile(r"(?i)\b(?:health\s*id|patient\s*id|nhs\s*number|nhs[-_\s]?nummer)\b[:#\-]?\s*(?:(?:is|ist)\s+)?([A-Z0-9 \-]{6,20})")
         self.HEALTH_INFO_RX = re.compile(r"(?i)\b(?:diagnos(?:is|ed)|icd\-?10|icd\-?9|hiv|cancer|diabetes|pregnan(?:t|cy)|medicat(?:ion|e)|prescription|allerg(?:y|ies)|blood\s*type)\b")
 
         # Education/Employment
-        self.STUDENT_NUMBER_RX = re.compile(r"(?i)\b(?:student\s*(?:id|number)|matriculation|matrikel(?:nummer)?|matricula|roll\s*number)\b[:#\-]?\s*([A-Z0-9\-]{5,16})")
-        self.EMPLOYEE_ID_RX = re.compile(r"(?i)\b(?:employee\s*(?:id|number)|staff\s*id|personalnummer|personnel\s*number)\b[:#\-]?\s*([A-Z0-9\-]{5,16})")
-        self.PRO_LICENSE_RX = re.compile(r"(?i)\b(?:license\s*(?:no|number)|bar\s*number|medical\s*license|professional\s*license)\b[:#\-]?\s*([A-Z0-9\-]{5,20})")
+        self.STUDENT_NUMBER_RX = re.compile(r"(?i)\b(?:student\s*(?:id|number|ausweis(?:nummer)?)|matriculation|matrikel(?:nummer)?|matricula|roll\s*number)\b[:#\-]?\s*(?:(?:is|ist)\s+)?([A-Z0-9\-]{4,16})|\b(?:STU)[\-_]?[A-Z0-9]{3,10}\b")
+        self.EMPLOYEE_ID_RX = re.compile(r"(?i)\b(?:employee\s*(?:id|number)|staff\s*id|mitarbeiter(?:nummer)?|personalnummer|personnel\s*number)\b[:#\-]?\s*([A-Z0-9\-]{4,16})|\b(?:EMP)[\-_]?[A-Z0-9]{3,10}\b")
+        self.PRO_LICENSE_RX = re.compile(r"(?i)\b(?:license\s*(?:no|number|lizenz)|bar\s*number|medical\s*license|professional\s*license|berufslizenz)\b[:#\-]?\s*([A-Z0-9\-]{4,20})|\b(?:LIC)[\-_]?[A-Z0-9]{3,10}\b")
 
         # ID Documents - labeled (supports "My X is Y" and German "Meine X ist Y")
-        self.DRIVER_LICENSE_LABEL_RX = re.compile(r"(?i)(?:my\s+)?(?:driver(?:'?s)?\s*(?:license|licence|lic)|dl\s*number|f\u00fchrerschein)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]\d{5,10})")
-        self.VOTER_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:voter\s*(?:id|card|number)|wählerausweins?(?:nummer)?)\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
-        self.RESIDENCE_PERMIT_LABEL_RX = re.compile(r"(?i)(?:my\s+)?(?:residence\s*(?:permit|card)|resident\s*permit|aufenthaltsgenehmigung|aufenthaltstitel)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]{2}\d{5,10})")
-        self.BENEFIT_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:benefit\s*(?:id|card|number)|sozialhilf(?:e|ekarte))\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
-        self.MILITARY_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine(?:r)?\s+)?(?:military\s*(?:id|number)|militär(?:ausweis)?)\b(?:\s+is|st)?[\s:]*([A-Z]\d{5,10})")
+        self.DRIVER_LICENSE_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:driver(?:'?s)?\s*(?:license|licence|lic)|dl\s*number|führerschein)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]\d{5,10})")
+        self.VOTER_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:voter\s*(?:id|card|number)|wähler(?:ausweis)?(?:nummer)?)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]\d{5,10})")
+        self.RESIDENCE_PERMIT_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:residence\s*(?:permit|card)|resident\s*permit|aufenthaltsgenehmigung|aufenthaltstitel)\b(?:\s*(?:is|ist))?[\s:]*([A-Z]{2}\d{5,10})")
+        self.BENEFIT_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine\s+)?(?:benefit\s*(?:id|card|number)|sozialhilf(?:e|ekarte))\b(?:\s+(?:is|ist))?[\s:]*([A-Z]\d{5,10})|\b(?:B)\d{7,10}\b")
+        self.MILITARY_ID_LABEL_RX = re.compile(r"(?i)(?:my\s+|meine(?:r)?\s+)?(?:military\s*(?:id|number)|militär(?:ausweis)?)\b(?:\s+(?:is|ist))?[\s:]*([A-Z]\d{5,10})|\b(?:M)\d{7,10}\b")
 
         # Contact/Comms
         self.SOCIAL_HANDLE_RX = re.compile(r"(?<![\w@])@([A-Za-z0-9_]{3,32})(?![^\s@]*\.[^\s@])")
@@ -1252,7 +1256,14 @@ class PIIFilter:
         self.IMEI_RX = re.compile(r"\b(?:\d[ \-]?){14}\d\b")
         self.UUID_RX = re.compile(r"\b[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\b")
         self.AD_ID_LABEL_RX = re.compile(r"(?i)\b(?:idfa|aaid|advertis(?:ing)?\s*id)\b(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(" + self.UUID_RX.pattern + r")")
-        self.DEVICE_ID_LABEL_RX = re.compile(r"(?i)\b(?:device\s*id|udid)\b(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(" + self.UUID_RX.pattern + r")")
+        self.DEVICE_ID_LABEL_RX = re.compile(r"(?i)\b(?:device\s*id|udid|Geräte\s*-?\s*id)\b(?:\s*(?:[:#\-]?\s*|(?:is|ist)\s+))(" + self.UUID_RX.pattern + r")")
+        self.DEVICE_ID_PREFIX_RX = re.compile(r"(?i)\b(?:device\s*id|Geräte\s*-?\s*id)\b[:#\-]?\s*(?:(?:is|ist)\s+)?(\bDEV-\d{8,9}\b)")  # DEV-... format
+
+        # Location extras
+        self.GEO_COORDS_RX = re.compile(r"\b([+-]?\d{1,2}\.\d+)[,\s]+([+-]?\d{1,3}\.\d+)\b")
+        self.PLUS_CODE_RX = re.compile(r"\b[23456789CFGHJMPQRVWX]{2,8}\+[23456789CFGHJMPQRVWX]{2,3}\b")
+        self.W3W_RX = re.compile(r"\b///([a-z]+(?:\.[a-z]+){2,})\b")
+        self.PLATE_LABEL_RX = re.compile(r"(?i)\b(?:license\s*plate|registration|plate\s*no|matr[ií]cula|targa|immatriculation|kennzeichen|număr\s*de\s*înmatriculare|车牌|plate)\b[:#\-]?\s*([A-Z0-9\- ]{4,12})")
 
         # Location extras
         self.GEO_COORDS_RX = re.compile(r"\b([+-]?\d{1,2}\.\d+)[,\s]+([+-]?\d{1,3}\.\d+)\b")
@@ -1610,6 +1621,22 @@ class PIIFilter:
                 out.append(r)
                 continue
             if any(not (r.end <= ds or r.start >= de) for ds, de in dates):
+                continue
+            out.append(r)
+        return out
+
+    def _demote_phone_over_health_id(self, text, items):
+        """Prevent NHS numbers (944 476 5919 format) from being detected as PHONE"""
+        health_ids = [(r.start, r.end) for r in items if r.entity_type == "HEALTH_ID"]
+        if not health_ids:
+            return items
+        out = []
+        for r in items:
+            if r.entity_type != "PHONE_NUMBER":
+                out.append(r)
+                continue
+            # Skip PHONE if it overlaps with HEALTH_ID
+            if any(not (r.end <= hs or r.start >= he) for hs, he in health_ids):
                 continue
             out.append(r)
         return out
@@ -2175,6 +2202,15 @@ class PIIFilter:
             prefix = text[max(0, s - 48):s].lower()
             if any(cue in prefix for cue in self.INTRO_CUES):
                 continue
+            # Guard against matching education/employment IDs as addresses (e.g., "student ID is STU-12345"
+            # where "student" contains "tal" which is a street suffix in German).
+            # Check the broader context to see if this is actually an ID label
+            broader_span = text[max(0, s - 50):e + 10].lower()
+            if any(label in broader_span for label in ["student id", "student number", "studentenausweis",
+                                                       "employee id", "employee number",
+                                                       "professional license", "license number",
+                                                       "pro license", "credential"]):
+                continue
             # Conservative guard: require either a house number or an explicit street suffix to reduce city-name false positives
             if not re.search(r"\d", span):
                 # If no digit present but a street suffix exists, try to absorb a following house-number from the right context
@@ -2258,7 +2294,7 @@ class PIIFilter:
                 add.append(RecognizerResult("FAX_NUMBER", s, e, 1.05))
 
         # Dates
-        for patt in (self.DATE_REGEX_1, self.DATE_REGEX_2, self.DATE_REGEX_3):
+        for patt in (self.DATE_REGEX_1, self.DATE_REGEX_2, self.DATE_REGEX_3, self.DATE_REGEX_4, self.DATE_REGEX_5):
             for m in re.finditer(patt, text, flags=re.I | re.UNICODE):
                 add.append(RecognizerResult("DATE", m.start(), m.end(), 0.93))
         # Filter out common relative date words (e.g., 'today') which are not PII in noisy text
@@ -2578,28 +2614,28 @@ class PIIFilter:
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             val = text[s:e]
             if re.search(r"\b\d{3}\s*\d{3}\s*\d{4}\b", val) and self._nhs_ok(val):
-                add.append(RecognizerResult("HEALTH_ID", s, e, 0.97))
+                add.append(RecognizerResult("HEALTH_ID", s, e, 1.05))  # Higher than PHONE
             else:
-                add.append(RecognizerResult("HEALTH_ID", s, e, 0.85))
+                add.append(RecognizerResult("HEALTH_ID", s, e, 0.95))
         for m in self.MRN_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("MRN", s, e, 0.90))
+            add.append(RecognizerResult("MRN", s, e, 0.95))  # Increased from 0.90
         for m in self.INSURANCE_ID_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("INSURANCE_ID", s, e, 0.90))
+            add.append(RecognizerResult("INSURANCE_ID", s, e, 0.95))
         for m in self.HEALTH_INFO_RX.finditer(text):
             add.append(RecognizerResult("HEALTH_INFO", m.start(), m.end(), 1.0))
 
         # Education/Employment
         for m in self.STUDENT_NUMBER_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("STUDENT_NUMBER", s, e, 0.88))
+            add.append(RecognizerResult("STUDENT_NUMBER", s, e, 0.95))  # Increased from 0.88
         for m in self.EMPLOYEE_ID_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("EMPLOYEE_ID", s, e, 0.90))
+            add.append(RecognizerResult("EMPLOYEE_ID", s, e, 0.95))  # Increased from 0.90
         for m in self.PRO_LICENSE_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
-            add.append(RecognizerResult("PRO_LICENSE", s, e, 0.88))
+            add.append(RecognizerResult("PRO_LICENSE", s, e, 0.95))  # Increased from 0.88
 
         # Contact/Comms
         for m in self.SOCIAL_HANDLE_RX.finditer(text):
@@ -2632,6 +2668,9 @@ class PIIFilter:
         for m in self.DEVICE_ID_LABEL_RX.finditer(text):
             s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
             add.append(RecognizerResult("DEVICE_ID", s, e, 0.88))
+        for m in self.DEVICE_ID_PREFIX_RX.finditer(text):
+            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            add.append(RecognizerResult("DEVICE_ID", s, e, 1.05))  # Higher score to beat generic ID
 
         # Geographic coordinates, plus codes and what3words
         for m in self.GEO_COORDS_RX.finditer(text):
@@ -2784,6 +2823,18 @@ class PIIFilter:
                 # If the PERSON span contains a strict-address with a house number, pull it out as ADDRESS
                 addr_m = self.STRICT_ADDRESS_RX.search(span)
                 if addr_m and re.search(r"\d", addr_m.group()):
+                    # Guard against matching education/employment IDs as addresses (e.g., "student ID is STU-12345"
+                    # where "student" contains "tal" which is a street suffix in German).
+                    broader_ctx = text[max(0, r.start - 50):r.end + 10].lower()
+                    if any(label in broader_ctx for label in ["student id", "student number", "studentenausweis",
+                                                              "employee id", "employee number",
+                                                              "professional license", "license number",
+                                                              "pro license", "credential"]):
+                        # This is likely an education/employment ID, not an address - skip extracting as ADDRESS
+                        if not self._plausible_person(span, text, r.start):
+                            continue
+                        filtered.append(r)
+                        continue
                     # address coordinates in original text
                     addr_s = r.start + (addr_m.start() + (offset if offset else 0))
                     addr_e = r.start + (addr_m.end() + (offset if offset else 0))
@@ -2858,6 +2909,30 @@ class PIIFilter:
             return out
         final = _filter_person_before_date_with_prep(text, final)
 
+        # Filter out PERSON results that are part of STUDENT_NUMBER patterns
+        def _filter_person_student_id(text, items):
+            # Find all STUDENT_NUMBER spans first
+            student_spans = []
+            for m in self.STUDENT_NUMBER_RX.finditer(text):
+                s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+                student_spans.append((s, e))
+            
+            out = []
+            for r in items:
+                if r.entity_type != 'PERSON':
+                    out.append(r)
+                    continue
+                # Check if this PERSON span is fully contained within any STUDENT_NUMBER span
+                is_student_id = False
+                for s, e in student_spans:
+                    if s <= r.start and r.end <= e:
+                        is_student_id = True
+                        break
+                if not is_student_id:
+                    out.append(r)
+            return out
+        final = _filter_person_student_id(text, final)
+
         # Drop LOCATION when a label keyword is inline or adjacent
         final = self._filter_locations_with_inline_or_near_labels(text, final, window=28)
 
@@ -2877,6 +2952,7 @@ class PIIFilter:
 
         # Phone/date & meeting promotion
         final = self._demote_phone_over_date(text, final)
+        final = self._demote_phone_over_health_id(text, final)
         final = self._promote_meeting_over_phone(text, final, window=24)
 
         # Address span trimming

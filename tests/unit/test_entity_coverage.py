@@ -54,7 +54,7 @@ entity_samples = [
 
     # PASSPORT
     ("PASSPORT", "US Passport: A12345678", "<PASSPORT>"),  # Detected as PASSPORT
-    ("PASSPORT", "EU Passport: X1Y2Z3A4B", "<ID_NUMBER>"),
+    ("PASSPORT", "EU Passport: X1Y2Z3A4B", "<PASSPORT>"),
 
     # ID_NUMBER
     ("ID_NUMBER", "ID: 12345678Z", "<ID_NUMBER>"),
