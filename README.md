@@ -1,6 +1,6 @@
 # PII Filter
 
-A comprehensive Python-based Personally Identifiable Information (PII) detection and anonymization system. Detects and redacts sensitive entities across **53+ PII types** in **9+ languages** using regex patterns, Presidio, and custom language detection.
+A comprehensive Python-based Personally Identifiable Information (PII) detection and anonymization system. Detects and redacts sensitive entities across **60+ PII types** in **9+ languages** using regex patterns, Presidio, and custom language detection.
 
 ---
 
@@ -9,7 +9,7 @@ A comprehensive Python-based Personally Identifiable Information (PII) detection
 The `PIIFilter` class detects personally identifiable and sensitive information in text and optionally anonymizes it by replacing detected entities with placeholder tokens (e.g., `<PHONE_NUMBER>`, `<EMAIL_ADDRESS>`).
 
 **Core Capabilities:**
-- Detects **53+ entity types** across personal, financial, government, health, and communication categories
+- Detects **60+ entity types** across personal, financial, government, health, and communication categories
 - Supports **9+ languages**: English, German, French, Spanish, Turkish, Arabic, and more
 - Uses **regex patterns + Presidio recognizers** for high-accuracy detection
 - Implements **smart merging logic** to avoid overlapping entities
@@ -133,7 +133,7 @@ The filter detects text language automatically or can be set manually. Supported
 
 | Language | Code | Entity Coverage | Notes |
 |----------|------|-----------------|-------|
-| English | `en` | Full (53+ entities) | Default; extensive pattern library |
+| English | `en` | Full (60+ entities) | Default; extensive pattern library |
 | German | `de` | Full + specialized | German street types, postal codes, GovIDs |
 | French | `fr` | Full | French address formats, tax IDs |
 | Spanish | `es` | Full | Spanish address/phone formats |
@@ -188,7 +188,7 @@ python main_runner.py
 **What It Does:**
 - Initializes `PIIFilter` with the full pattern library
 - Processes **100+ test texts** across **9+ languages** and **multiple PII categories**:
-  - English, German (9 variants), French, Spanish, Turkish, Arabic, Italian, Portuguese
+  - English, German (a lot of variants), French, Spanish, Turkish, Arabic, Italian, Portuguese
   - Financial, Crypto, Healthcare, E-Government, Auth Secrets, Communication, Device IDs, Addresses, etc.
 - For each text:
   1. **Detects** all PII entities
@@ -198,7 +198,7 @@ python main_runner.py
 - Outputs a detailed markdown report: `entity_demonstration_report.md`
 
 **Output Files:**
-- `entity_demonstration_report.md` (2000+ lines, ~79 KB)
+- `entity_demonstration_report.md` 
   - Grouped by entity type and language
   - Shows original/anonymized text examples
   - Coverage statistics for each entity
@@ -206,21 +206,8 @@ python main_runner.py
 **Run:**
 ```bash
 python main_runner.py
-# Optional: pipe to file
-python main_runner.py > demo_output.txt 2>&1
 ```
 
-**Example Output:**
-```
-Entity Coverage Summary:
-=======================
-PHONE_NUMBER       50
-ADDRESS            20
-EMAIL_ADDRESS      15
-CREDIT_CARD         8
-...
-Report generated: entity_demonstration_report.md
-```
 
 ---
 
@@ -229,23 +216,22 @@ Report generated: entity_demonstration_report.md
 **Purpose:** Execute the entire unit test suite and report results.
 
 **What It Does:**
-- Runs all **12 test files** in `tests/unit/` with pytest
-- Executes **1000+ test cases** covering:
-  - Regex pattern correctness (191 core tests)
-  - Entity coverage validation
+- Runs all test files in `tests/unit/` with pytest
+- Executes test cases covering:
+  - Entity coverage validation 
   - False positive filtering
   - Language-specific behavior
   - Overlap resolution logic
   - Person detection guards
   - API key/token patterns
   - Address parsing edge cases
+  - ID and tax number patterns
   - Validators and guards
 - Provides verbose output showing pass/fail per test
 - Returns clear exit codes (0 = all pass, 1 = some failed)
 
 **Test Files Included:**
-- `test_regex_patterns.py` (191 tests) – Core regex validation
-- `test_entity_coverage.py` – Entity detection sanity checks
+- `test_entity_coverage.py` – Entity detection validation
 - `test_api_keys.py` – Secret/token patterns
 - `test_false_positives.py` – Guard logic validation
 - `test_guards.py` – People/address guard rules
@@ -255,7 +241,6 @@ Report generated: entity_demonstration_report.md
 - `test_reference_identifiers.py` – Reference ID patterns
 - `test_tokens.py` – Authentication token patterns
 - `test_validators.py` – Standalone validator functions
-- `test_debug_address.py` – Address-specific debugging
 
 **Run:**
 ```bash
@@ -272,7 +257,7 @@ tests/unit/test_regex_patterns.py .......................................... [10
 tests/unit/test_entity_coverage.py ...................................... [ 95%]
 ...
 
-=================== 1000+ tests passed in 60+ seconds ====================
+=================== tests passed ====================
 ```
 
 **Interpreting Results:**
@@ -298,32 +283,9 @@ tests/unit/test_entity_coverage.py ...................................... [ 95%]
 - Writes detailed report: `TEST_REPORT_SUMMARY.md`
 
 **Output File:** `TEST_REPORT_SUMMARY.md`
-```markdown
-## Summary
-| Metric | Count |
-|--------|-------|
-| Total Tests | 1000+ |
-| Passed | 990+ |
-| Failed | 10 |
-| Skipped | 0 |
-| Pass Rate | 99% |
-
-## Per-File Results
-### test_regex_patterns.py
-- Passed: 191
-- Failed: 0
-- Skipped: 0
-
-### test_api_keys.py
-- Passed: 45
-- Failed: 7
-- Skipped: 0
-
-## Failed Tests (7)
-- test_api_keys.py: FAILED test_api_keys.py::test_weak_api_key_variant
-- test_api_keys.py: FAILED test_api_keys.py::test_legacy_token_format
-...
-```
+- Provides pass/fail counts per test file
+- Aggregates overall statistics
+- Identifies failed test names for debugging
 
 **Run:**
 ```bash
@@ -333,7 +295,6 @@ python test_runner_simple.py
 **When to Use:**
 - After making changes to quickly identify problem areas
 - Generating reports for debugging
-- CI/CD pipeline integration with artifact generation
 
 ---
 
@@ -344,7 +305,7 @@ PII_Filter/
 ├── run_tests.py                 # Main test runner (execute all tests)
 ├── main_runner.py               # Multilingual test corpus & demo report
 ├── test_runner_simple.py        # Per-file test reporter
-├── cleanup_unused_files.py     # Utility to remove legacy files
+
 ├── requirements.txt             # Python dependencies
 ├── pytest.ini                   # Pytest configuration
 │
@@ -354,9 +315,8 @@ PII_Filter/
 │
 ├── tests/                       # Unit tests
 │   ├── conftest.py
-│   ├── unit/                    # 12 test files (1000+ tests)
-│   │   ├── test_regex_patterns.py         (191 tests)
-│   │   ├── test_entity_coverage.py
+│   ├── unit/                    # Test files
+│   │   ├── test_entity_coverage.py       (126 tests)
 │   │   ├── test_api_keys.py
 │   │   ├── test_false_positives.py
 │   │   ├── test_guards.py
@@ -365,8 +325,7 @@ PII_Filter/
 │   │   ├── test_person_logic.py
 │   │   ├── test_reference_identifiers.py
 │   │   ├── test_tokens.py
-│   │   ├── test_validators.py
-│   │   └── test_debug_address.py
+│   │   └── test_validators.py
 │   ├── benchmarks/              # Performance benchmarks
 │   ├── corpora/                 # Test data (JSON)
 │   │   ├── ar/, de/, en/, es/, it/, nl/, tr/
@@ -382,8 +341,6 @@ PII_Filter/
 │
 └── Documentation
     ├── README.md                (this file)
-    ├── API_KEY_IMPLEMENTATION_SUMMARY.md
-    ├── TEST_INFRASTRUCTURE_SUMMARY.md
     ├── entity_demonstration_report.md   (auto-generated)
     └── TEST_REPORT_SUMMARY.md           (auto-generated)
 ```
@@ -473,16 +430,6 @@ pii = PIIFilter(
 )
 ```
 
-### Access Pattern Configuration
-All regex patterns are defined in `pii_filter.py`:
-- Lines 140–180: Core patterns (ADDRESS, PHONE, EMAIL)
-- Lines 200–400: Language-specific variants
-- Lines 500–700: Financial & payment patterns
-- Lines 800–1000: ID & government patterns
-- Lines 1100–1200: Auth secrets & tokens
-
----
-
 ## Testing & Quality Assurance
 
 **Run all tests:**
@@ -492,7 +439,7 @@ python run_tests.py
 
 **Run specific test file:**
 ```bash
-python -m pytest tests/unit/test_regex_patterns.py -v
+python -m pytest tests/unit/test_entity_coverage.py -v
 ```
 
 **Run with coverage:**
@@ -507,34 +454,18 @@ python test_runner_simple.py
 
 ---
 
-## Performance Notes
-
-- **Detection speed:** ~1–10ms per 1000 characters (varies by entity density)
-- **Memory:** Minimal (<50 MB for typical usage)
-- **Test suite:** ~60–90 seconds for full 1000+ test suite
-- **Demo report generation:** ~10–15 seconds for 100+ test texts
-
----
-
-## Known Limitations & Future Work
-
-- **Language detection** may fail on very short text (<20 chars); set language manually if needed
-- **Complex overlaps** (e.g., email within a longer identifier) are resolved with guardrails but edge cases may remain
-- **Custom entity patterns** require code modification; future release will support config files
-- **Performance optimization** for large-scale batch processing is planned
-
----
-
 ## License & Contributing
 
 This project uses open-source libraries (Presidio, spaCy, langdetect). Contributions welcome—please run full test suite before submitting PRs.
 
 ---
-
+---
 ## Support
 
 For issues, improvements, or questions:
-1. Check `TEST_INFRASTRUCTURE_SUMMARY.md` for setup details
-2. Run `python test_runner_simple.py` to identify failing tests
-3. Review test output in `TEST_REPORT_SUMMARY.md`
-4. Check `pii_filter.py` for entity pattern definitions
+1. Run `python test_runner_simple.py` to identify failing tests
+2. Review test output in `TEST_REPORT_SUMMARY.md`
+3. Check `pii_filter.py` for entity pattern definitions
+4. Review entity coverage with `python main_runner.py`
+---
+---

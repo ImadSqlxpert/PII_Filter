@@ -2986,6 +2986,8 @@ class PIIFilter:
             "TAX_ID":           OperatorConfig("replace", {"new_value": "<TAX_ID>"}),
             "IP_ADDRESS":       OperatorConfig("replace", {"new_value": "<IP_ADDRESS>"}),
             "EORI":             OperatorConfig("replace", {"new_value": "<EORI>"}),
+            "COMMERCIAL_REGISTER": OperatorConfig("replace", {"new_value": "<COMMERCIAL_REGISTER>"}),
+            "CASE_REFERENCE":   OperatorConfig("replace", {"new_value": "<CASE_REFERENCE>"}),
 
             "CREDIT_CARD":      OperatorConfig("replace", {"new_value": "<CREDIT_CARD>"}),
             "BANK_ACCOUNT":     OperatorConfig("replace", {"new_value": "<BANK_ACCOUNT>"}),
@@ -3022,6 +3024,21 @@ class PIIFilter:
             "PLUS_CODE":        OperatorConfig("replace", {"new_value": "<PLUS_CODE>"}),
             "W3W":              OperatorConfig("replace", {"new_value": "<W3W>"}),
             "LICENSE_PLATE":    OperatorConfig("replace", {"new_value": "<LICENSE_PLATE>"}),
+
+            "BUND_ID":          OperatorConfig("replace", {"new_value": "<BUND_ID>"}),
+            "ELSTER_ID":        OperatorConfig("replace", {"new_value": "<ELSTER_ID>"}),
+            "SERVICEKONTO":     OperatorConfig("replace", {"new_value": "<SERVICEKONTO>"}),
+
+            "PASSWORD":         OperatorConfig("replace", {"new_value": "<PASSWORD>"}),
+            "PIN":              OperatorConfig("replace", {"new_value": "<PIN>"}),
+            "TAN":              OperatorConfig("replace", {"new_value": "<TAN>"}),
+            "PUK":              OperatorConfig("replace", {"new_value": "<PUK>"}),
+            "RECOVERY_CODE":    OperatorConfig("replace", {"new_value": "<RECOVERY_CODE>"}),
+
+            "FILE_NUMBER":      OperatorConfig("replace", {"new_value": "<FILE_NUMBER>"}),
+            "TRANSACTION_NUMBER": OperatorConfig("replace", {"new_value": "<TRANSACTION_NUMBER>"}),
+            "CUSTOMER_NUMBER":  OperatorConfig("replace", {"new_value": "<CUSTOMER_NUMBER>"}),
+            "TICKET_ID":        OperatorConfig("replace", {"new_value": "<TICKET_ID>"}),
 
             "API_KEY":          OperatorConfig("replace", {"new_value": "<API_KEY>"}),
             "SESSION_ID":       OperatorConfig("replace", {"new_value": "<SESSION_ID>"}),
