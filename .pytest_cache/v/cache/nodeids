@@ -95,6 +95,8 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[ADDRESS-\\u6771\\u4eac\\u90fd\\u6e0b\\u8c37\\u533a\\u6e0b\\u8c371-1-1-<ADDRESS>]",
   "tests/unit/test_entity_coverage.py::test_entity_coverage[ADVERTISING_ID-Meine IDFA ist 123e4567-e89b-12d3-a456-426614174000-<ADVERTISING_ID>]",
   "tests/unit/test_entity_coverage.py::test_entity_coverage[ADVERTISING_ID-My IDFA is 123e4567-e89b-12d3-a456-426614174000-<ADVERTISING_ID>]",
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[API_KEY-Mein API-Schl\\xfcssel ist sk_live_abc123def456-<API_KEY>]",
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[API_KEY-My API key is sk_live_abc123def456-<API_KEY>]",
   "tests/unit/test_entity_coverage.py::test_entity_coverage[BANK_ACCOUNT-IBAN: DE44 5001 0517 5407 3249 31-<BANK_ACCOUNT>]",
   "tests/unit/test_entity_coverage.py::test_entity_coverage[BANK_ACCOUNT-Meine IBAN ist DE12345678901234567890-<BANK_ACCOUNT>]",
   "tests/unit/test_entity_coverage.py::test_entity_coverage[BANK_ACCOUNT-My IBAN is DE12345678901234567890-<BANK_ACCOUNT>]",
