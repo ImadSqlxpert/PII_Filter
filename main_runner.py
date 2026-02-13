@@ -111,7 +111,8 @@ Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. I will 
 ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
 ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
 ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
-
+Guten Tag, mein name ist Frank Verz, ich möchte ein Gewerbe anmelden.
+Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?
 """,
 
     "German - Street Variants": """
