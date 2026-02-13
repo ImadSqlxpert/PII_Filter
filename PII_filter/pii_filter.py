@@ -948,6 +948,10 @@ class PIIFilter:
             "langsam","schnell","groß","klein","alt","jung","neu","gut","schlecht","schön",
             "hier","dort","da","wo","wann","wie","warum","was","welcher","welche","welches",
             "runter","hoch","rauf","runter","entlang","hinter","dienst","doktor","zwischen",
+            # German business/action nouns and verbs that should not be person names
+            "gründung","gründer","unternehmen","gibt","hat","habe","haben","sein",
+            "beratung","beratungszentrum","beratungszentern","zentrum","zentren",
+            "service","angebot","lösung","bieten","anbieten","anfrage",
         }
 
         self.PERSON_BLACKLIST_WORDS = {
@@ -1501,6 +1505,21 @@ class PIIFilter:
             latin_tokens = [t for t in tokens if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t)]
             if latin_tokens and not any(t[0].isupper() for t in latin_tokens):
                 return False
+            
+            # For multi-token PERSON spans detected by the base analyzer, check if  they contain
+            # obvious non-person content (verbs, prepositions, etc.) that indicate this is not a name
+            # E.g., "ich möchte ein Gewerbe" starts with "ich" (pronoun) + "möchte" (modal verb)
+            # This is clearly a sentence fragment, not a person name
+            non_person_words = {
+                "ich", "du", "er", "sie", "es", "wir", "ihr",  # Pronouns in German
+                "möchte", "kann", "werde", "würde", "habe", "bin", "ist", "sind", "hat",  # Modal/auxiliary verbs
+                "für", "von", "zu", "auf", "bei", "mit", "ohne", "in", "das", "der", "die", "den", "dem",  # Prepositions/articles
+            }
+            if any(tok.lower() in non_person_words for tok in tokens[:2]):  # Check first two tokens
+                # Multi-token span with non-person starter - likely not a name
+                return False
+            
+            # EARLY RETURN - multi-token entities with valid names pass
             return True
         t0 = low[0]
         if t0 in self.PRONOUN_PERSONS:
@@ -1514,9 +1533,33 @@ class PIIFilter:
         if any(sb in left_ctx for sb in self.STREET_BLOCKERS) and not any(cue in prefix for cue in self.INTRO_CUES):
             return False
 
+        # 
         # intro cue check (if present, we'll accept a person span)
+        # BUT: only if the span is close to the intro cue (within ~20 chars) to avoid false positives
+        # where an intro cue appears much earlier but is followed by unrelated text
         if any(cue in prefix for cue in self.INTRO_CUES):
-            return True
+            # Check if the intro cue is CLOSE (recent) - within last 20 characters
+            # This filters out cases like "mein name ist Frank Verz, [20+ chars later] Gewerbe"
+            close_prefix = text[max(0, start - 20):start].lower()
+            if any(cue in close_prefix for cue in self.INTRO_CUES):
+                # Intro cue is very close, likely directly connected to this span - accept it
+                return True
+            else:
+                # Intro cue is 20-40 chars back - too far to reliably apply to this span
+                # For multi-token spans, be extra conservative and don't accept
+                if len(tokens) > 1:
+                    # Check for context-breaking words that confirm this isn't a name
+                    intervening = text[max(0, start - 40):start + 15].lower()
+                    context_breakers = {
+                        "möchte", "kann", "werde", "würde", "habe", "hab", "bin", "ist", "sind", "hat", "had", "have",
+                        "für", "von", "zu", "zum", "zur", "auf", "bei", "mit", "ohne",
+                        "anmelden", "anmeldung", "anfrage", "anfragen", "dienst", "dienste",
+                        "ein", "eine", "einer", "einem", "einen",
+                    }
+                    if any(word in intervening for word in context_breakers):
+                        return False
+                    # Even without explicit context breakers, don't trust far-away intro cues for multi-token spans
+                    return False
         if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", tokens[0]) and not tokens[0][0].isupper():
             return False
         return True
@@ -1887,7 +1930,7 @@ class PIIFilter:
 
     def _trim_address_spans(self, text, items):
         """Trim ADDRESS spans at first newline or before label words to avoid bleed."""
-        label_stops = re.compile(r"(?i)\b(email|e-mail|mail|meine|la mia email|mon email|adresse)\b")
+        label_stops = re.compile(r"(?i)\b(email|e-mail|mail|meine|la mia email|mon email|adresse|für|gründung|unternehmen)\b")
         out = []
         for r in items:
             if r.entity_type != "ADDRESS":
@@ -1904,6 +1947,16 @@ class PIIFilter:
                     e = s + m.start()
             trimmed = span[:e - s].rstrip(" .,:;–—")
             if trimmed:
+                # Additional filter: DROP addresses that don't contain house numbers or street types that require numbers
+                # E.g., "Tempelhof-Shöneberg" is just a district name, not a complete address
+                # Valid addresses should have digits (house numbers) or be specific street patterns
+                if not re.search(r"\d", trimmed):
+                    # No digits - check if it's a district that got misdetected
+                    # If it doesn't contain typical address markers, skip it
+                    addr_markers = r"(?i)\b(straße|strasse|str\.?|street|avenue|avenue|weg|platz|gasse|ring|allée|allee)"
+                    if not re.search(addr_markers, trimmed):
+                        # No street type patterns either - likely just a location name, not a residential address
+                        continue
                 out.append(RecognizerResult("ADDRESS", s, s + len(trimmed), r.score))
             else:
                 out.append(r)
@@ -2871,12 +2924,26 @@ class PIIFilter:
             final = preserved
         
         # Drop PERSON spans that are clearly non-person single tokens (e.g., Gewerbe)
+        # OR multi-token spans that start with sentence structure (pronouns + verbs)
         pruned = []
         for r in final:
             if r.entity_type == 'PERSON':
                 span = text[r.start:r.end].strip()
+                # Single token check
                 if re.fullmatch(r"[A-Za-zÄÖÜäöüßÀ-ÿ]+", span) and span.lower() in self.NON_PERSON_SINGLE_TOKENS:
                     continue
+                # Multi-token check: look for sentence-like structure (pronoun + verb + article + noun)
+                tokens = [t.lower() for t in span.split()]
+                if len(tokens) >= 2:
+                    # Check if starts with pronoun or modal verb
+                    sentence_starters = {
+                        "ich", "du", "er", "sie", "es", "wir", "ihr",  # Pronouns
+                        "möchte", "kann", "werde", "würde", "habe", "hab", "bin", "ist", "sind", "hat", "hätte",
+                        "für", "von", "zu", "bei", "mit", "ohne", "in",  # Prepositions/articles indicating sentence fragment
+                    }
+                    # Check first two tokens
+                    if any(t in sentence_starters for t in tokens[:2]):
+                        continue
             pruned.append(r)
         final = pruned
 
