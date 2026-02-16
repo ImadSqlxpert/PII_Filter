@@ -1,16 +1,16 @@
 # Test Execution Report
 
-Generated: **2026-02-14 20:36:54**
+Generated: **2026-02-16 16:58:02**
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
 | Total Tests | 1117 |
-| Passed | 1093 |
-| Failed | 24 |
+| Passed | 1099 |
+| Failed | 18 |
 | Skipped | 0 |
-| Pass Rate | 97.9% |
+| Pass Rate | 98.4% |
 
 ## Per‑File Results
 
@@ -20,8 +20,8 @@ Generated: **2026-02-14 20:36:54**
 - Skipped: 0
 
 ### test_chat_person_address_de_en.py
-- Passed: 36
-- Failed: 11
+- Passed: 47
+- Failed: 0
 - Skipped: 0
 
 ### test_debug_address.py
@@ -30,18 +30,18 @@ Generated: **2026-02-14 20:36:54**
 - Skipped: 0
 
 ### test_entity_coverage.py
-- Passed: 597
-- Failed: 0
+- Passed: 596
+- Failed: 1
 - Skipped: 0
 
 ### test_false_positives.py
-- Passed: 8
-- Failed: 0
+- Passed: 7
+- Failed: 1
 - Skipped: 0
 
 ### test_guards.py
-- Passed: 8
-- Failed: 4
+- Passed: 7
+- Failed: 5
 - Skipped: 0
 
 ### test_ids_tax.py
@@ -55,13 +55,13 @@ Generated: **2026-02-14 20:36:54**
 - Skipped: 0
 
 ### test_person_address_de_en.py
-- Passed: 58
-- Failed: 8
+- Passed: 66
+- Failed: 0
 - Skipped: 0
 
 ### test_person_logic.py
-- Passed: 39
-- Failed: 0
+- Passed: 35
+- Failed: 4
 - Skipped: 0
 
 ### test_reference_identifiers.py
@@ -70,8 +70,8 @@ Generated: **2026-02-14 20:36:54**
 - Skipped: 0
 
 ### test_regex_patterns.py
-- Passed: 191
-- Failed: 0
+- Passed: 185
+- Failed: 6
 - Skipped: 0
 
 ### test_tokens.py
@@ -86,9 +86,9 @@ Generated: **2026-02-14 20:36:54**
 
 ## Failure Details
 
-### ❌ test_chat_person_address_de_en.py
+### ❌ test_entity_coverage.py
 
-#### ::test_chat_person_address_de_en::test_chat_address_true_positives[User: Shipping address: Main Street 42, 12345 Sampletown]
+#### ::test_entity_coverage::test_person_false_positives[Ich bin besch\xe4ftigt.]
 
 **Original:**
 ```
@@ -108,441 +108,57 @@ Generated: **2026-02-14 20:36:54**
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E977305890>
-chat = 'User: Shipping address: Main Street 42, 12345 Sampletown'
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000021EBB105A10>
+text = 'Ich bin beschäftigt.'
 
-    @pytest.mark.parametrize("chat", [
-        "User: My address is 221B Baker Street, NW1 6XE London",
-        "User: Shipping address: Main Street 42, 12345 Sampletown",
-        "Kunde: Meine Adresse ist Hauptstraße 5, 10115 Berlin",
-        "Kunde: Lieferadresse: Goethestraße 10\n80331 München",
-        "User: Send to Am Stadtpark 3, 20095 Hamburg",
-    ])
-    def test_chat_address_true_positives(f, chat):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, ADDRESS), out
-E       AssertionError: User: Shipping address: Main Street 42, <LOCATION>
-E       assert False
-E        +  where False = has_tag('User: Shipping address: Main Street 42, <LOCATION>', 'ADDRESS')
+    @pytest.mark.parametrize("text", person_false_positive_samples)
+    def test_person_false_positives(f, text):
+        out = f.anonymize_text(text)
+>       assert "<PERSON>" not in out, f"False positive PERSON detection in: {text}"
+E       AssertionError: False positive PERSON detection in: Ich bin beschäftigt.
+E       assert '<PERSON>' not in 'Ich bin <PERSON>.'
+E         
+E         '<PERSON>' is contained here:
+E           Ich bin <PERSON>.
 
-tests\unit\test_chat_person_address_de_en.py:91: AssertionError
+tests\unit\test_entity_coverage.py:632: AssertionError
 ```
 </details>
 
-#### ::test_chat_person_address_de_en::test_chat_address_true_positives[Kunde: Meine Adresse ist Hauptstra\xdfe 5, 10115 Berlin]
+### ❌ test_false_positives.py
+
+#### ::test_false_positives::test_false_positives[Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstra\xdfe 5, 10115 Berlin.-<EMAIL>]
 
 **Original:**
 ```
-(not found)
+Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.
 ```
 
 **Expected:**
 ```
-(not found)
+<EMAIL>
 ```
 
 **Actual:**
 ```
-(not found)
+Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E931E00F50>
-chat = 'Kunde: Meine Adresse ist Hauptstraße 5, 10115 Berlin'
-
-    @pytest.mark.parametrize("chat", [
-        "User: My address is 221B Baker Street, NW1 6XE London",
-        "User: Shipping address: Main Street 42, 12345 Sampletown",
-        "Kunde: Meine Adresse ist Hauptstraße 5, 10115 Berlin",
-        "Kunde: Lieferadresse: Goethestraße 10\n80331 München",
-        "User: Send to Am Stadtpark 3, 20095 Hamburg",
-    ])
-    def test_chat_address_true_positives(f, chat):
-        out = f.anonymize_text(chat)
-        assert has_tag(out, ADDRESS), out
-        # Don’t mis-tag address as PERSON
->       assert not has_tag(out, PERSON), out
-E       AssertionError: <PERSON>: Meine Adresse ist <ADDRESS>
-E       assert not True
-E        +  where True = has_tag('<PERSON>: Meine Adresse ist <ADDRESS>', 'PERSON')
-
-tests\unit\test_chat_person_address_de_en.py:93: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_address_true_positives[Kunde: Lieferadresse: Goethestra\xdfe 10\n80331 M\xfcnchen]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E904DE8A10>
-chat = 'Kunde: Lieferadresse: Goethestraße 10\n80331 München'
-
-    @pytest.mark.parametrize("chat", [
-        "User: My address is 221B Baker Street, NW1 6XE London",
-        "User: Shipping address: Main Street 42, 12345 Sampletown",
-        "Kunde: Meine Adresse ist Hauptstraße 5, 10115 Berlin",
-        "Kunde: Lieferadresse: Goethestraße 10\n80331 München",
-        "User: Send to Am Stadtpark 3, 20095 Hamburg",
-    ])
-    def test_chat_address_true_positives(f, chat):
-        out = f.anonymize_text(chat)
-        assert has_tag(out, ADDRESS), out
-        # Don’t mis-tag address as PERSON
->       assert not has_tag(out, PERSON), out
-E       AssertionError: <PERSON>: <PERSON>: <ADDRESS>
-E       assert not True
-E        +  where True = has_tag('<PERSON>: <PERSON>: <ADDRESS>', 'PERSON')
-
-tests\unit\test_chat_person_address_de_en.py:93: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_single_tokens_not_person_or_address[Kunde: RECHNUNG]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E9121F7710>
-chat = 'Kunde: RECHNUNG'
-
-    @pytest.mark.parametrize("chat", [
-        "User: Straße",
-        "User: Weg",
-        "User: Gasse",
-        "User: Allee",
-        "User: ADDRESS:",
-        "Kunde: RECHNUNG",
-        "Kunde: KUNDENNUMMER",
-    ])
-    def test_chat_single_tokens_not_person_or_address(f, chat):
-        out = f.anonymize_text(chat)
->       assert not has_tag(out, PERSON), out
-E       AssertionError: <PERSON>: <BANK_ACCOUNT>
-E       assert not True
-E        +  where True = has_tag('<PERSON>: <BANK_ACCOUNT>', 'PERSON')
-
-tests\unit\test_chat_person_address_de_en.py:129: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_single_tokens_not_person_or_address[Kunde: KUNDENNUMMER]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E977181F50>
-chat = 'Kunde: KUNDENNUMMER'
-
-    @pytest.mark.parametrize("chat", [
-        "User: Straße",
-        "User: Weg",
-        "User: Gasse",
-        "User: Allee",
-        "User: ADDRESS:",
-        "Kunde: RECHNUNG",
-        "Kunde: KUNDENNUMMER",
-    ])
-    def test_chat_single_tokens_not_person_or_address(f, chat):
-        out = f.anonymize_text(chat)
->       assert not has_tag(out, PERSON), out
-E       AssertionError: <PERSON>: KUNDENNUMMER
-E       assert not True
-E        +  where True = has_tag('<PERSON>: KUNDENNUMMER', 'PERSON')
-
-tests\unit\test_chat_person_address_de_en.py:129: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_de_chat_ich_bin_location_not_person[Kunde: Ich bin in M\xfcnchen im Urlaub]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E905F13910>
-chat = 'Kunde: Ich bin in München im Urlaub'
-
-    @pytest.mark.parametrize("chat", [
-        "Kunde: Ich bin in München im Urlaub",
-        "User: Ich bin in Berlin, kein Name",
-    ])
-    def test_de_chat_ich_bin_location_not_person(f, chat):
-        out = f.anonymize_text(chat)
->       assert not has_tag(out, PERSON), out
-E       AssertionError: <PERSON>: Ich bin in München im Urlaub
-E       assert not True
-E        +  where True = has_tag('<PERSON>: Ich bin in München im Urlaub', 'PERSON')
-
-tests\unit\test_chat_person_address_de_en.py:184: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_partial_address_across_lines[User: Stra\xdfe: Hauptstra\xdfe\nNr.: 10\nPLZ/Ort: 10115 Berlin]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E936CE4450>
-chat = 'User: Straße: Hauptstraße\nNr.: 10\nPLZ/Ort: 10115 Berlin'
-
-    @pytest.mark.parametrize("chat", [
-        "User: Straße: Hauptstraße\nNr.: 10\nPLZ/Ort: 10115 Berlin",
-        "User: Street: Baker St.\nNumber: 221B\nCity: London",
-    ])
-    def test_chat_partial_address_across_lines(f, chat):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, ADDRESS), out
-E       AssertionError: User: Straße: Hauptstraße
-E         Nr.: 10
-E         PLZ/Ort: <LOCATION>
-E       assert False
-E        +  where False = has_tag('User: Straße: Hauptstraße\nNr.: 10\nPLZ/Ort: <LOCATION>', 'ADDRESS')
-
-tests\unit\test_chat_person_address_de_en.py:197: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_partial_address_across_lines[User: Street: Baker St.\nNumber: 221B\nCity: London]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E927ABD1D0>
-chat = 'User: Street: Baker St.\nNumber: 221B\nCity: London'
-
-    @pytest.mark.parametrize("chat", [
-        "User: Straße: Hauptstraße\nNr.: 10\nPLZ/Ort: 10115 Berlin",
-        "User: Street: Baker St.\nNumber: 221B\nCity: London",
-    ])
-    def test_chat_partial_address_across_lines(f, chat):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, ADDRESS), out
-E       AssertionError: User: Street: <PERSON>
-E         Number: 221B
-E         City: London
-E       assert False
-E        +  where False = has_tag('User: Street: <PERSON>\nNumber: 221B\nCity: London', 'ADDRESS')
-
-tests\unit\test_chat_person_address_de_en.py:197: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_chat_address_abbreviations_true_positive[User: Shipping to Main St. 10, 90210 Beverly Hills]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E975E550D0>
-chat = 'User: Shipping to Main St. 10, 90210 Beverly Hills'
-
-    @pytest.mark.parametrize("chat", [
-        "User: Send to Hauptstr. 5, 10115 Berlin",
-        "User: Shipping to Main St. 10, 90210 Beverly Hills",
-        "User: Deliver to 10 Downing St, SW1A 2AA London",
-    ])
-    def test_chat_address_abbreviations_true_positive(f, chat):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, ADDRESS), out
-E       AssertionError: User: Shipping to Main St. 10, <LOCATION>
-E       assert False
-E        +  where False = has_tag('User: Shipping to Main St. 10, <LOCATION>', 'ADDRESS')
-
-tests\unit\test_chat_person_address_de_en.py:239: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_non_regression_other_entities_in_chat[Call me at +49 30 1234567-PHONE_NUMBER]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E9386251D0>
-chat = 'Call me at +49 30 1234567', expected = 'PHONE_NUMBER'
-
-    @pytest.mark.parametrize("chat, expected", [
-        ("Call me at +49 30 1234567", "PHONE_NUMBER"),
-        ("I was born on March 15, 1985", "DATE"),
-        ("SSN: 123-45-6789", "ID_NUMBER"),
-        ("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token", "ACCESS_TOKEN"),
-        ("sk-proj-1234567890abcdefghijklmnop", "API_KEY"),
-        ("tok_abc123def456ghi789xyz", "PAYMENT_TOKEN"),
-        ("MAC AA:BB:CC:DD:EE:FF", "MAC_ADDRESS"),
-        ("IP: 192.168.1.1", "IP_ADDRESS"),
-    ])
-    def test_non_regression_other_entities_in_chat(f, chat, expected):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, expected), out
-E       AssertionError: Call me at <PHONE>
-E       assert False
-E        +  where False = has_tag('Call me at <PHONE>', 'PHONE_NUMBER')
-
-tests\unit\test_chat_person_address_de_en.py:258: AssertionError
-```
-</details>
-
-#### ::test_chat_person_address_de_en::test_non_regression_other_entities_in_chat[tok_abc123def456ghi789xyz-PAYMENT_TOKEN]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <pii_filter.pii_filter.PIIFilter object at 0x000001E905269110>
-chat = 'tok_abc123def456ghi789xyz', expected = 'PAYMENT_TOKEN'
-
-    @pytest.mark.parametrize("chat, expected", [
-        ("Call me at +49 30 1234567", "PHONE_NUMBER"),
-        ("I was born on March 15, 1985", "DATE"),
-        ("SSN: 123-45-6789", "ID_NUMBER"),
-        ("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token", "ACCESS_TOKEN"),
-        ("sk-proj-1234567890abcdefghijklmnop", "API_KEY"),
-        ("tok_abc123def456ghi789xyz", "PAYMENT_TOKEN"),
-        ("MAC AA:BB:CC:DD:EE:FF", "MAC_ADDRESS"),
-        ("IP: 192.168.1.1", "IP_ADDRESS"),
-    ])
-    def test_non_regression_other_entities_in_chat(f, chat, expected):
-        out = f.anonymize_text(chat)
->       assert has_tag(out, expected), out
-E       AssertionError: tok_abc123def456ghi789xyz
-E       assert False
-E        +  where False = has_tag('tok_abc123def456ghi789xyz', 'PAYMENT_TOKEN')
-
-tests\unit\test_chat_person_address_de_en.py:258: AssertionError
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001E825615C50>
+text = 'Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.'
+expected = '<EMAIL>'
+
+    @pytest.mark.parametrize("text,expected", cases)
+    def test_false_positives(f, text, expected):
+        out = f.anonymize_text(text)
+>       assert expected in out, f"Expected {expected} in anonymized output for: {text}; got: {out}"
+E       AssertionError: Expected <EMAIL> in anonymized output for: Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.; got: Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.
+E       assert '<EMAIL>' in 'Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.'
+
+tests\unit\test_false_positives.py:23: AssertionError
 ```
 </details>
 
@@ -568,7 +184,7 @@ Am Wald
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x0000021064079D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
 
     def test_guard_natural_suffix_requires_number_off_keeps(f):
         text = "Am Wald"
@@ -609,7 +225,7 @@ My address is Rue Victor Hugo
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x0000021064079D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
 
     def test_guard_requires_context_without_number_kept_with_keyword(f):
         text = "My address is Rue Victor Hugo"   # 'address' is in ADDRESS_CONTEXT_KEYWORDS
@@ -649,7 +265,7 @@ Rue Victor Hugo
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x0000021064079D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
 
     def test_guard_requires_context_without_number_off_kept(f):
         text = "Rue Victor Hugo"
@@ -689,7 +305,7 @@ Rosenweg
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x0000021064079D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
 
     def test_guard_single_token_addresses_off_keeps(f):
         text = "Rosenweg"
@@ -709,9 +325,43 @@ tests\unit\test_guards.py:109: AssertionError
 ```
 </details>
 
-### ❌ test_person_address_de_en.py
+#### ::test_guards::test_trim_address_span_at_newline_or_label
 
-#### ::test_person_address_de_en::test_person_intro_true_positives[I am called Sarah Connor]
+**Original:**
+```
+<ADDRESS>\nemail: juan@example.com
+```
+
+**Expected:**
+```
+<EMAIL>
+```
+
+**Actual:**
+```
+<ADDRESS>\nemail: juan@example.com
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
+
+    def test_trim_address_span_at_newline_or_label(f):
+        text = "Calle Mayor 5\nemail: juan@example.com"
+        out = f.anonymize_text(text, guards_enabled=True)
+        # Address should be trimmed before email label (and email anonymized)
+        assert "<ADDRESS>" in out
+>       assert "<EMAIL>" in out
+E       AssertionError: assert '<EMAIL>' in '<ADDRESS>\nemail: juan@example.com'
+
+tests\unit\test_guards.py:162: AssertionError
+```
+</details>
+
+### ❌ test_person_logic.py
+
+#### ::test_person_logic::test_intro_multilingual_produces_person[\u039c\u03b5 \u03bb\u03ad\u03bd\u03b5 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf \u03a0\u03b1\u03c0\u03b1\u03b4\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf]
 
 **Original:**
 ```
@@ -731,29 +381,42 @@ tests\unit\test_guards.py:109: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199A00BDED0>
-text = 'I am called Sarah Connor'
+f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+text = 'Με λένε Γιώργο Παπαδόπουλο'
 
     @pytest.mark.parametrize("text", [
-        "Mein Name ist Anna Müller",
-        "Ich heiße Lukas Bauer",
         "My name is John Doe",
-        "I am called Sarah Connor",
-        # allow small variation/whitespace
-        "  Mein Name ist   Paul  Meier  ",
+        "Mein Name ist Hans Müller",
+        "Je m’appelle Pierre Dupont",
+        "Me llamo Juan Pérez",
+        "Mi chiamo Mario Rossi",
+        "Meu nome é Ana Silva",
+        "Ik heet Jan Jansen",
+        "Jag heter Sara Lind",
+        "Jeg hedder Lars Jensen",
+        "Minun nimeni on Matti Meikäläinen",
+        "Nazywam się Jan Kowalski",
+        "Jmenuji se Karel Novák",
+        "Volám sa Peter Horváth",
+        "A nevem László Kovács",
+        "Mă numesc Andrei Popescu",
+        "Με λένε Γιώργο Παπαδόπουλο",
+        "Benim adım Ahmet Yılmaz",
+        "اسمي أحمد محمد",
+        "Меня зовут Иван Петров",
     ])
-    def test_person_intro_true_positives(f, text):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "PERSON"), f"Expected <PERSON> in: {out}"
-E       AssertionError: Expected <PERSON> in: I am called Sarah Connor
+    def test_intro_multilingual_produces_person(f, text):
+        out = f.anonymize_text(text, guards_enabled=True)
+>       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
+E       AssertionError: Intro should produce PERSON: Με λένε Γιώργο Παπαδόπουλο
 E       assert False
-E        +  where False = has_tag('I am called Sarah Connor', 'PERSON')
+E        +  where False = has_tag('Με λένε Γιώργο Παπαδόπουλο', 'PERSON')
 
-tests\unit\test_person_address_de_en.py:47: AssertionError
+tests\unit\test_person_logic.py:37: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_address_true_positives[Main Street 42, 12345 Sampletown]
+#### ::test_person_logic::test_intro_multilingual_produces_person[\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 \u0418\u0432\u0430\u043d \u041f\u0435\u0442\u0440\u043e\u0432]
 
 **Original:**
 ```
@@ -773,29 +436,83 @@ tests\unit\test_person_address_de_en.py:47: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199D4A5AC50>
-text = 'Main Street 42, 12345 Sampletown'
+f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+text = 'Меня зовут Иван Петров'
 
     @pytest.mark.parametrize("text", [
-        "Musterstraße 12, 10115 Berlin",
-        "Hauptstraße 5",
-        "Main Street 42, 12345 Sampletown",
-        "Goethestraße 10\n10115 Berlin",
-        "Lindenstr. 7 – 80331 München",
-        "Am Stadtpark 3, 20095 Hamburg",
+        "My name is John Doe",
+        "Mein Name ist Hans Müller",
+        "Je m’appelle Pierre Dupont",
+        "Me llamo Juan Pérez",
+        "Mi chiamo Mario Rossi",
+        "Meu nome é Ana Silva",
+        "Ik heet Jan Jansen",
+        "Jag heter Sara Lind",
+        "Jeg hedder Lars Jensen",
+        "Minun nimeni on Matti Meikäläinen",
+        "Nazywam się Jan Kowalski",
+        "Jmenuji se Karel Novák",
+        "Volám sa Peter Horváth",
+        "A nevem László Kovács",
+        "Mă numesc Andrei Popescu",
+        "Με λένε Γιώργο Παπαδόπουλο",
+        "Benim adım Ahmet Yılmaz",
+        "اسمي أحمد محمد",
+        "Меня зовут Иван Петров",
     ])
-    def test_address_true_positives(f, text):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "ADDRESS"), f"Expected <ADDRESS> in: {out}"
-E       AssertionError: Expected <ADDRESS> in: Main Street 42, <LOCATION>
+    def test_intro_multilingual_produces_person(f, text):
+        out = f.anonymize_text(text, guards_enabled=True)
+>       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
+E       AssertionError: Intro should produce PERSON: Меня зовут Иван Петров
 E       assert False
-E        +  where False = has_tag('Main Street 42, <LOCATION>', 'ADDRESS')
+E        +  where False = has_tag('Меня зовут Иван Петров', 'PERSON')
 
-tests\unit\test_person_address_de_en.py:101: AssertionError
+tests\unit\test_person_logic.py:37: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_address_location_merge_becomes_address[Main Street 42 \u2014 12345 Sampletown]
+#### ::test_person_logic::test_intro_trimming_keeps_prefix_and_replaces_name_only[\u0627\u0633\u0645\u064a \u0645\u062d\u0645\u062f \u0623\u062d\u0645\u062f-\u0627\u0633\u0645\u064a ]
+
+**Original:**
+```
+اسمي محمد أحمد
+```
+
+**Expected:**
+```
+<PERSON>
+```
+
+**Actual:**
+```
+اسمي محمد أحمد
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+text = 'اسمي محمد أحمد', prefix = 'اسمي '
+
+    @pytest.mark.parametrize("text,prefix", [
+        ("My name is John Doe", "My name is "),
+        ("Je m’appelle Marie Curie", "Je m’appelle "),
+        ("Benim adım Cem Yılmaz", "Benim adım "),
+        ("اسمي محمد أحمد", "اسمي "),
+    ])
+    def test_intro_trimming_keeps_prefix_and_replaces_name_only(f, text, prefix):
+        out = f.anonymize_text(text, guards_enabled=True)
+        out_n = norm(out)
+        assert prefix in out_n, "Intro prefix should remain"
+>       assert "<PERSON>" in out_n, "Name should be replaced with PERSON"
+E       AssertionError: Name should be replaced with PERSON
+E       assert '<PERSON>' in 'اسمي محمد أحمد'
+
+tests\unit\test_person_logic.py:53: AssertionError
+```
+</details>
+
+#### ::test_person_logic::test_person_with_email_nearby_is_still_person
 
 **Original:**
 ```
@@ -815,230 +532,294 @@ tests\unit\test_person_address_de_en.py:101: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199D32616D0>
-text = 'Main Street 42 — 12345 Sampletown'
+f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
 
-    @pytest.mark.parametrize("text", [
-        "Hauptstraße 5, 80331 München",
-        "Goethestraße 10\n10115 Berlin",
-        "Main Street 42 — 12345 Sampletown",
-    ])
-    def test_address_location_merge_becomes_address(f, text):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "ADDRESS"), f"Expected merged <ADDRESS> in: {out}"
-E       AssertionError: Expected merged <ADDRESS> in: Main Street 42 — <LOCATION>
+    def test_person_with_email_nearby_is_still_person(f):
+        text = "My name is John Doe, email john.doe@example.com"
+        out = f.anonymize_text(text, guards_enabled=True)
+        assert has_tag(out, "PERSON"), "Intro must produce PERSON"
+>       assert has_tag(out, "EMAIL"), "Nearby email should also be anonymized"
+E       AssertionError: Nearby email should also be anonymized
 E       assert False
-E        +  where False = has_tag('Main Street 42 — <LOCATION>', 'ADDRESS')
+E        +  where False = has_tag('My name is <PERSON>, email <EMAIL_ADDRESS>', 'EMAIL')
 
-tests\unit\test_person_address_de_en.py:147: AssertionError
+tests\unit\test_person_logic.py:115: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_address_trim_and_no_bleed_into_labels[Main Street 42, 12345 City\nTelefon: 030 123456]
+### ❌ test_regex_patterns.py
+
+#### ::test_regex_patterns::test_commercial_register_with_context
 
 **Original:**
 ```
-(not found)
+\n    Company Registration <LICENSE_PLATE>:\n    The company is registered at:\n    - <COMMERCIAL_REGISTER>123456\n    - German VAT ID: <TAX_ID>\n    - Contact: <EMAIL_ADDRESS>\n    
 ```
 
 **Expected:**
 ```
-(not found)
+<EMAIL>
 ```
 
 **Actual:**
 ```
-(not found)
+\n    Company Registration <LICENSE_PLATE>:\n    The company is registered at:\n    - <COMMERCIAL_REGISTER>123456\n    - German VAT ID: <TAX_ID>\n    - Contact: <EMAIL_ADDRESS>\n    
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199BF2DE890>
-text = 'Main Street 42, 12345 City\nTelefon: 030 123456'
+def test_commercial_register_with_context():
+        """Test COMMERCIAL_REGISTER detection in realistic document context."""
+        f = PIIFilter()
+    
+        document = """
+        Company Registration Details:
+        The company is registered at:
+        - Amtsgericht München, Handelsregister B 123456
+        - German VAT ID: DE123456789
+        - Contact: max.mustermann@example.de
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<COMMERCIAL_REGISTER>" in out, "Should detect commercial register in document"
+>       assert "<EMAIL>" in out, "Should also detect email"
+E       AssertionError: Should also detect email
+E       assert '<EMAIL>' in '\n    Company Registration <LICENSE_PLATE>:\n    The company is registered at:\n    - <COMMERCIAL_REGISTER>123456\n    - German VAT ID: <TAX_ID>\n    - Contact: <EMAIL_ADDRESS>\n    '
 
-    @pytest.mark.parametrize("text", [
-        "Hauptstraße 10\nEmail: someone@example.com",
-        "Main Street 42, 12345 City\nTelefon: 030 123456",
-    ])
-    def test_address_trim_and_no_bleed_into_labels(f, text):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "ADDRESS"), f"Expected <ADDRESS> in: {out}"
-E       AssertionError: Expected <ADDRESS> in: Main Street 42, <LOCATION>: 030 123456
-E       assert False
-E        +  where False = has_tag('Main Street 42, <LOCATION>: 030 123456', 'ADDRESS')
-
-tests\unit\test_person_address_de_en.py:173: AssertionError
+tests\unit\test_regex_patterns.py:237: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_person_single_token_needs_intro[Anna-False]
+#### ::test_regex_patterns::test_case_reference_with_context
 
 **Original:**
 ```
-(not found)
+\n    Case Management System:\n    - <CASE_REFERENCE>\n    - <CASE_REFERENCE>\n    - Customer Name: <PERSON>\n    - Email: <EMAIL_ADDRESS>\n    - Registration: <LICENSE_PLATE>ter B 123456\n    
 ```
 
 **Expected:**
 ```
-(not found)
+<EMAIL>
 ```
 
 **Actual:**
 ```
-(not found)
+\n    Case Management System:\n    - <CASE_REFERENCE>\n    - <CASE_REFERENCE>\n    - Customer Name: <PERSON>\n    - Email: <EMAIL_ADDRESS>\n    - Registration: <LICENSE_PLATE>ter B 123456\n    
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199BF2A6B90>
-text = 'Anna', expect_person = False
+def test_case_reference_with_context():
+        """Test CASE_REFERENCE detection in realistic document context."""
+        f = PIIFilter()
+    
+        document = """
+        Case Management System:
+        - Case ID: CASE-2023-001234
+        - Reference Number: REF-2024-567890
+        - Customer Name: John Schmidt
+        - Email: john.schmidt@example.com
+        - Registration: Handelsregister B 123456
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<CASE_REFERENCE>" in out, "Should detect case reference in document"
+        assert "<PERSON>" in out, "Should also detect person name"
+>       assert "<EMAIL>" in out, "Should detect email"
+E       AssertionError: Should detect email
+E       assert '<EMAIL>' in '\n    Case Management System:\n    - <CASE_REFERENCE>\n    - <CASE_REFERENCE>\n    - Customer Name: <PERSON>\n    - Email: <EMAIL_ADDRESS>\n    - Registration: <LICENSE_PLATE>ter B 123456\n    '
 
-    @pytest.mark.parametrize("text, expect_person", [
-        ("Anna", False),                   # too ambiguous; no intro cue
-        ("Mein Name ist Anna", True),     # intro cue allows single token
-        ("Ich bin Anna", True),           # allowed if name-like token follows
-        ("Ich bin in München", False),    # 'Ich bin' + location (not a name)
-    ])
-    def test_person_single_token_needs_intro(f, text, expect_person):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "PERSON") == expect_person, out
-E       AssertionError: <PERSON>
-E       assert True == False
-E        +  where True = has_tag('<PERSON>', 'PERSON')
-
-tests\unit\test_person_address_de_en.py:191: AssertionError
+tests\unit\test_regex_patterns.py:347: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_non_regression_other_entities[+49 30 1234567-PHONE_NUMBER]
+#### ::test_regex_patterns::test_german_gov_ids_with_context
 
 **Original:**
 ```
-(not found)
+\n    Behördliche Registrierung:\n    <BUND_ID>\n    <ELSTER_ID>\n    <SERVICEKONTO>\n    Name: <PERSON>\n    Email: <EMAIL_ADDRESS>\n    
 ```
 
 **Expected:**
 ```
-(not found)
+<EMAIL>
 ```
 
 **Actual:**
 ```
-(not found)
+\n    Behördliche Registrierung:\n    <BUND_ID>\n    <ELSTER_ID>\n    <SERVICEKONTO>\n    Name: <PERSON>\n    Email: <EMAIL_ADDRESS>\n    
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199A3E2DC90>
-text = '+49 30 1234567', tag = 'PHONE_NUMBER'
+def test_german_gov_ids_with_context():
+        """Test German e-government IDs in realistic document context."""
+        f = PIIFilter()
+    
+        document = """
+        Behördliche Registrierung:
+        BundID: BUND-12345678-ABCD
+        ELSTER-ID: ELST-12345
+        Servicekonto: servicekonto_56789
+        Name: Max Mustermann
+        Email: max@example.com
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<BUND_ID>" in out, "Should detect BundID in document"
+        assert "<ELSTER_ID>" in out, "Should detect ELSTER_ID in document"
+        assert "<SERVICEKONTO>" in out, "Should detect SERVICEKONTO in document"
+        assert "<PERSON>" in out, "Should also detect person name"
+>       assert "<EMAIL>" in out, "Should detect email"
+E       AssertionError: Should detect email
+E       assert '<EMAIL>' in '\n    Behördliche Registrierung:\n    <BUND_ID>\n    <ELSTER_ID>\n    <SERVICEKONTO>\n    Name: <PERSON>\n    Email: <EMAIL_ADDRESS>\n    '
 
-    @pytest.mark.parametrize("text, tag", [
-        ("+49 30 1234567", "PHONE_NUMBER"),
-        ("I was born on March 15, 1985", "DATE"),
-        ("Meine Sozialversicherungsnummer ist 123-45-6789", "ID_NUMBER"),
-        ("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token", "ACCESS_TOKEN"),
-        ("sk-proj-1234567890abcdefghijklmnop", "API_KEY"),
-        ("sk_live_abc123def456", "API_KEY"),  # by policy in your suite
-        ("tok_abc123def456ghi789xyz", "PAYMENT_TOKEN"),
-        ("0x52908400098527886E0F7030069857D2E4169EE7", "CRYPTO_ADDRESS"),
-        ("AA:BB:CC:DD:EE:FF", "MAC_ADDRESS"),
-        ("192.168.1.10", "IP_ADDRESS"),
-    ])
-    def test_non_regression_other_entities(f, text, tag):
-        out = f.anonymize_text(text)
->       assert has_tag(out, tag), f"Expected <{tag}> in: {out}"
-E       AssertionError: Expected <PHONE_NUMBER> in: <PHONE>
-E       assert False
-E        +  where False = has_tag('<PHONE>', 'PHONE_NUMBER')
-
-tests\unit\test_person_address_de_en.py:212: AssertionError
+tests\unit\test_regex_patterns.py:492: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_non_regression_other_entities[tok_abc123def456ghi789xyz-PAYMENT_TOKEN]
+#### ::test_regex_patterns::test_german_gov_ids_priority
 
 **Original:**
 ```
-(not found)
+\n    <BUND_ID>\n    Phone: <PHONE_NUMBER>\n    Email: <EMAIL_ADDRESS>\n    <SERVICEKONTO>\n    
 ```
 
 **Expected:**
 ```
-(not found)
+<PHONE>
 ```
 
 **Actual:**
 ```
-(not found)
+\n    <BUND_ID>\n    Phone: <PHONE_NUMBER>\n    Email: <EMAIL_ADDRESS>\n    <SERVICEKONTO>\n    
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199B973B510>
-text = 'tok_abc123def456ghi789xyz', tag = 'PAYMENT_TOKEN'
+def test_german_gov_ids_priority():
+        """Test that German e-government IDs don't conflict with other entities."""
+        f = PIIFilter()
+    
+        # Document with mixed entity types
+        document = """
+        BundID: BUND-12345678-ABCD
+        Phone: +49 30 12345678
+        Email: user@example.de
+        Service-Konto: servicekonto_xyz789
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<BUND_ID>" in out, "Should detect BundID"
+        assert "<SERVICEKONTO>" in out, "Should detect SERVICEKONTO"
+>       assert "<PHONE>" in out, "Should detect phone"
+E       AssertionError: Should detect phone
+E       assert '<PHONE>' in '\n    <BUND_ID>\n    Phone: <PHONE_NUMBER>\n    Email: <EMAIL_ADDRESS>\n    <SERVICEKONTO>\n    '
 
-    @pytest.mark.parametrize("text, tag", [
-        ("+49 30 1234567", "PHONE_NUMBER"),
-        ("I was born on March 15, 1985", "DATE"),
-        ("Meine Sozialversicherungsnummer ist 123-45-6789", "ID_NUMBER"),
-        ("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token", "ACCESS_TOKEN"),
-        ("sk-proj-1234567890abcdefghijklmnop", "API_KEY"),
-        ("sk_live_abc123def456", "API_KEY"),  # by policy in your suite
-        ("tok_abc123def456ghi789xyz", "PAYMENT_TOKEN"),
-        ("0x52908400098527886E0F7030069857D2E4169EE7", "CRYPTO_ADDRESS"),
-        ("AA:BB:CC:DD:EE:FF", "MAC_ADDRESS"),
-        ("192.168.1.10", "IP_ADDRESS"),
-    ])
-    def test_non_regression_other_entities(f, text, tag):
-        out = f.anonymize_text(text)
->       assert has_tag(out, tag), f"Expected <{tag}> in: {out}"
-E       AssertionError: Expected <PAYMENT_TOKEN> in: tok_abc123def456ghi789xyz
-E       assert False
-E        +  where False = has_tag('tok_abc123def456ghi789xyz', 'PAYMENT_TOKEN')
-
-tests\unit\test_person_address_de_en.py:212: AssertionError
+tests\unit\test_regex_patterns.py:530: AssertionError
 ```
 </details>
 
-#### ::test_person_address_de_en::test_mixed_line_stress[Customer: John Doe; Address: Main Street 42, 12345 Sampletown]
+#### ::test_regex_patterns::test_auth_secrets_with_context
 
 **Original:**
 ```
-(not found)
+\n    User Account Setup:\n    Username: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    \n    Two-Factor Authentication:\n    <TAN>\n    <PUK>\n    <RECOVERY_CODE>\n    
 ```
 
 **Expected:**
 ```
-(not found)
+<EMAIL>
 ```
 
 **Actual:**
 ```
-(not found)
+\n    User Account Setup:\n    Username: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    \n    Two-Factor Authentication:\n    <TAN>\n    <PUK>\n    <RECOVERY_CODE>\n    
 ```
 
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <pii_filter.pii_filter.PIIFilter object at 0x00000199A2EE1F10>
-text = 'Customer: John Doe; Address: Main Street 42, 12345 Sampletown'
+def test_auth_secrets_with_context():
+        """Test authentication secrets in realistic document context."""
+        f = PIIFilter()
+    
+        document = """
+        User Account Setup:
+        Username: john.doe@example.com
+        Password: SecureP@ssw0rd2024!
+        PIN: 1234
+    
+        Two-Factor Authentication:
+        TAN: 654321
+        PUK: 12345678
+        Recovery code: ABC-DEF-123-456
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<PASSWORD>" in out, "Should detect password"
+        assert "<PIN>" in out, "Should detect PIN"
+        assert "<TAN>" in out, "Should detect TAN"
+        assert "<PUK>" in out, "Should detect PUK"
+        assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
+>       assert "<EMAIL>" in out, "Should also detect email"
+E       AssertionError: Should also detect email
+E       assert '<EMAIL>' in '\n    User Account Setup:\n    Username: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    \n    Two-Factor Authentication:\n    <TAN>\n    <PUK>\n    <RECOVERY_CODE>\n    '
 
-    @pytest.mark.parametrize("text", [
-        "Kunde: Anna Müller, Adresse: Hauptstraße 5, 10115 Berlin",
-        "Customer: John Doe; Address: Main Street 42, 12345 Sampletown",
-    ])
-    def test_mixed_line_stress(f, text):
-        out = f.anonymize_text(text)
->       assert has_tag(out, "PERSON"), f"Expected <PERSON> in: {out}"
-E       AssertionError: Expected <PERSON> in: <CUSTOMER_NUMBER> Doe; Address: Main Street 42, <LOCATION>
-E       assert False
-E        +  where False = has_tag('<CUSTOMER_NUMBER> Doe; Address: Main Street 42, <LOCATION>', 'PERSON')
+tests\unit\test_regex_patterns.py:716: AssertionError
+```
+</details>
 
-tests\unit\test_person_address_de_en.py:225: AssertionError
+#### ::test_regex_patterns::test_auth_secrets_priority
+
+**Original:**
+```
+\n    Login Credentials:\n    Email: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    Phone: <PHONE_NUMBER>\n    \n    <RECOVERY_CODE>:\n    <RECOVERY_CODE>\n    <PUK>\n    
+```
+
+**Expected:**
+```
+<EMAIL>
+```
+
+**Actual:**
+```
+\n    Login Credentials:\n    Email: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    Phone: <PHONE_NUMBER>\n    \n    <RECOVERY_CODE>:\n    <RECOVERY_CODE>\n    <PUK>\n    
+```
+
+<details><summary>Full Failure Block</summary>
+
+```
+def test_auth_secrets_priority():
+        """Test that authentication secrets don't conflict with other entities."""
+        f = PIIFilter()
+    
+        document = """
+        Login Credentials:
+        Email: user@example.com
+        Password: SecureP@ss@2024!
+        PIN: 1234
+        Phone: +49 30 12345678
+    
+        Recovery Information:
+        Recovery code: ABC-DEF-123-456
+        PUK: 87654321
+        """
+    
+        out = f.anonymize_text(document)
+        assert "<PASSWORD>" in out, "Should detect password"
+        assert "<PIN>" in out, "Should detect PIN"
+        assert "<PUK>" in out, "Should detect PUK"
+        assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
+>       assert "<EMAIL>" in out, "Should detect email"
+E       AssertionError: Should detect email
+E       assert '<EMAIL>' in '\n    Login Credentials:\n    Email: <EMAIL_ADDRESS>\n    <PASSWORD>\n    <PIN>\n    Phone: <PHONE_NUMBER>\n    \n    <RECOVERY_CODE>:\n    <RECOVERY_CODE>\n    <PUK>\n    '
+
+tests\unit\test_regex_patterns.py:784: AssertionError
 ```
 </details>
 
@@ -1064,8 +845,8 @@ one_time_<PASSWORD>
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_tokens.TestOTPCode object at 0x0000024C1A655910>
-filter_instance = <pii_filter.pii_filter.PIIFilter object at 0x0000024C1A8C0610>
+self = <unit.test_tokens.TestOTPCode object at 0x000001D26E4FF090>
+filter_instance = <PII_filter.pii_filter.PIIFilter object at 0x000001D205DE1F50>
 
     def test_one_time_password_format(self, filter_instance):
         """Test one-time password format."""

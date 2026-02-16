@@ -422,7 +422,11 @@ class PIIFilter:
         )
         self.STRICT_ADDRESS_RX = re.compile(self.STRICT_ADDRESS_REGEX, re.I | re.UNICODE | re.VERBOSE)
         # Conservative fallback: street name + suffix + house number (captures variants missed by STRICT_ADDRESS)
-        self.FALLBACK_STREET_RX = re.compile(r"\b[A-ZÀ-ÖØ-ÝÄÖÜ][\wÀ-ÖØ-öø-ÿÄÖÜäöüß'’\.-]*(?:\s+(?:" + self.STREET_SUFFIX_COMPOUND + r"))\s*\d{1,4}[A-Za-z]?(?:\s*[-–]\s*\d+[A-Za-z]?)?\b", re.I | re.UNICODE)
+        # Accept either the compact suffix list or the broader street type list (cover English 'Street', 'Avenue', etc.)
+        self.FALLBACK_STREET_RX = re.compile(
+            r"\b[A-ZÀ-ÖØ-ÝÄÖÜ][\wÀ-ÖØ-öø-ÿÄÖÜäöüß'’\.-]*(?:\s+(?:" + self.STREET_SUFFIX_COMPOUND + r"|" + self.STREET_TYPES + r"))\s*\d{1,4}[A-Za-z]?(?:\s*[-–]\s*\d+[A-Za-z]?)?\b",
+            re.I | re.UNICODE
+        )
         # POSTAL codes + City
         self.CITY_TOKEN = r"[A-ZÀ-ÖØ-ÝÄÖÜ][A-Za-zÀ-ÖØ-öø-ÿĀ-ſ\u00C0-\u024F\u0370-\u03FF\u0400-\u04FFÄÖÜäöüß'’\.]+"
         self.CITY_OR_DISTRICT = rf"{self.CITY_TOKEN}(?:[-\s]{self.CITY_TOKEN})*"
@@ -789,7 +793,8 @@ class PIIFilter:
         self.CUSTOMER_NUMBER_RX = re.compile(
             r"(?:customer[\s\-]?(?:number|no|id|no\.)|cust(?:omer)?[\s\-]?(?:number|no|id|no\.)?|client[\s\-]?(?:number|no|id|no\.)?|numero[\s\-]?(?:client|cliente)|numéro[\s\-]?(?:client|cliente)|kundennummer|kundenid|klientennummer|client[\-\s]?id|cliente[\s\-]?(?:numero|no|id)|codice[\s\-]?cliente|klantennummer|klantnummer|customer[\s\-]?id|clnumber|custid|cust[\s\-]?number)"
             r"[\s:#\-=]+"
-            r"(?:[A-Z0-9]{2,4}[\s\-]?)?[A-Z0-9]{4,20}",
+            # Require at least one digit in the identifier to avoid matching plain names like 'Customer: John'
+            r"(?:[A-Z0-9]{2,4}[\s\-]?)?(?=[A-Z0-9]*\d)[A-Z0-9]{4,20}",
             re.UNICODE | re.MULTILINE | re.IGNORECASE
         )
 
@@ -975,6 +980,9 @@ class PIIFilter:
             "я","ты","он","она","мы","вы","они","я","ти","він","вона","ми","ви","вони","я","ты","ён","яна","мы","вы","яны",
         }
 
+        # Titles that can introduce a following single-token person name
+        self.TITLE_TOKENS = {"herr","frau","mr","mrs","ms","dr","prof","professor","doktor"}
+
         # Street blockers (for PERSON plausibility)
         self.STREET_BLOCKERS = {
             "via","viale","vicolo","vico","piazza","corso","strada","rue","chemin","allée","impasse",
@@ -1027,7 +1035,8 @@ class PIIFilter:
 
         # Simple substring cues used for quick prefix checks (lowercased)
         self.INTRO_CUES = [
-        "my name is", "je m", "mein name", "ich hei", "me llamo", "mi chiamo",
+        "my name is", "je m", "mein name", "ich hei", "ich bin", "me llamo", "mi chiamo",
+        "i am called",
         "meu nome", "chamo-me", "ik heet", "mijn naam", "jag heter", "jeg heter", "jeg hedder",
         "minun nimeni", "nimeni on", "ég heiti", "nazywam", "jmenuji se", "volám sa", "volam sa",
         "a nevem", "hívnak", "ma numesc", "mă numesc", "казвам се", "με λένε", "ονομάζομαι",
@@ -1135,7 +1144,8 @@ class PIIFilter:
             re.UNICODE
         )
         self.PAYMENT_TOKEN_RX = re.compile(
-            r"(?i)\b(?:token|payment\s*token|client\s*secret|secret(?:\s*key)?|bearer\s*token)\b[:=\s\-]*([A-Za-z0-9_\-]{16,128})"
+            # Match labeled tokens (e.g., "token: <value>") OR common payment token prefixes like tok_...
+            r"(?i)(?:\b(?:token|payment\s*token|client\s*secret|secret(?:\s*key)?|bearer\s*token)\b[:=\s\-]*([A-Za-z0-9_\-]{16,128})|\b(tok_[A-Za-z0-9]{8,64})\b)"
         )
 
         # ============================================================
@@ -1501,28 +1511,38 @@ class PIIFilter:
         if any(tok in self.NON_PERSON_SINGLE_TOKENS for tok in low):
             return False
         if len(tokens) > 1:
-            # Require at least one capitalized Latin token
+            # Require at least one capitalized Latin token among tokens that start with a letter
             latin_tokens = [t for t in tokens if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t)]
             if latin_tokens and not any(t[0].isupper() for t in latin_tokens):
                 return False
-            
-            # For multi-token PERSON spans detected by the base analyzer, check if  they contain
-            # obvious non-person content (verbs, prepositions, etc.) that indicate this is not a name
-            # E.g., "ich möchte ein Gewerbe" starts with "ich" (pronoun) + "möchte" (modal verb)
-            # This is clearly a sentence fragment, not a person name
+
+            # Reject obvious sentence fragments that start with pronouns/auxiliary verbs
             non_person_words = {
-                "ich", "du", "er", "sie", "es", "wir", "ihr",  # Pronouns in German
-                "möchte", "kann", "werde", "würde", "habe", "bin", "ist", "sind", "hat",  # Modal/auxiliary verbs
-                "für", "von", "zu", "auf", "bei", "mit", "ohne", "in", "das", "der", "die", "den", "dem",  # Prepositions/articles
+                "ich", "du", "er", "sie", "es", "wir", "ihr",
+                "möchte", "kann", "werde", "würde", "habe", "bin", "ist", "sind", "hat",
+                "für", "von", "zu", "auf", "bei", "mit", "ohne", "in", "das", "der", "die", "den", "dem",
             }
-            if any(tok.lower() in non_person_words for tok in tokens[:2]):  # Check first two tokens
-                # Multi-token span with non-person starter - likely not a name
+            if any(tok.lower() in non_person_words for tok in tokens[:2]):
                 return False
-            
-            # EARLY RETURN - multi-token entities with valid names pass
+
+            # Require tokens to look like a name in DE/EN: not street words / role words and at least one capitalized token
+            if not self._looks_like_name_de_en(tokens):
+                return False
+
             return True
         t0 = low[0]
         if t0 in self.PRONOUN_PERSONS:
+            return False
+
+        # Single-token names: be conservative — accept only when preceded by an intro cue or a title
+        if len(tokens) == 1:
+            # Accept if clearly introduced ("my name is Anna")
+            if self._has_intro_prefix(text, start):
+                return True
+            # Accept if immediately preceded by a title (Herr/Frau/Dr/Mr/etc.)
+            left = text[max(0, start - 40):start]
+            if re.search(r"\b(?:" + "|".join(re.escape(t) for t in self.TITLE_TOKENS) + r")\b\s*$", left, re.I):
+                return True
             return False
         
         
@@ -1563,6 +1583,30 @@ class PIIFilter:
         if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", tokens[0]) and not tokens[0][0].isupper():
             return False
         return True
+
+    def _looks_like_name_de_en(self, tokens: list) -> bool:
+        """Heuristic: return True if tokens plausibly form a personal name in DE/EN.
+        - At least one token starts with a capital letter (for Latin scripts)
+        - No digits present
+        - Tokens are not street blockers or single-token non-person tokens
+        """
+        if not tokens:
+            return False
+        # no digits
+        if any(re.search(r"\d", t) for t in tokens):
+            return False
+        low = [t.lower() for t in tokens]
+        # Avoid all-street/component tokens
+        if all(tok in self.STREET_BLOCKERS for tok in low):
+            return False
+        # Avoid obvious non-person single tokens
+        if any(tok in self.NON_PERSON_SINGLE_TOKENS for tok in low):
+            return False
+        # At least one capitalized token among letter-starting tokens
+        for t in tokens:
+            if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t) and t[0].isupper():
+                return True
+        return False
 
     def _inject_name_intro_persons(self, text, results):
         add = []
@@ -1931,6 +1975,7 @@ class PIIFilter:
     def _trim_address_spans(self, text, items):
         """Trim ADDRESS spans at first newline or before label words to avoid bleed."""
         label_stops = re.compile(r"(?i)\b(email|e-mail|mail|meine|la mia email|mon email|adresse|für|gründung|unternehmen)\b")
+        multiline_addr = re.compile(r"(?i)(?:nr\.?|no\.?|number|nummer|num)\s*:?\s*\d|(?:plz\/ort|plz|postal|city|stadt|ort)", re.MULTILINE)
         out = []
         for r in items:
             if r.entity_type != "ADDRESS":
@@ -1938,7 +1983,15 @@ class PIIFilter:
                 continue
             s, e = r.start, r.end
             span = text[s:e]
-            cut = span.find("\n")
+            
+            # Check if this is a multi-line address (has number or city labels on different lines)
+            has_multiline = bool(multiline_addr.search(span))
+            
+            # Only trim at first newline if this is NOT a multi-line tagged address
+            cut = -1
+            if not has_multiline:
+                cut = span.find("\n")
+            
             if cut != -1:
                 e = s + cut
             else:
@@ -2252,7 +2305,8 @@ class PIIFilter:
                 continue
             # If an intro cue immediately precedes this span (e.g., "Je m'appelle Rue Victor"),
             # prefer PERSON and skip injecting an ADDRESS so the intro-based PERSON can win.
-            prefix = text[max(0, s - 48):s].lower()
+            # Consider a small right-context as intro cues may overlap the match start
+            prefix = text[max(0, s - 48):s + 16].lower()
             if any(cue in prefix for cue in self.INTRO_CUES):
                 continue
             # Guard against matching education/employment IDs as addresses (e.g., "student ID is STU-12345"
@@ -2287,7 +2341,8 @@ class PIIFilter:
             if any(not (e <= a.start or s >= a.end) for a in add if a.entity_type in ("EMAIL", "EMAIL_ADDRESS")):
                 continue
             # If an intro cue immediately precedes this span, prefer PERSON and skip injecting ADDRESS
-            prefix = text[max(0, s - 48):s].lower()
+            # Consider small right-context so intro cues that overlap the match cancel ADDRESS injection
+            prefix = text[max(0, s - 48):s + 16].lower()
             if any(cue in prefix for cue in self.INTRO_CUES):
                 continue
             # Avoid duplicate ADDRESS injections
@@ -2335,6 +2390,150 @@ class PIIFilter:
                     if any(k in left or k in right for k in self.ID_KEYWORDS):
                         continue
                     add.append(RecognizerResult("PHONE_NUMBER", s, e, 0.90))
+        
+        # Combine labeled multi-line address fragments into ADDRESS when possible
+        # e.g. "Straße: Hauptstraße\nNr.: 10\nPLZ/Ort: 10115 Berlin" or
+        # "Street: Baker St.\nNumber: 221B\nCity: London"
+        locs = [r for r in add if r.entity_type == "LOCATION"]
+        for loc in locs:
+            # find the newline that starts the LOCATION line
+            loc_line_start = text.rfind("\n", 0, loc.start)
+            if loc_line_start == -1:
+                continue
+            # previous line (likely number label)
+            prev_line_end = loc_line_start
+            prev_line_start = text.rfind("\n", 0, prev_line_end - 1)
+            prev_line = text[prev_line_start + 1:prev_line_end].strip() if prev_line_start != -1 else text[:prev_line_end].strip()
+            # line above that (likely street label)
+            prev2_end = prev_line_start
+            if prev2_end == -1:
+                continue
+            prev2_start = text.rfind("\n", 0, prev2_end - 1)
+            prev2_line = text[prev2_start + 1:prev2_end].strip() if prev2_start != -1 else text[:prev2_end].strip()
+
+            low2 = prev2_line.lower()
+            low1 = prev_line.lower()
+            # street label detection — use substring checks to tolerate punctuation like ':'
+            if not any(k in low2 for k in ("straße", "strasse", "str.", "street", "st.")):
+                continue
+            # number label detection — tolerate 'Nr', 'No', 'Number', 'Nr.' etc.
+            if not any(k in low1 for k in ("nr", "no", "number", "nummer", "num")):
+                continue
+            # Anchor near first capitalized token in street line
+            mname = re.search(r"[A-ZÀ-ÖØ-ÝÄÖÜ][\w'’\.-]+", prev2_line)
+            if not mname:
+                continue
+            s = prev2_start + 1 + mname.start()
+            e = loc.end
+            # If an overlapping ADDRESS exists, prefer expanding smaller spans to the larger merged span
+            overlaps = [a for a in add if a.entity_type == "ADDRESS" and not (e <= a.start or s >= a.end)]
+            if overlaps:
+                expanded = False
+                for a in overlaps:
+                    # if the new span fully contains an existing smaller ADDRESS, replace it with the expanded span
+                    if s <= a.start and e >= a.end:
+                        try:
+                            add.remove(a)
+                        except ValueError:
+                            pass
+                        add.append(RecognizerResult("ADDRESS", s, e, max(a.score, 1.03)))
+                        expanded = True
+                        break
+                if not expanded:
+                    # otherwise keep existing address(es)
+                    continue
+            else:
+                add.append(RecognizerResult("ADDRESS", s, e, 1.03))
+        # Also detect fully labeled 3-line address blocks (street + number + city) even when no postal code was matched
+        # Pattern matches: street_label:value\nnumber_label:value\ncity_label:value
+        # Requires labels to be followed by colon or whitespace (to avoid matching "St." as a label when it's part of an address value)
+        block_rx = re.compile(
+            r"(?im)"
+            r"(?:straße|strasse|str|street|adresse|address|rue)(?:\.|:|\s)(?:\s*:?\s*)([^\n:]+)"
+            r"(?:\n\s*(?:nr|no|number|nummer|num)(?:\.|:|\s)(?:\s*:?\s*)([^\n:]+))?"
+            r"(?:\n\s*(?:plz(?:/ort)?|postal|city|stadt|ort|ville|ciudad)(?:\.|:|\s)(?:\s*:?\s*)([^\n:]+))?"
+        )
+        
+        _debug_block = False  # "Straße: Hauptstraße" in text and "Nr.:" in text
+        if _debug_block:
+            print(f"[DEBUG] block_rx processing. Current add list has {len(add)} entities:")
+            for i, ent in enumerate(add):
+                print(f"  [{i}] {ent.entity_type:15s} ({ent.start:3d}, {ent.end:3d}): {repr(text[ent.start:min(ent.end,ent.start+30)])}")
+        
+        for m in block_rx.finditer(text):
+            # Extract the matched groups
+            street_val = m.group(1)
+            number_val = m.group(2)
+            city_val = m.group(3)
+            
+            # Both number and city must be present for a valid address block
+            if not (number_val and city_val):
+                continue
+            
+            _debug_block2 = False  # "Straße: Hauptstraße" in text and "Nr.:" in text
+            if _debug_block2:
+                print(f"\n[DEBUG] block_rx matched! Groups: street={street_val!r}, number={number_val!r}, city={city_val!r}")
+            
+            s = m.start(1)
+            # Calculate the end position: use the furthest non-None group's end
+            if m.group(3):
+                e = m.end(3)
+            elif m.group(2):
+                e = m.end(2)
+            else:
+                e = m.end(1)
+            
+            if _debug_block2:
+                print(f"[DEBUG] Creating ADDRESS span: ({s}, {e}) = {repr(text[s:e][:50])}")
+            
+            overlaps = [a for a in add if a.entity_type == "ADDRESS" and not (e <= a.start or s >= a.end)]
+            if _debug_block2:
+                print(f"[DEBUG] Found {len(overlaps)} overlapping ADDRESS entities")
+                for ov in overlaps:
+                    print(f"  Overlap: ({ov.start}, {ov.end})")
+                    print(f"    Condition 1 (contains): {s <= ov.start and e >= ov.end}")
+                    print(f"    Condition 2 (overlap_start): {s <= ov.start and e > ov.start}")
+                    print(f"    Condition 3 (overlap_end): {s < ov.end and e >= ov.end}")
+                    print(f"    Width comparison: new={e-s}, old={ov.end - ov.start}, new_wider={e > ov.end - ov.start}")
+            
+            if overlaps:
+                expanded = False
+                for a in overlaps:
+                    # If the new merged span fully contains an existing ADDRESS, or overlaps significantly, expand
+                    if (s <= a.start and e >= a.end) or (s <= a.start and e > a.start) or (s < a.end and e >= a.end):
+                        if _debug_block2:
+                            print(f"[DEBUG] Merging: old=({a.start}, {a.end}), new=({s}, {e})")
+                        try:
+                            add.remove(a)
+                        except ValueError:
+                            pass
+                        # Create a new span that covers both the old and new extents
+                        new_s = min(s, a.start)
+                        new_e = max(e, a.end)
+                        add.append(RecognizerResult("ADDRESS", new_s, new_e, max(a.score, 1.03)))
+                        expanded = True
+                        break
+                if not expanded:
+                    # If there's an overlap but can't merge, prefer the larger new span over the smaller old one
+                    for a in overlaps:
+                        if e > a.end - a.start:  # New span is wider than old span
+                            if _debug_block2:
+                                print(f"[DEBUG] Replacing smaller old with new: new=({s}, {e}), old=({a.start}, {a.end})")
+                            try:
+                                add.remove(a)
+                            except ValueError:
+                                pass
+                            add.append(RecognizerResult("ADDRESS", s, e, max(a.score, 1.03)))
+                            expanded = True
+                            break
+                if not expanded:
+                    if _debug_block2:
+                        print(f"[DEBUG] NO expansion happened, skipping new ADDRESS")
+                    continue
+            else:
+                if _debug_block2:
+                    print(f"[DEBUG] No overlaps, adding ADDRESS ({s}, {e}) directly")
+                add.append(RecognizerResult("ADDRESS", s, e, 1.03))
 
         # Fax (label-led)
         for fax in self.FAX_LABEL_RX.finditer(text):
@@ -2632,7 +2831,15 @@ class PIIFilter:
 
         # Payment/API tokens
         for m in self.PAYMENT_TOKEN_RX.finditer(text):
-            s, e = (m.start(1), m.end(1)) if m.lastindex else (m.start(), m.end())
+            # Determine which capturing group matched (group 1 or group 2)
+            s = e = None
+            if m.lastindex:
+                for gi in range(1, m.lastindex + 1):
+                    if m.group(gi):
+                        s, e = m.start(gi), m.end(gi)
+                        break
+            if s is None:
+                s, e = m.start(), m.end()
             token = text[s:e]
             if len(token) >= 16:
                 # If left context explicitly mentions 'api key' (or localizations), prefer PAYMENT_TOKEN
@@ -2947,6 +3154,24 @@ class PIIFilter:
             pruned.append(r)
         final = pruned
 
+        # Drop EMAIL / PHONE_NUMBER that appear as a separate labeled line immediately
+        # following an ADDRESS line to avoid 'bleed' where labels become attached.
+        preserved = []
+        addr_spans = [(r.start, r.end) for r in final if r.entity_type == "ADDRESS"]
+        for r in final:
+            if r.entity_type in ("EMAIL", "EMAIL_ADDRESS", "PHONE_NUMBER"):
+                # find the start of the current line
+                line_start = text.rfind("\n", 0, r.start)
+                if line_start != -1:
+                    # check the token left of the line for an ADDRESS that ends before this line
+                    if any(aend <= line_start for (astart, aend) in addr_spans):
+                        # If the line begins with an obvious label like 'email' or 'telefon', drop the contact entity
+                        label = text[line_start + 1:r.start].lower()
+                        if re.search(r"\b(email|e-mail|mail|telefon|telefon:|phone|telefonnummer|tel)\b", label):
+                            continue
+            preserved.append(r)
+        final = preserved
+
         # Filter out PERSON followed by a DATE via connecting prepositions (e.g., 'unter 01.01')
         def _filter_person_before_date_with_prep(text, items):
             out = []
@@ -3042,9 +3267,9 @@ class PIIFilter:
         # Replacements: single-escaped HTML tokens
         operators = {
             "PERSON":           OperatorConfig("replace", {"new_value": "<PERSON>"}),
-            "EMAIL_ADDRESS":    OperatorConfig("replace", {"new_value": "<EMAIL>"}),
-            "PHONE_NUMBER":     OperatorConfig("replace", {"new_value": "<PHONE>"}),
-            "FAX_NUMBER":       OperatorConfig("replace", {"new_value": "<FAX>"}),
+            "EMAIL_ADDRESS":    OperatorConfig("replace", {"new_value": "<EMAIL_ADDRESS>"}),
+            "PHONE_NUMBER":     OperatorConfig("replace", {"new_value": "<PHONE_NUMBER>"}),
+            "FAX_NUMBER":       OperatorConfig("replace", {"new_value": "<FAX_NUMBER>"}),
             "ADDRESS":          OperatorConfig("replace", {"new_value": "<ADDRESS>"}),
             "LOCATION":         OperatorConfig("replace", {"new_value": "<LOCATION>"}),
             "DATE":             OperatorConfig("replace", {"new_value": "<DATE>"}),

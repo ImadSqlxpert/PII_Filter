@@ -1,1 +1,91 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="39" time="4.166" timestamp="2026-02-14T20:34:45.493881+01:00" hostname="SteffenXpert"><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[My name is John Doe]" time="1.725" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Mein Name ist Hans M\xfcller]" time="0.014" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Je m\u2019appelle Pierre Dupont]" time="0.015" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Me llamo Juan P\xe9rez]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Mi chiamo Mario Rossi]" time="0.010" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Meu nome \xe9 Ana Silva]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Ik heet Jan Jansen]" time="0.025" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jag heter Sara Lind]" time="0.015" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jeg hedder Lars Jensen]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Minun nimeni on Matti Meik\xe4l\xe4inen]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Nazywam si\u0119 Jan Kowalski]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jmenuji se Karel Nov\xe1k]" time="0.014" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Vol\xe1m sa Peter Horv\xe1th]" time="0.011" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[A nevem L\xe1szl\xf3 Kov\xe1cs]" time="0.007" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[M\u0103 numesc Andrei Popescu]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u039c\u03b5 \u03bb\u03ad\u03bd\u03b5 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf \u03a0\u03b1\u03c0\u03b1\u03b4\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf]" time="0.006" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Benim ad\u0131m Ahmet Y\u0131lmaz]" time="0.007" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u0627\u0633\u0645\u064a \u0623\u062d\u0645\u062f \u0645\u062d\u0645\u062f]" time="0.006" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 \u0418\u0432\u0430\u043d \u041f\u0435\u0442\u0440\u043e\u0432]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[My name is John Doe-My name is ]" time="0.011" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[Je m\u2019appelle Marie Curie-Je m\u2019appelle ]" time="0.009" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[Benim ad\u0131m Cem Y\u0131lmaz-Benim ad\u0131m ]" time="0.007" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[\u0627\u0633\u0645\u064a \u0645\u062d\u0645\u062f \u0623\u062d\u0645\u062f-\u0627\u0633\u0645\u064a ]" time="0.006" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[via Roma]" time="0.028" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[rue de Rivoli]" time="0.018" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[calle Mayor]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[stra\xdfe der Nationen]" time="0.007" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[I and you and we]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[yo y t\xfa y nosotros]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[je et tu et nous]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[ich und du und wir]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_address_dropped_when_overlapping_with_person[Je m'appelle Rue Victor]" time="0.009" /><testcase classname="tests.unit.test_person_logic" name="test_address_dropped_when_overlapping_with_person[Mi chiamo Via Roma]" time="0.011" /><testcase classname="tests.unit.test_person_logic" name="test_person_with_email_nearby_is_still_person" time="0.092" /><testcase classname="tests.unit.test_person_logic" name="test_intro_lowercase_single_token_allowed[my name is john]" time="0.010" /><testcase classname="tests.unit.test_person_logic" name="test_intro_lowercase_single_token_allowed[je m\u2019appelle jean]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[Policy name field is required]" time="0.009" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[The address label is missing]" time="0.009" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[Numero di telefono]" time="0.010" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="39" time="6.615" timestamp="2026-02-16T16:54:09.723850+01:00" hostname="LAPTOP-4UQ2EECE"><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[My name is John Doe]" time="2.953" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Mein Name ist Hans M\xfcller]" time="0.014" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Je m\u2019appelle Pierre Dupont]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Me llamo Juan P\xe9rez]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Mi chiamo Mario Rossi]" time="0.015" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Meu nome \xe9 Ana Silva]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Ik heet Jan Jansen]" time="0.024" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jag heter Sara Lind]" time="0.026" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jeg hedder Lars Jensen]" time="0.034" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Minun nimeni on Matti Meik\xe4l\xe4inen]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Nazywam si\u0119 Jan Kowalski]" time="0.017" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Jmenuji se Karel Nov\xe1k]" time="0.022" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Vol\xe1m sa Peter Horv\xe1th]" time="0.023" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[A nevem L\xe1szl\xf3 Kov\xe1cs]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[M\u0103 numesc Andrei Popescu]" time="0.011" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u039c\u03b5 \u03bb\u03ad\u03bd\u03b5 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf \u03a0\u03b1\u03c0\u03b1\u03b4\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf]" time="0.009"><failure message="AssertionError: Intro should produce PERSON: Με λένε Γιώργο Παπαδόπουλο&#10;assert False&#10; +  where False = has_tag('Με λένε Γιώργο Παπαδόπουλο', 'PERSON')">f = &lt;PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10&gt;
+text = 'Με λένε Γιώργο Παπαδόπουλο'
+
+    @pytest.mark.parametrize("text", [
+        "My name is John Doe",
+        "Mein Name ist Hans Müller",
+        "Je m’appelle Pierre Dupont",
+        "Me llamo Juan Pérez",
+        "Mi chiamo Mario Rossi",
+        "Meu nome é Ana Silva",
+        "Ik heet Jan Jansen",
+        "Jag heter Sara Lind",
+        "Jeg hedder Lars Jensen",
+        "Minun nimeni on Matti Meikäläinen",
+        "Nazywam się Jan Kowalski",
+        "Jmenuji se Karel Novák",
+        "Volám sa Peter Horváth",
+        "A nevem László Kovács",
+        "Mă numesc Andrei Popescu",
+        "Με λένε Γιώργο Παπαδόπουλο",
+        "Benim adım Ahmet Yılmaz",
+        "اسمي أحمد محمد",
+        "Меня зовут Иван Петров",
+    ])
+    def test_intro_multilingual_produces_person(f, text):
+        out = f.anonymize_text(text, guards_enabled=True)
+&gt;       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
+E       AssertionError: Intro should produce PERSON: Με λένε Γιώργο Παπαδόπουλο
+E       assert False
+E        +  where False = has_tag('Με λένε Γιώργο Παπαδόπουλο', 'PERSON')
+
+tests\unit\test_person_logic.py:37: AssertionError</failure></testcase><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[Benim ad\u0131m Ahmet Y\u0131lmaz]" time="0.010" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u0627\u0633\u0645\u064a \u0623\u062d\u0645\u062f \u0645\u062d\u0645\u062f]" time="0.008" /><testcase classname="tests.unit.test_person_logic" name="test_intro_multilingual_produces_person[\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 \u0418\u0432\u0430\u043d \u041f\u0435\u0442\u0440\u043e\u0432]" time="0.019"><failure message="AssertionError: Intro should produce PERSON: Меня зовут Иван Петров&#10;assert False&#10; +  where False = has_tag('Меня зовут Иван Петров', 'PERSON')">f = &lt;PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10&gt;
+text = 'Меня зовут Иван Петров'
+
+    @pytest.mark.parametrize("text", [
+        "My name is John Doe",
+        "Mein Name ist Hans Müller",
+        "Je m’appelle Pierre Dupont",
+        "Me llamo Juan Pérez",
+        "Mi chiamo Mario Rossi",
+        "Meu nome é Ana Silva",
+        "Ik heet Jan Jansen",
+        "Jag heter Sara Lind",
+        "Jeg hedder Lars Jensen",
+        "Minun nimeni on Matti Meikäläinen",
+        "Nazywam się Jan Kowalski",
+        "Jmenuji se Karel Novák",
+        "Volám sa Peter Horváth",
+        "A nevem László Kovács",
+        "Mă numesc Andrei Popescu",
+        "Με λένε Γιώργο Παπαδόπουλο",
+        "Benim adım Ahmet Yılmaz",
+        "اسمي أحمد محمد",
+        "Меня зовут Иван Петров",
+    ])
+    def test_intro_multilingual_produces_person(f, text):
+        out = f.anonymize_text(text, guards_enabled=True)
+&gt;       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
+E       AssertionError: Intro should produce PERSON: Меня зовут Иван Петров
+E       assert False
+E        +  where False = has_tag('Меня зовут Иван Петров', 'PERSON')
+
+tests\unit\test_person_logic.py:37: AssertionError</failure></testcase><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[My name is John Doe-My name is ]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[Je m\u2019appelle Marie Curie-Je m\u2019appelle ]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[Benim ad\u0131m Cem Y\u0131lmaz-Benim ad\u0131m ]" time="0.009" /><testcase classname="tests.unit.test_person_logic" name="test_intro_trimming_keeps_prefix_and_replaces_name_only[\u0627\u0633\u0645\u064a \u0645\u062d\u0645\u062f \u0623\u062d\u0645\u062f-\u0627\u0633\u0645\u064a ]" time="0.011"><failure message="AssertionError: Name should be replaced with PERSON&#10;assert '&lt;PERSON&gt;' in 'اسمي محمد أحمد'">f = &lt;PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10&gt;
+text = 'اسمي محمد أحمد', prefix = 'اسمي '
+
+    @pytest.mark.parametrize("text,prefix", [
+        ("My name is John Doe", "My name is "),
+        ("Je m’appelle Marie Curie", "Je m’appelle "),
+        ("Benim adım Cem Yılmaz", "Benim adım "),
+        ("اسمي محمد أحمد", "اسمي "),
+    ])
+    def test_intro_trimming_keeps_prefix_and_replaces_name_only(f, text, prefix):
+        out = f.anonymize_text(text, guards_enabled=True)
+        out_n = norm(out)
+        assert prefix in out_n, "Intro prefix should remain"
+&gt;       assert "&lt;PERSON&gt;" in out_n, "Name should be replaced with PERSON"
+E       AssertionError: Name should be replaced with PERSON
+E       assert '&lt;PERSON&gt;' in 'اسمي محمد أحمد'
+
+tests\unit\test_person_logic.py:53: AssertionError</failure></testcase><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[via Roma]" time="0.031" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[rue de Rivoli]" time="0.026" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[calle Mayor]" time="0.026" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_street_words[stra\xdfe der Nationen]" time="0.017" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[I and you and we]" time="0.012" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[yo y t\xfa y nosotros]" time="0.016" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[je et tu et nous]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_person_not_triggered_by_pronouns[ich und du und wir]" time="0.010" /><testcase classname="tests.unit.test_person_logic" name="test_address_dropped_when_overlapping_with_person[Je m'appelle Rue Victor]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_address_dropped_when_overlapping_with_person[Mi chiamo Via Roma]" time="0.020" /><testcase classname="tests.unit.test_person_logic" name="test_person_with_email_nearby_is_still_person" time="0.147"><failure message="AssertionError: Nearby email should also be anonymized&#10;assert False&#10; +  where False = has_tag('My name is &lt;PERSON&gt;, email &lt;EMAIL_ADDRESS&gt;', 'EMAIL')">f = &lt;PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10&gt;
+
+    def test_person_with_email_nearby_is_still_person(f):
+        text = "My name is John Doe, email john.doe@example.com"
+        out = f.anonymize_text(text, guards_enabled=True)
+        assert has_tag(out, "PERSON"), "Intro must produce PERSON"
+&gt;       assert has_tag(out, "EMAIL"), "Nearby email should also be anonymized"
+E       AssertionError: Nearby email should also be anonymized
+E       assert False
+E        +  where False = has_tag('My name is &lt;PERSON&gt;, email &lt;EMAIL_ADDRESS&gt;', 'EMAIL')
+
+tests\unit\test_person_logic.py:115: AssertionError</failure></testcase><testcase classname="tests.unit.test_person_logic" name="test_intro_lowercase_single_token_allowed[my name is john]" time="0.015" /><testcase classname="tests.unit.test_person_logic" name="test_intro_lowercase_single_token_allowed[je m\u2019appelle jean]" time="0.020" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[Policy name field is required]" time="0.014" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[The address label is missing]" time="0.013" /><testcase classname="tests.unit.test_person_logic" name="test_no_false_person_without_intro_and_no_name_like_span[Numero di telefono]" time="0.012" /></testsuite></testsuites>
