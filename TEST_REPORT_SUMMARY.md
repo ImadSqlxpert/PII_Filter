@@ -1,16 +1,16 @@
 # Test Execution Report
 
-Generated: **2026-02-16 16:58:02**
+Generated: **2026-02-16 18:41:40**
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
 | Total Tests | 1117 |
-| Passed | 1099 |
-| Failed | 18 |
+| Passed | 1104 |
+| Failed | 13 |
 | Skipped | 0 |
-| Pass Rate | 98.4% |
+| Pass Rate | 98.8% |
 
 ## Per‑File Results
 
@@ -40,8 +40,8 @@ Generated: **2026-02-16 16:58:02**
 - Skipped: 0
 
 ### test_guards.py
-- Passed: 7
-- Failed: 5
+- Passed: 12
+- Failed: 0
 - Skipped: 0
 
 ### test_ids_tax.py
@@ -108,7 +108,7 @@ Generated: **2026-02-16 16:58:02**
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000021EBB105A10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000026B75A0CC50>
 text = 'Ich bin beschäftigt.'
 
     @pytest.mark.parametrize("text", person_false_positive_samples)
@@ -147,7 +147,7 @@ Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001E825615C50>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000020ED9933410>
 text = 'Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.'
 expected = '<EMAIL>'
 
@@ -159,203 +159,6 @@ E       AssertionError: Expected <EMAIL> in anonymized output for: Meine E-Mail 
 E       assert '<EMAIL>' in 'Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.'
 
 tests\unit\test_false_positives.py:23: AssertionError
-```
-</details>
-
-### ❌ test_guards.py
-
-#### ::test_guards::test_guard_natural_suffix_requires_number_off_keeps
-
-**Original:**
-```
-Am Wald
-```
-
-**Expected:**
-```
-<ADDRESS>
-```
-
-**Actual:**
-```
-Am Wald
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
-
-    def test_guard_natural_suffix_requires_number_off_keeps(f):
-        text = "Am Wald"
-        out = f.anonymize_text(
-            text,
-            guards_enabled=True,
-            guard_natural_suffix_requires_number=False,   # OFF
-            guard_single_token_addresses=False,
-            guard_address_vs_person_priority=False,
-            guard_requires_context_without_number=False,
-        )
-        # With other guards off, permissive regex may keep it
->       assert "<ADDRESS>" in out, "With guard OFF and other guards disabled, 'Am Wald' may be kept as ADDRESS."
-E       AssertionError: With guard OFF and other guards disabled, 'Am Wald' may be kept as ADDRESS.
-E       assert '<ADDRESS>' in 'Am Wald'
-
-tests\unit\test_guards.py:38: AssertionError
-```
-</details>
-
-#### ::test_guards::test_guard_requires_context_without_number_kept_with_keyword
-
-**Original:**
-```
-My address is Rue Victor Hugo
-```
-
-**Expected:**
-```
-<ADDRESS>
-```
-
-**Actual:**
-```
-My address is Rue Victor Hugo
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
-
-    def test_guard_requires_context_without_number_kept_with_keyword(f):
-        text = "My address is Rue Victor Hugo"   # 'address' is in ADDRESS_CONTEXT_KEYWORDS
-        out = f.anonymize_text(
-            text,
-            guards_enabled=True,
-            guard_requires_context_without_number=True,   # ON
-            guard_natural_suffix_requires_number=False,
-            guard_single_token_addresses=False,
-            guard_address_vs_person_priority=False,
-        )
->       assert "<ADDRESS>" in out, "Context keyword + no number → allowed by the guard."
-E       AssertionError: Context keyword + no number → allowed by the guard.
-E       assert '<ADDRESS>' in 'My address is Rue Victor Hugo'
-
-tests\unit\test_guards.py:67: AssertionError
-```
-</details>
-
-#### ::test_guards::test_guard_requires_context_without_number_off_kept
-
-**Original:**
-```
-Rue Victor Hugo
-```
-
-**Expected:**
-```
-<ADDRESS>
-```
-
-**Actual:**
-```
-Rue Victor Hugo
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
-
-    def test_guard_requires_context_without_number_off_kept(f):
-        text = "Rue Victor Hugo"
-        out = f.anonymize_text(
-            text,
-            guards_enabled=True,
-            guard_requires_context_without_number=False,  # OFF
-            guard_natural_suffix_requires_number=False,
-            guard_single_token_addresses=False,
-            guard_address_vs_person_priority=False,
-        )
->       assert "<ADDRESS>" in out, "With guard OFF, name-only street can be kept."
-E       AssertionError: With guard OFF, name-only street can be kept.
-E       assert '<ADDRESS>' in 'Rue Victor Hugo'
-
-tests\unit\test_guards.py:80: AssertionError
-```
-</details>
-
-#### ::test_guards::test_guard_single_token_addresses_off_keeps
-
-**Original:**
-```
-Rosenweg
-```
-
-**Expected:**
-```
-<ADDRESS>
-```
-
-**Actual:**
-```
-Rosenweg
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
-
-    def test_guard_single_token_addresses_off_keeps(f):
-        text = "Rosenweg"
-        out = f.anonymize_text(
-            text,
-            guards_enabled=True,
-            guard_single_token_addresses=False,           # OFF
-            guard_requires_context_without_number=False,
-            guard_natural_suffix_requires_number=False,
-            guard_address_vs_person_priority=False,
-        )
->       assert "<ADDRESS>" in out, "With guard OFF, permissive suffix match can be kept as ADDRESS."
-E       AssertionError: With guard OFF, permissive suffix match can be kept as ADDRESS.
-E       assert '<ADDRESS>' in 'Rosenweg'
-
-tests\unit\test_guards.py:109: AssertionError
-```
-</details>
-
-#### ::test_guards::test_trim_address_span_at_newline_or_label
-
-**Original:**
-```
-<ADDRESS>\nemail: juan@example.com
-```
-
-**Expected:**
-```
-<EMAIL>
-```
-
-**Actual:**
-```
-<ADDRESS>\nemail: juan@example.com
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000001404430CF10>
-
-    def test_trim_address_span_at_newline_or_label(f):
-        text = "Calle Mayor 5\nemail: juan@example.com"
-        out = f.anonymize_text(text, guards_enabled=True)
-        # Address should be trimmed before email label (and email anonymized)
-        assert "<ADDRESS>" in out
->       assert "<EMAIL>" in out
-E       AssertionError: assert '<EMAIL>' in '<ADDRESS>\nemail: juan@example.com'
-
-tests\unit\test_guards.py:162: AssertionError
 ```
 </details>
 
@@ -381,7 +184,7 @@ tests\unit\test_guards.py:162: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
 text = 'Με λένε Γιώργο Παπαδόπουλο'
 
     @pytest.mark.parametrize("text", [
@@ -436,7 +239,7 @@ tests\unit\test_person_logic.py:37: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
 text = 'Меня зовут Иван Петров'
 
     @pytest.mark.parametrize("text", [
@@ -491,7 +294,7 @@ tests\unit\test_person_logic.py:37: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
 text = 'اسمي محمد أحمد', prefix = 'اسمي '
 
     @pytest.mark.parametrize("text,prefix", [
@@ -532,7 +335,7 @@ tests\unit\test_person_logic.py:53: AssertionError
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x000002837F022D10>
+f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
 
     def test_person_with_email_nearby_is_still_person(f):
         text = "My name is John Doe, email john.doe@example.com"
@@ -845,8 +648,8 @@ one_time_<PASSWORD>
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_tokens.TestOTPCode object at 0x000001D26E4FF090>
-filter_instance = <PII_filter.pii_filter.PIIFilter object at 0x000001D205DE1F50>
+self = <unit.test_tokens.TestOTPCode object at 0x000002D02BD2E050>
+filter_instance = <PII_filter.pii_filter.PIIFilter object at 0x000002D0343F8F50>
 
     def test_one_time_password_format(self, filter_instance):
         """Test one-time password format."""
