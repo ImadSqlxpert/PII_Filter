@@ -739,6 +739,7 @@
   "tests/unit/test_false_positives.py::test_false_positives[IMEI 490154203237518-<IMEI>]",
   "tests/unit/test_false_positives.py::test_false_positives[Ich will Gewerbe anmelden.-Gewerbe]",
   "tests/unit/test_false_positives.py::test_false_positives[Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstra\\xdfe 5, 10115 Berlin.-<EMAIL>]",
+  "tests/unit/test_false_positives.py::test_false_positives[Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstra\\xdfe 5, 10115 Berlin.-<EMAIL_ADDRESS>]",
   "tests/unit/test_false_positives.py::test_false_positives[My device IMEI is 490154203237518-<IMEI>]",
   "tests/unit/test_false_positives.py::test_false_positives[My name is John Smith-<PERSON>]",
   "tests/unit/test_false_positives.py::test_false_positives[Visa 4111 1111 1111 1111-<CREDIT_CARD>]",

@@ -8,7 +8,7 @@ def f():
 cases = [
     # (input, expected substring in anonymized output)
     ("I live at 221B Baker Street, London.", "<ADDRESS>"),
-    ("Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.", "<EMAIL>"),
+    ("Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.", "<EMAIL_ADDRESS>"),
     ("Ich will Gewerbe anmelden.", "Gewerbe"),
     ("IMEI 490154203237518", "<IMEI>"),
     ("My device IMEI is 490154203237518", "<IMEI>"),

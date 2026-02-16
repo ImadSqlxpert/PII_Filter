@@ -1513,6 +1513,7 @@ class PIIFilter:
         if len(tokens) > 1:
             # Require at least one capitalized Latin token among tokens that start with a letter
             latin_tokens = [t for t in tokens if re.match(r"^[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ]", t)]
+            # If there are Latin-script tokens, require at least one capitalized Latin token
             if latin_tokens and not any(t[0].isupper() for t in latin_tokens):
                 return False
 
@@ -1525,11 +1526,23 @@ class PIIFilter:
             if any(tok.lower() in non_person_words for tok in tokens[:2]):
                 return False
 
-            # Require tokens to look like a name in DE/EN: not street words / role words and at least one capitalized token
-            if not self._looks_like_name_de_en(tokens):
-                return False
+            # Require tokens to look like a name in DE/EN when Latin-script tokens are present
+            if latin_tokens:
+                if not self._looks_like_name_de_en(tokens):
+                    return False
+                return True
 
-            return True
+            # For non-Latin scripts (e.g., Cyrillic, Greek, Arabic), be permissive:
+            # accept multi-token spans where each token contains alphabetic characters
+            # and tokens are not blacklisted or street-like.
+            # This avoids over-relying on Latin capitalization heuristics.
+            if all(any(ch.isalpha() for ch in t) for t in tokens):
+                if any(tok in self.PERSON_BLACKLIST_WORDS for tok in low):
+                    return False
+                if all(tok in self.STREET_BLOCKERS for tok in low):
+                    return False
+                return True
+            return False
         t0 = low[0]
         if t0 in self.PRONOUN_PERSONS:
             return False

@@ -112,7 +112,7 @@ def test_person_with_email_nearby_is_still_person(f):
     text = "My name is John Doe, email john.doe@example.com"
     out = f.anonymize_text(text, guards_enabled=True)
     assert has_tag(out, "PERSON"), "Intro must produce PERSON"
-    assert has_tag(out, "EMAIL"), "Nearby email should also be anonymized"
+    assert has_tag(out, "EMAIL_ADDRESS"), "Nearby email should also be anonymized"
 
 
 # -----------------------------

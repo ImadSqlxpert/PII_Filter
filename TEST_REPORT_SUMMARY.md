@@ -1,16 +1,16 @@
 # Test Execution Report
 
-Generated: **2026-02-16 18:41:40**
+Generated: **2026-02-16 23:32:18**
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
 | Total Tests | 1117 |
-| Passed | 1104 |
-| Failed | 13 |
+| Passed | 1108 |
+| Failed | 9 |
 | Skipped | 0 |
-| Pass Rate | 98.8% |
+| Pass Rate | 99.2% |
 
 ## Per‑File Results
 
@@ -60,8 +60,8 @@ Generated: **2026-02-16 18:41:40**
 - Skipped: 0
 
 ### test_person_logic.py
-- Passed: 35
-- Failed: 4
+- Passed: 39
+- Failed: 0
 - Skipped: 0
 
 ### test_reference_identifiers.py
@@ -108,7 +108,7 @@ Generated: **2026-02-16 18:41:40**
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000026B75A0CC50>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001BE8C8DC9D0>
 text = 'Ich bin beschäftigt.'
 
     @pytest.mark.parametrize("text", person_false_positive_samples)
@@ -147,7 +147,7 @@ Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.
 <details><summary>Full Failure Block</summary>
 
 ```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000020ED9933410>
+f = <PII_filter.pii_filter.PIIFilter object at 0x000001917AD506D0>
 text = 'Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstraße 5, 10115 Berlin.'
 expected = '<EMAIL>'
 
@@ -159,194 +159,6 @@ E       AssertionError: Expected <EMAIL> in anonymized output for: Meine E-Mail 
 E       assert '<EMAIL>' in 'Meine E-Mail ist <EMAIL_ADDRESS> und ich wohne <ADDRESS>.'
 
 tests\unit\test_false_positives.py:23: AssertionError
-```
-</details>
-
-### ❌ test_person_logic.py
-
-#### ::test_person_logic::test_intro_multilingual_produces_person[\u039c\u03b5 \u03bb\u03ad\u03bd\u03b5 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf \u03a0\u03b1\u03c0\u03b1\u03b4\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
-text = 'Με λένε Γιώργο Παπαδόπουλο'
-
-    @pytest.mark.parametrize("text", [
-        "My name is John Doe",
-        "Mein Name ist Hans Müller",
-        "Je m’appelle Pierre Dupont",
-        "Me llamo Juan Pérez",
-        "Mi chiamo Mario Rossi",
-        "Meu nome é Ana Silva",
-        "Ik heet Jan Jansen",
-        "Jag heter Sara Lind",
-        "Jeg hedder Lars Jensen",
-        "Minun nimeni on Matti Meikäläinen",
-        "Nazywam się Jan Kowalski",
-        "Jmenuji se Karel Novák",
-        "Volám sa Peter Horváth",
-        "A nevem László Kovács",
-        "Mă numesc Andrei Popescu",
-        "Με λένε Γιώργο Παπαδόπουλο",
-        "Benim adım Ahmet Yılmaz",
-        "اسمي أحمد محمد",
-        "Меня зовут Иван Петров",
-    ])
-    def test_intro_multilingual_produces_person(f, text):
-        out = f.anonymize_text(text, guards_enabled=True)
->       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
-E       AssertionError: Intro should produce PERSON: Με λένε Γιώργο Παπαδόπουλο
-E       assert False
-E        +  where False = has_tag('Με λένε Γιώργο Παπαδόπουλο', 'PERSON')
-
-tests\unit\test_person_logic.py:37: AssertionError
-```
-</details>
-
-#### ::test_person_logic::test_intro_multilingual_produces_person[\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 \u0418\u0432\u0430\u043d \u041f\u0435\u0442\u0440\u043e\u0432]
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
-text = 'Меня зовут Иван Петров'
-
-    @pytest.mark.parametrize("text", [
-        "My name is John Doe",
-        "Mein Name ist Hans Müller",
-        "Je m’appelle Pierre Dupont",
-        "Me llamo Juan Pérez",
-        "Mi chiamo Mario Rossi",
-        "Meu nome é Ana Silva",
-        "Ik heet Jan Jansen",
-        "Jag heter Sara Lind",
-        "Jeg hedder Lars Jensen",
-        "Minun nimeni on Matti Meikäläinen",
-        "Nazywam się Jan Kowalski",
-        "Jmenuji se Karel Novák",
-        "Volám sa Peter Horváth",
-        "A nevem László Kovács",
-        "Mă numesc Andrei Popescu",
-        "Με λένε Γιώργο Παπαδόπουλο",
-        "Benim adım Ahmet Yılmaz",
-        "اسمي أحمد محمد",
-        "Меня зовут Иван Петров",
-    ])
-    def test_intro_multilingual_produces_person(f, text):
-        out = f.anonymize_text(text, guards_enabled=True)
->       assert has_tag(out, "PERSON"), f"Intro should produce PERSON: {text}"
-E       AssertionError: Intro should produce PERSON: Меня зовут Иван Петров
-E       assert False
-E        +  where False = has_tag('Меня зовут Иван Петров', 'PERSON')
-
-tests\unit\test_person_logic.py:37: AssertionError
-```
-</details>
-
-#### ::test_person_logic::test_intro_trimming_keeps_prefix_and_replaces_name_only[\u0627\u0633\u0645\u064a \u0645\u062d\u0645\u062f \u0623\u062d\u0645\u062f-\u0627\u0633\u0645\u064a ]
-
-**Original:**
-```
-اسمي محمد أحمد
-```
-
-**Expected:**
-```
-<PERSON>
-```
-
-**Actual:**
-```
-اسمي محمد أحمد
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
-text = 'اسمي محمد أحمد', prefix = 'اسمي '
-
-    @pytest.mark.parametrize("text,prefix", [
-        ("My name is John Doe", "My name is "),
-        ("Je m’appelle Marie Curie", "Je m’appelle "),
-        ("Benim adım Cem Yılmaz", "Benim adım "),
-        ("اسمي محمد أحمد", "اسمي "),
-    ])
-    def test_intro_trimming_keeps_prefix_and_replaces_name_only(f, text, prefix):
-        out = f.anonymize_text(text, guards_enabled=True)
-        out_n = norm(out)
-        assert prefix in out_n, "Intro prefix should remain"
->       assert "<PERSON>" in out_n, "Name should be replaced with PERSON"
-E       AssertionError: Name should be replaced with PERSON
-E       assert '<PERSON>' in 'اسمي محمد أحمد'
-
-tests\unit\test_person_logic.py:53: AssertionError
-```
-</details>
-
-#### ::test_person_logic::test_person_with_email_nearby_is_still_person
-
-**Original:**
-```
-(not found)
-```
-
-**Expected:**
-```
-(not found)
-```
-
-**Actual:**
-```
-(not found)
-```
-
-<details><summary>Full Failure Block</summary>
-
-```
-f = <PII_filter.pii_filter.PIIFilter object at 0x0000021B9BAE7450>
-
-    def test_person_with_email_nearby_is_still_person(f):
-        text = "My name is John Doe, email john.doe@example.com"
-        out = f.anonymize_text(text, guards_enabled=True)
-        assert has_tag(out, "PERSON"), "Intro must produce PERSON"
->       assert has_tag(out, "EMAIL"), "Nearby email should also be anonymized"
-E       AssertionError: Nearby email should also be anonymized
-E       assert False
-E        +  where False = has_tag('My name is <PERSON>, email <EMAIL_ADDRESS>', 'EMAIL')
-
-tests\unit\test_person_logic.py:115: AssertionError
 ```
 </details>
 
@@ -648,8 +460,8 @@ one_time_<PASSWORD>
 <details><summary>Full Failure Block</summary>
 
 ```
-self = <unit.test_tokens.TestOTPCode object at 0x000002D02BD2E050>
-filter_instance = <PII_filter.pii_filter.PIIFilter object at 0x000002D0343F8F50>
+self = <unit.test_tokens.TestOTPCode object at 0x0000020692CAF910>
+filter_instance = <PII_filter.pii_filter.PIIFilter object at 0x0000020697733250>
 
     def test_one_time_password_format(self, filter_instance):
         """Test one-time password format."""

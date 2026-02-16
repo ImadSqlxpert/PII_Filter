@@ -234,7 +234,7 @@ def test_commercial_register_with_context():
     
     out = f.anonymize_text(document)
     assert "<COMMERCIAL_REGISTER>" in out, "Should detect commercial register in document"
-    assert "<EMAIL>" in out, "Should also detect email"
+    assert "<EMAIL_ADDRESS>" in out, "Should also detect email"
     assert "<TAX_ID>" in out, "VAT ID should be detected and anonymized"
 
 
@@ -344,7 +344,7 @@ def test_case_reference_with_context():
     out = f.anonymize_text(document)
     assert "<CASE_REFERENCE>" in out, "Should detect case reference in document"
     assert "<PERSON>" in out, "Should also detect person name"
-    assert "<EMAIL>" in out, "Should detect email"
+    assert "<EMAIL_ADDRESS>" in out, "Should detect email"
 
 
 def test_case_reference_no_conflict_with_phone():
@@ -489,7 +489,7 @@ def test_german_gov_ids_with_context():
     assert "<ELSTER_ID>" in out, "Should detect ELSTER_ID in document"
     assert "<SERVICEKONTO>" in out, "Should detect SERVICEKONTO in document"
     assert "<PERSON>" in out, "Should also detect person name"
-    assert "<EMAIL>" in out, "Should detect email"
+    assert "<EMAIL_ADDRESS>" in out, "Should detect email"
 
 
 def test_german_gov_ids_no_false_positives():
@@ -527,8 +527,8 @@ def test_german_gov_ids_priority():
     out = f.anonymize_text(document)
     assert "<BUND_ID>" in out, "Should detect BundID"
     assert "<SERVICEKONTO>" in out, "Should detect SERVICEKONTO"
-    assert "<PHONE>" in out, "Should detect phone"
-    assert "<EMAIL>" in out, "Should detect email"
+    assert "<PHONE_NUMBER>" in out, "Should detect phone"
+    assert "<EMAIL_ADDRESS>" in out, "Should detect email"
 
 
 # Authentication Secrets tests
@@ -713,7 +713,7 @@ def test_auth_secrets_with_context():
     assert "<TAN>" in out, "Should detect TAN"
     assert "<PUK>" in out, "Should detect PUK"
     assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
-    assert "<EMAIL>" in out, "Should also detect email"
+    assert "<EMAIL_ADDRESS>" in out, "Should also detect email"
 
 
 def test_auth_secrets_multilingual():
@@ -781,6 +781,6 @@ def test_auth_secrets_priority():
     assert "<PIN>" in out, "Should detect PIN"
     assert "<PUK>" in out, "Should detect PUK"
     assert "<RECOVERY_CODE>" in out, "Should detect recovery code"
-    assert "<EMAIL>" in out, "Should detect email"
-    assert "<PHONE>" in out, "Should detect phone"
+    assert "<EMAIL_ADDRESS>" in out, "Should detect email"
+    assert "<PHONE_NUMBER>" in out, "Should detect phone"
 
