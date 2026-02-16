@@ -6,7 +6,6 @@ You must:
 - Increase **precision** and **stability** for **German (de)** and **English (en)** PERSON/ADDRESS.
 - **Do not** change any behavior for other entities (PHONE_NUMBER, DATE, ID_NUMBER, PASSPORT, TAX_ID, BANK_ACCOUNT, CREDIT_CARD, API_KEY, PAYMENT_TOKEN, MAC_ADDRESS, IP_ADDRESS, DEVICE_ID, HEALTH_*, etc.).
 - Keep the current public API and placeholders (e.g., `<PERSON>`, `<ADDRESS>`) unchanged.
-- Keep execution time within ±10% of current.
 
 We will use two focused test files that must pass alongside the existing suite:
 - `tests/unit/test_person_address_de_en.py`
@@ -38,7 +37,7 @@ These objects and helpers already exist—**reuse and extend** them rather than 
 **PERSON**
 - True positives: DE/EN with intro cues like “Mein Name ist … / Ich heiße … / My name is … / I am called …”.
 - False positives to avoid:
-  - Single street words (“Straße”, “Weg”, “Gasse”, “Allee”, “Street”, “Road/rd”, “St.”) not part of a name.
+  - Single street words (“Straße”, “Weg”, “Gasse”, “Allee”, “Street”, “Road/rd”, “St.,..”) not part of a name.
   - All‑caps labels (“RECHNUNG”, “KUNDENNUMMER”, “ADDRESS”).
   - Date contexts (e.g., “am 12. März”), city‑only mentions, phone/email labels.
   - Single-token PERSON without an intro cue (except obviously name-like, capitalized tokens and no street/role words).
