@@ -58,7 +58,6 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Sie k\\xf6nnen mich unter max.mueller@example.de erreichen-<EMAIL>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PHONE_NUMBER-Rufen Sie mich unter +49 123 456789 an-<PHONE>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[FAX_NUMBER-Meine Faxnummer ist +49 30 1234567-<FAX>]": true,
-  "tests/unit/test_entity_coverage.py::test_person_false_positives[Ich bin besch\\xe4ftigt.]": true,
   "tests/unit/test_false_positives.py::test_false_positives[Meine E-Mail ist max.mustermann@beispiel.de und ich wohne in der Musterstra\\xdfe 5, 10115 Berlin.-<EMAIL>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-My email is john@example.com-<EMAIL>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-Email: hans@test.de-<EMAIL>]": true,
@@ -69,5 +68,6 @@
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PHONE_NUMBER-+966 50 123 4567-<PHONE>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[EMAIL_ADDRESS-You can contact me at jane.smith@gmail.com-<EMAIL>]": true,
   "tests/unit/test_entity_coverage.py::test_entity_coverage[PHONE_NUMBER-Call me at +1 555-123-4567-<PHONE>]": true,
-  "tests/unit/test_entity_coverage.py::test_entity_coverage[FAX_NUMBER-My fax number is +1 555-123-4568-<FAX>]": true
+  "tests/unit/test_entity_coverage.py::test_entity_coverage[FAX_NUMBER-My fax number is +1 555-123-4568-<FAX>]": true,
+  "tests/unit/test_entity_coverage.py::test_person_false_positives[Ich bin besch\\xe4ftigt.]": true
 }

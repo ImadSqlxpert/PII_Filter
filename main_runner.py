@@ -106,13 +106,26 @@ Personalausweisnummer: T22000129
 Steuer-ID: 12 345 678 901
 USt-IdNr.: DE 123456789
 ich will Gewerbe anmelden.
-ich bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
-Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. I will ein Gewerbe anmelden
-ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
-ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
-ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? I will ein Gewerbe anmelden
+ich bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. Ich will ein Gewerbe anmelden
+ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
 Guten Tag, mein name ist Frank Verz, ich möchte ein Gewerbe anmelden.
 Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?
+"Ich bin beschäftigt."
+"Ich bin nicht beschäftigt."
+"Ich bin heute beschäftigt."
+"Ich bin beschäftigt heute."
+"Ich bin sehr beschäftigt."
+"Ich bin beschäftigt sehr"
+"Ich bin beschäftigt einfach."
+"Ich bin einfach beschäftigt."
+"Ich bin Beschäftigt."
+"Ich bin mark beschäftigt."
+"Ich bin beschäftigt schmidt."
+"Ich bin Mark Beschäftigt."
+"Ich bin Beschäftigt Schmidt."
 """,
 
     "German - Street Variants": """
