@@ -819,12 +819,49 @@ Issue ID: ISSUE2024555
 Tâche: TASK2024444
 """,
 
-    "Failed": """
-one_time_password=987654
-Meine Geräte-ID ist DEV-999888777
-Meine Militärausweis ist M55667788
-Meine Sozialhilfekarte ist B11223344
+    "some examples:": """
+Mein Name ist Max Mustermann, geboren am 31.12.1990.
+ich Heisse Max Mustermann und ich bin am 31.12.1990 geboren.
+ich heisse Max Mustermann und ich bin am 31.12.1990 geboren.
+ich heisse max mustermann und ich bin am 31.12.1990 geboren.
+Personalausweisnummer: T22000129
+Steuer-ID: 12 345 678 901
+Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).
+USt-IdNr.: DE 123456789
+""",
 
+    "some examples 2:": """
+ich will Gewerbe anmelden.
+ich bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. Ich will ein Gewerbe anmelden
+ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden
+Guten Tag, mein name ist Frank Verz, ich möchte ein Gewerbe anmelden.
+Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
+Personalausweisnummer: T22000129
+""",
+
+    "some examples 3:": """
+Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?
+Gibt es in Tempelhof-Shöneberg Beratungsstellen für Gastronomiebetriebe?
+Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen
+Ich bin Elektriker und habe meine Ausbildung in Polen gemacht. Wie geht das mit Anerkennung?
+""",
+    "some examples 4:": """
+Ich bin beschäftigt.
+Ich bin nicht beschäftigt.
+Ich bin heute beschäftigt.
+Ich bin beschäftigt heute.
+Ich bin sehr beschäftigt.
+Ich bin beschäftigt sehr
+Ich bin beschäftigt einfach.
+Ich bin einfach beschäftigt.
+Ich bin Beschäftigt."
+Ich bin mark und bin beschäftigt.
+Ich bin Mark und bin beschäftigt.
+Ich bin mark.
+Ich bin beschäftigt schon.
 """,
 
 }

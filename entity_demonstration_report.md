@@ -1,6 +1,6 @@
 # Comprehensive Entity Type Demonstration
 
-**Generated**: 2026-02-17 14:49:00
+**Generated**: 2026-02-18 00:42:44
 
 This document demonstrates all PII entity types found by the filter.
 **Note**: Each entry shows the original text and the anonymized result produced by `PIIFilter.anonymize_text()`.
@@ -141,13 +141,13 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Hauptstraße 12, Stiege 2, Top 14, 2. OG, 1010 Wien.`  
 **Anonymized:** `<ADDRESS>, Stiege 2, Top 14, 2. OG, 1010 Wien.`  
 
+**Source:** some examples:  
+**Original:** `Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).`  
+**Anonymized:** `Ich wohne <ADDRESS> (<LOCATION>).`  
+
 ---
 
 ### en
-
-**Source:** English  
-**Original:** `I live at 221B Baker Street, London.`  
-**Anonymized:** `I live at <ADDRESS>.`  
 
 **Source:** US Tax & IDs  
 **Original:** `Address: 742 Evergreen Terrace, 90210 Beverly Hills.`  
@@ -156,6 +156,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Authentication Secrets  
 **Original:** `PUK: 1010101`  
 **Anonymized:** `<ADDRESS>101`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 1111111`  
+**Anonymized:** `<ADDRESS>111`  
 
 ---
 
@@ -191,6 +195,14 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### no
+
+**Source:** English  
+**Original:** `I live at 221B Baker Street, London.`  
+**Anonymized:** `I live at <ADDRESS>.`  
+
+---
+
 ### pt
 
 **Source:** Location & Geographic Codes  
@@ -208,14 +220,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Extended Government & Education IDs  
 **Original:** `Matrikelnummer: STU-55666`  
 **Anonymized:** `Matrikelnummer: <ADDRESS>`  
-
----
-
-### tl
-
-**Source:** Authentication Secrets  
-**Original:** `PUK: 1111111`  
-**Anonymized:** `<ADDRESS>111`  
 
 ---
 
@@ -247,6 +251,14 @@ This document demonstrates all PII entity types found by the filter.
 
 ## API_KEY
 
+### ca
+
+**Source:** API & Authentication Tokens  
+**Original:** `Google API Key: AIzaSyDxKmE5R4L9JqR7vJlR3V9p8q9r0s1t2u3v`  
+**Anonymized:** `Google API Key: <API_KEY>`  
+
+---
+
 ### da
 
 **Source:** Payments  
@@ -261,13 +273,13 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `API Key: sk_live_abcDEF1234567890ghijkl`  
 **Anonymized:** `API Key: <API_KEY>`  
 
+**Source:** API & Authentication Tokens  
+**Original:** `Stripe API: rk_live_abcd1234efgh5678ijkl9012mnop3456`  
+**Anonymized:** `Stripe API: <API_KEY>`  
+
 ---
 
 ### en
-
-**Source:** API & Authentication Tokens  
-**Original:** `Google API Key: AIzaSyDxKmE5R4L9JqR7vJlR3V9p8q9r0s1t2u3v`  
-**Anonymized:** `Google API Key: <API_KEY>`  
 
 **Source:** API & Authentication Tokens  
 **Original:** `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U`  
@@ -292,10 +304,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** API & Authentication Tokens  
 **Original:** `GitHub Token: ghp_1234567890abcdefghijklmnopqrstuvwxyz`  
 **Anonymized:** `GitHub Token: <API_KEY>`  
-
-**Source:** API & Authentication Tokens  
-**Original:** `Stripe API: rk_live_abcd1234efgh5678ijkl9012mnop3456`  
-**Anonymized:** `Stripe API: <API_KEY>`  
 
 **Source:** API & Authentication Tokens  
 **Original:** `rt_live_abcdef1234567890ghijklmnop9876543210`  
@@ -356,10 +364,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Extended Government & Education IDs  
 **Original:** `Sozialhilfe: B65432100`  
 **Anonymized:** `Sozialhilfe: <BENEFIT_ID>`  
-
-**Source:** Failed  
-**Original:** `Meine Sozialhilfekarte ist B11223344`  
-**Anonymized:** `Meine Sozialhilfekarte ist <BENEFIT_ID>`  
 
 ---
 
@@ -473,6 +477,10 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Número de expediente: EXP-2023-999`  
 **Anonymized:** `<CASE_REFERENCE>`  
 
+**Source:** Case Reference (Multilingual)  
+**Original:** `Expediente #EXP-2024-111`  
+**Anonymized:** `<CASE_REFERENCE>`  
+
 ---
 
 ### it
@@ -491,14 +499,6 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Case Reference (Multilingual)  
 **Original:** `Numéro de dossier: ND-2024-001`  
-**Anonymized:** `<CASE_REFERENCE>`  
-
----
-
-### ro
-
-**Source:** Case Reference (Multilingual)  
-**Original:** `Expediente #EXP-2024-111`  
 **Anonymized:** `<CASE_REFERENCE>`  
 
 ---
@@ -557,6 +557,14 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### en
+
+**Source:** Commercial Register (European)  
+**Original:** `RCS Paris B 678901`  
+**Anonymized:** `<COMMERCIAL_REGISTER>`  
+
+---
+
 ### es
 
 **Source:** Commercial Register (European)  
@@ -578,14 +586,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Commercial Register (European)  
 **Original:** `L'impresa è iscritta nel Registro delle Imprese di Roma, sezione B, numero 345678.`  
 **Anonymized:** `L'impresa è iscritta nel <COMMERCIAL_REGISTER>, numero 345678.`  
-
----
-
-### lt
-
-**Source:** Commercial Register (European)  
-**Original:** `RCS Paris B 678901`  
-**Anonymized:** `<COMMERCIAL_REGISTER>`  
 
 ---
 
@@ -611,23 +611,19 @@ This document demonstrates all PII entity types found by the filter.
 
 ## CREDIT_CARD
 
-### ca
-
-**Source:** Payments  
-**Original:** `Visa 4111 1111 1111 1111, Amex 3782 822463 10005.`  
-**Anonymized:** `Visa <CREDIT_CARD>, Amex <CREDIT_CARD>.`  
-
-**Source:** Payments  
-**Original:** `Visa 4111 1111 1111 1111, Amex 3782 822463 10005.`  
-**Anonymized:** `Visa <CREDIT_CARD>, Amex <CREDIT_CARD>.`  
-
----
-
 ### tl
 
 **Source:** German - Payments/Bank  
 **Original:** `Visa 4111 1111 1111 1111`  
 **Anonymized:** `Visa <CREDIT_CARD>`  
+
+**Source:** Payments  
+**Original:** `Visa 4111 1111 1111 1111, Amex 3782 822463 10005.`  
+**Anonymized:** `Visa <CREDIT_CARD>, Amex <CREDIT_CARD>.`  
+
+**Source:** Payments  
+**Original:** `Visa 4111 1111 1111 1111, Amex 3782 822463 10005.`  
+**Anonymized:** `Visa <CREDIT_CARD>, Amex <CREDIT_CARD>.`  
 
 ---
 
@@ -707,6 +703,22 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Ruf mich unter 12-03-2023 an.`  
 **Anonymized:** `Ruf mich unter <DATE> an.`  
 
+**Source:** some examples:  
+**Original:** `Mein Name ist Max Mustermann, geboren am 31.12.1990.`  
+**Anonymized:** `Mein Name ist <PERSON>, geboren am <DATE>.`  
+
+**Source:** some examples:  
+**Original:** `ich Heisse Max Mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich Heisse <PERSON> und ich bin am <DATE> geboren.`  
+
+**Source:** some examples:  
+**Original:** `ich heisse Max Mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich heisse <PERSON> und ich bin am <DATE> geboren.`  
+
+**Source:** some examples:  
+**Original:** `ich heisse max mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich heisse <PERSON> und ich bin am <DATE> geboren.`  
+
 ---
 
 ### en
@@ -746,14 +758,6 @@ This document demonstrates all PII entity types found by the filter.
 ---
 
 ## DEVICE_ID
-
-### de
-
-**Source:** Failed  
-**Original:** `Meine Geräte-ID ist DEV-999888777`  
-**Anonymized:** `Meine Geräte-ID ist <DEVICE_ID>`  
-
----
 
 ### en
 
@@ -820,6 +824,10 @@ This document demonstrates all PII entity types found by the filter.
 ### de
 
 **Source:** German - Basics  
+**Original:** `Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.`  
+**Anonymized:** `Meine E-Mail ist <EMAIL_ADDRESS> und meine Nummer ist 0176 12345678.`  
+
+**Source:** some examples 2:  
 **Original:** `Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.`  
 **Anonymized:** `Meine E-Mail ist <EMAIL_ADDRESS> und meine Nummer ist 0176 12345678.`  
 
@@ -1123,10 +1131,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Student ID: 20240987654`  
 **Anonymized:** `Student ID: <ID_NUMBER>`  
 
-**Source:** Financial & Routing  
-**Original:** `Transit Number: 001005124`  
-**Anonymized:** `Transit Number: <ID_NUMBER>`  
-
 **Source:** Extended Government & Education IDs  
 **Original:** `UDID: DEV-555666777`  
 **Anonymized:** `UDID: DEV-<ID_NUMBER>`  
@@ -1134,6 +1138,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Steuer-ID: DE 123456789`  
 **Anonymized:** `Steuer-ID: DE <ID_NUMBER>`  
+
+**Source:** some examples:  
+**Original:** `USt-IdNr.: DE 123456789`  
+**Anonymized:** `USt-IdNr.: DE <ID_NUMBER>`  
 
 ---
 
@@ -1150,6 +1158,14 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Financial & Routing  
 **Original:** `ABA: 123456789`  
 **Anonymized:** `ABA: <ID_NUMBER>`  
+
+---
+
+### id
+
+**Source:** Financial & Routing  
+**Original:** `Transit Number: 001005124`  
+**Anonymized:** `Transit Number: <ID_NUMBER>`  
 
 ---
 
@@ -1333,6 +1349,14 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `20095 Hamburg (Altstadt)`  
 **Anonymized:** `<LOCATION> (Altstadt)`  
 
+**Source:** some examples:  
+**Original:** `Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).`  
+**Anonymized:** `Ich wohne <ADDRESS> (<LOCATION>).`  
+
+**Source:** some examples 3:  
+**Original:** `Gibt es in Tempelhof-Shöneberg Beratungsstellen für Gastronomiebetriebe?`  
+**Anonymized:** `<LOCATION> in Tempelhof-Shöneberg Beratungsstellen für Gastronomiebetriebe?`  
+
 ---
 
 ### en
@@ -1465,10 +1489,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Meine Militärnummer: M66677788`  
 **Anonymized:** `Meine Militärnummer: <MILITARY_ID>`  
 
-**Source:** Failed  
-**Original:** `Meine Militärausweis ist M55667788`  
-**Anonymized:** `Meine Militärausweis ist <MILITARY_ID>`  
-
 ---
 
 ### en
@@ -1560,6 +1580,14 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Government & Official IDs  
 **Original:** `Welfare ID: WEL-2024-456789`  
 **Anonymized:** `Welfare ID: WEL-2024-456789`  
+
+**Source:** some examples 2:  
+**Original:** `ich will Gewerbe anmelden.`  
+**Anonymized:** `ich will Gewerbe anmelden.`  
+
+**Source:** some examples 3:  
+**Original:** `Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?`  
+**Anonymized:** `Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?`  
 
 ---
 
@@ -1757,10 +1785,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `PHPSESSID: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
 **Anonymized:** `<PASSPORT>: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
 
-**Source:** Government & Official IDs  
-**Original:** `Electoral Card: 123-456-789-012`  
-**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
-
 ---
 
 ### de
@@ -1776,6 +1800,22 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Extended Government & Education IDs  
 **Original:** `Aufenthaltserlaubnis: RP999888`  
 **Anonymized:** `Aufenthaltserlaubnis: <PASSPORT>`  
+
+**Source:** some examples:  
+**Original:** `Personalausweisnummer: T22000129`  
+**Anonymized:** `Personalausweisnummer: <PASSPORT>`  
+
+**Source:** some examples 2:  
+**Original:** `Personalausweisnummer: T22000129`  
+**Anonymized:** `Personalausweisnummer: <PASSPORT>`  
+
+**Source:** some examples 3:  
+**Original:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen`  
+**Anonymized:** `Hallo mein Name ist <PERSON>. <PERSON> ist <PASSPORT>. Ich möchte einen neuen Personalausweis <PASSPORT>`  
+
+**Source:** some examples 3:  
+**Original:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen`  
+**Anonymized:** `Hallo mein Name ist <PERSON>. <PERSON> ist <PASSPORT>. Ich möchte einen neuen Personalausweis <PASSPORT>`  
 
 ---
 
@@ -1849,6 +1889,10 @@ This document demonstrates all PII entity types found by the filter.
 
 ### es
 
+**Source:** Government & Official IDs  
+**Original:** `Electoral Card: 123-456-789-012`  
+**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
+
 **Source:** Extended Government & Education IDs  
 **Original:** `Permiso de residencia: RP666777`  
 **Anonymized:** `Permiso de residencia: <PASSPORT>`  
@@ -1905,14 +1949,6 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `Password is SuperStr0ng!Key#2025`  
-**Anonymized:** `<PASSWORD>`  
-
----
-
-### ca
-
-**Source:** Authentication Secrets  
-**Original:** `pwd: ComplexPass#789Arabic`  
 **Anonymized:** `<PASSWORD>`  
 
 ---
@@ -2004,16 +2040,16 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PASSWORD>`  
 
 **Source:** Authentication Secrets  
+**Original:** `pwd: ComplexPass#789Arabic`  
+**Anonymized:** `<PASSWORD>`  
+
+**Source:** Authentication Secrets  
 **Original:** `pwd: Arabic$Pass789Secure`  
 **Anonymized:** `<PASSWORD>`  
 
 **Source:** API & Authentication Tokens  
 **Original:** `One-time password: 234567`  
 **Anonymized:** `One-time <PASSWORD>`  
-
-**Source:** Failed  
-**Original:** `one_time_password=987654`  
-**Anonymized:** `one_time_<PASSWORD>`  
 
 ---
 
@@ -2043,11 +2079,15 @@ This document demonstrates all PII entity types found by the filter.
 
 ## PAYMENT_TOKEN
 
-### en
+### cy
 
 **Source:** API & Authentication Tokens  
 **Original:** `OAuth Token: ac2220a67b28eb907d90d07f051875275cab6b20`  
 **Anonymized:** `OAuth Token: <PAYMENT_TOKEN>`  
+
+---
+
+### en
 
 **Source:** API & Authentication Tokens  
 **Original:** `Auth Token: 4517d1f2-4f81-4e1d-a6a8-c5c9d1b3f5d7`  
@@ -2159,6 +2199,110 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `"Ich bin Beschäftigt Schmidt."`  
 **Anonymized:** `"Ich bin <PERSON>."`  
 
+**Source:** some examples:  
+**Original:** `Mein Name ist Max Mustermann, geboren am 31.12.1990.`  
+**Anonymized:** `Mein Name ist <PERSON>, geboren am <DATE>.`  
+
+**Source:** some examples:  
+**Original:** `ich Heisse Max Mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich Heisse <PERSON> und ich bin am <DATE> geboren.`  
+
+**Source:** some examples:  
+**Original:** `ich heisse Max Mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich heisse <PERSON> und ich bin am <DATE> geboren.`  
+
+**Source:** some examples:  
+**Original:** `ich heisse max mustermann und ich bin am 31.12.1990 geboren.`  
+**Anonymized:** `ich heisse <PERSON> und ich bin am <DATE> geboren.`  
+
+**Source:** some examples 2:  
+**Original:** `ich bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+**Anonymized:** `ich bin <PERSON> und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+
+**Source:** some examples 2:  
+**Original:** `Ich Bin Anna Müller und ich wohne in der Blablastrasse 9, Berlin 10999. Ich will ein Gewerbe anmelden`  
+**Anonymized:** `Ich Bin <PERSON> und ich wohne in der Blablastrasse 9, Berlin 10999. Ich will ein Gewerbe anmelden`  
+
+**Source:** some examples 2:  
+**Original:** `ich Bin Sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+**Anonymized:** `ich Bin <PERSON> und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+
+**Source:** some examples 2:  
+**Original:** `ich bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+**Anonymized:** `ich bin <PERSON> und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+
+**Source:** some examples 2:  
+**Original:** `ich Bin sebastian Holz und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+**Anonymized:** `ich Bin <PERSON> und ich wohne in blablastrasse. 9, wer bist du? Ich will ein Gewerbe anmelden`  
+
+**Source:** some examples 2:  
+**Original:** `Guten Tag, mein name ist Frank Verz, ich möchte ein Gewerbe anmelden.`  
+**Anonymized:** `Guten Tag, mein name ist <PERSON>, ich möchte ein Gewerbe anmelden.`  
+
+**Source:** some examples 3:  
+**Original:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen`  
+**Anonymized:** `Hallo mein Name ist <PERSON>. <PERSON> ist <PASSPORT>. Ich möchte einen neuen Personalausweis <PASSPORT>`  
+
+**Source:** some examples 3:  
+**Original:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen`  
+**Anonymized:** `Hallo mein Name ist <PERSON>. <PERSON> ist <PASSPORT>. Ich möchte einen neuen Personalausweis <PASSPORT>`  
+
+**Source:** some examples 3:  
+**Original:** `Ich bin Elektriker und habe meine Ausbildung in Polen gemacht. Wie geht das mit Anerkennung?`  
+**Anonymized:** `Ich bin <PERSON> habe <PERSON> in Polen gemacht. Wie geht das mit Anerkennung?`  
+
+**Source:** some examples 3:  
+**Original:** `Ich bin Elektriker und habe meine Ausbildung in Polen gemacht. Wie geht das mit Anerkennung?`  
+**Anonymized:** `Ich bin <PERSON> habe <PERSON> in Polen gemacht. Wie geht das mit Anerkennung?`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin nicht beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin heute beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin beschäftigt heute.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin sehr beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin beschäftigt sehr`  
+**Anonymized:** `Ich bin <PERSON>`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin beschäftigt einfach.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin einfach beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin Beschäftigt."`  
+**Anonymized:** `Ich bin <PERSON>."`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin mark und bin beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON> bin beschäftigt.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin Mark und bin beschäftigt.`  
+**Anonymized:** `Ich bin <PERSON> bin beschäftigt.`  
+
+**Source:** some examples 4:  
+**Original:** `Ich bin beschäftigt schon.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
 ---
 
 ### en
@@ -2205,6 +2349,14 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### sv
+
+**Source:** some examples 4:  
+**Original:** `Ich bin mark.`  
+**Anonymized:** `Ich bin <PERSON>.`  
+
+---
+
 ### tr
 
 **Source:** Turkish  
@@ -2230,8 +2382,8 @@ This document demonstrates all PII entity types found by the filter.
 ### ca
 
 **Source:** Government & Official IDs  
-**Original:** `Electoral Card: 123-456-789-012`  
-**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
+**Original:** `Travel Document: TD-2024-111222`  
+**Anonymized:** `Travel Document: TD-<PHONE_NUMBER>`  
 
 ---
 
@@ -2282,10 +2434,6 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `Email: <EMAIL_ADDRESS>, Phone: <PHONE_NUMBER>`  
 
 **Source:** Government & Official IDs  
-**Original:** `Driving License: 1234567/ABC/2015/00123`  
-**Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
-
-**Source:** Government & Official IDs  
 **Original:** `EU Driver License: 1234567/19/AB/CD`  
 **Anonymized:** `EU Driver <PRO_LICENSE>: <PHONE_NUMBER>/19/AB/CD`  
 
@@ -2326,6 +2474,10 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PERSON>: <PHONE_NUMBER>`  
 
 **Source:** Government & Official IDs  
+**Original:** `Electoral Card: 123-456-789-012`  
+**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
+
+**Source:** Government & Official IDs  
 **Original:** `Contractor License: CTR-2024-777888`  
 **Anonymized:** `Contractor <PRO_LICENSE>: CTR-<PHONE_NUMBER>`  
 
@@ -2339,19 +2491,19 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### nl
+
+**Source:** Government & Official IDs  
+**Original:** `Driving License: 1234567/ABC/2015/00123`  
+**Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
+
+---
+
 ### pt
 
 **Source:** Turkish  
 **Original:** `E‑posta adresim ahmet.yilmaz@example.com ve telefon numaram 0555 123 45 67.`  
 **Anonymized:** `E‑posta adresim <EMAIL_ADDRESS> ve telefon numaram <PHONE_NUMBER>.`  
-
----
-
-### ro
-
-**Source:** Government & Official IDs  
-**Original:** `Travel Document: TD-2024-111222`  
-**Anonymized:** `Travel Document: TD-<PHONE_NUMBER>`  
 
 ---
 
@@ -2364,7 +2516,7 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PIN>`  
 
 **Source:** Authentication Secrets  
-**Original:** `code-secret: 6666`  
+**Original:** `code-secret: 1010`  
 **Anonymized:** `<PIN>`  
 
 **Source:** Authentication Secrets  
@@ -2384,7 +2536,11 @@ This document demonstrates all PII entity types found by the filter.
 ### en
 
 **Source:** Authentication Secrets  
-**Original:** `Personal ID Number: 3456`  
+**Original:** `personal id number: 6789`  
+**Anonymized:** `<PIN>`  
+
+**Source:** Authentication Secrets  
+**Original:** `personal identification number: 4444`  
 **Anonymized:** `<PIN>`  
 
 ---
@@ -2392,16 +2548,20 @@ This document demonstrates all PII entity types found by the filter.
 ### fr
 
 **Source:** Authentication Secrets  
-**Original:** `code-secret: 1010`  
+**Original:** `code-secret: 6666`  
+**Anonymized:** `<PIN>`  
+
+---
+
+### id
+
+**Source:** Authentication Secrets  
+**Original:** `Personal ID Number: 3456`  
 **Anonymized:** `<PIN>`  
 
 ---
 
 ### it
-
-**Source:** Authentication Secrets  
-**Original:** `personal identification number: 4444`  
-**Anonymized:** `<PIN>`  
 
 **Source:** Authentication Secrets  
 **Original:** `personal identification number: 8888`  
@@ -2430,14 +2590,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Authentication Secrets  
 **Original:** `Codice PIN: 1111`  
 **Anonymized:** `Codice <PIN>`  
-
----
-
-### sv
-
-**Source:** Authentication Secrets  
-**Original:** `personal id number: 6789`  
-**Anonymized:** `<PIN>`  
 
 ---
 
@@ -2515,7 +2667,7 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### fr
+### es
 
 **Source:** Location & Geographic Codes  
 **Original:** `plus_code: 8QQH+RR Lagos`  
@@ -2526,10 +2678,6 @@ This document demonstrates all PII entity types found by the filter.
 ## PRO_LICENSE
 
 ### en
-
-**Source:** Government & Official IDs  
-**Original:** `Driving License: 1234567/ABC/2015/00123`  
-**Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
 
 **Source:** Government & Official IDs  
 **Original:** `License Number: SMITH121080A1A2`  
@@ -2572,6 +2720,10 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `Driver <PRO_LICENSE>: <DRIVER_LICENSE>`  
 
 **Source:** Government & Official IDs  
+**Original:** `Driving License: 1234567/ABC/2015/00123`  
+**Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
+
+**Source:** Government & Official IDs  
 **Original:** `License Number: PROF-000123456`  
 **Anonymized:** `License Number: <PRO_LICENSE>`  
 
@@ -2594,11 +2746,19 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 22222222`  
+**Original:** `pin-unlock-key: 87654321`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 98765432`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
 **Original:** `PUK: 34567890`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 09876543`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
@@ -2622,27 +2782,11 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 67890123`  
-**Anonymized:** `<PUK>`  
-
-**Source:** Authentication Secrets  
-**Original:** `PUK: 32109876`  
-**Anonymized:** `<PUK>`  
-
-**Source:** Authentication Secrets  
 **Original:** `PUK: 66666666`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 78901234`  
-**Anonymized:** `<PUK>`  
-
-**Source:** Authentication Secrets  
 **Original:** `PUK: 43210987`  
-**Anonymized:** `<PUK>`  
-
-**Source:** Authentication Secrets  
-**Original:** `PUK: 77777777`  
 **Anonymized:** `<PUK>`  
 
 ---
@@ -2679,14 +2823,6 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### sv
-
-**Source:** Authentication Secrets  
-**Original:** `pin-unlock-key: 87654321`  
-**Anonymized:** `<PUK>`  
-
----
-
 ### tl
 
 **Source:** Authentication Secrets  
@@ -2694,15 +2830,27 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 98765432`  
+**Original:** `PUK: 22222222`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 09876543`  
+**Original:** `PUK: 67890123`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 32109876`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
 **Original:** `PUK: 78901234`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 78901234`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 77777777`  
 **Anonymized:** `<PUK>`  
 
 ---
@@ -2713,6 +2861,10 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `backup-code: XYZ-ABC-789-012`  
+**Anonymized:** `<RECOVERY_CODE>`  
+
+**Source:** Authentication Secrets  
+**Original:** `backup-code: BCD-EFG-890-123`  
 **Anonymized:** `<RECOVERY_CODE>`  
 
 ---
@@ -2733,10 +2885,6 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `recovery-code: DEF-GHI-234-567`  
-**Anonymized:** `<RECOVERY_CODE>`  
-
-**Source:** Authentication Secrets  
-**Original:** `backup-code: BCD-EFG-890-123`  
 **Anonymized:** `<RECOVERY_CODE>`  
 
 **Source:** Authentication Secrets  
@@ -2877,10 +3025,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Routing Number: 021000021`  
 **Anonymized:** `Routing Number: <ROUTING_NUMBER>`  
 
----
-
-### id
-
 **Source:** Financial & Routing  
 **Original:** `Bank Routing: 061000146`  
 **Anonymized:** `Bank Routing: <ROUTING_NUMBER>`  
@@ -3003,7 +3147,7 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### en
+### nl
 
 **Source:** Extended Government & Education IDs  
 **Original:** `My student ID is STU-54321`  
@@ -3140,6 +3284,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Tax Number: FR 1234567890`  
 **Anonymized:** `Tax Number: <TAX_ID>`  
+
+**Source:** some examples:  
+**Original:** `Steuer-ID: 12 345 678 901`  
+**Anonymized:** `Steuer-ID: <TAX_ID>`  
 
 ---
 
