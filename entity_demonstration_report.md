@@ -1,6 +1,6 @@
 # Comprehensive Entity Type Demonstration
 
-**Generated**: 2026-02-18 14:44:00
+**Generated**: 2026-02-18 19:46:53
 
 This document demonstrates all PII entity types found by the filter.
 **Note**: Each entry shows the original text and the anonymized result produced by `PIIFilter.anonymize_text()`.
@@ -199,7 +199,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** some examples 5:  
 **Original:** `ich habe meinen Abschluss als Elektriker in Polen gemacht und bin am 21.08.1995 geboren.`  
-**Anonymized:** `ich habe meinen <PASSPORT> als Elektriker <ADDRESS>.`  
+**Anonymized:** `ich habe meinen Abschluss als Elektriker <ADDRESS>.`  
 
 ---
 
@@ -212,10 +212,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** US Tax & IDs  
 **Original:** `Address: 742 Evergreen Terrace, 90210 Beverly Hills.`  
 **Anonymized:** `Address: <ADDRESS>.`  
-
-**Source:** Authentication Secrets  
-**Original:** `PUK: 1010101`  
-**Anonymized:** `<ADDRESS>101`  
 
 **Source:** Authentication Secrets  
 **Original:** `PUK: 1111111`  
@@ -238,6 +234,10 @@ This document demonstrates all PII entity types found by the filter.
 ### fr
 
 **Source:** French  
+**Original:** `J'habite au 12 rue de Rivoli, 75001 Paris.`  
+**Anonymized:** `J'habite <ADDRESS>.`  
+
+**Source:** French  
 **Original:** `Mon email est marie.dupont@gmail.com et mon numéro est 06 12 34 56 78.`  
 **Anonymized:** `Mon email est <EMAIL_ADDRESS> et mon <ADDRESS> 12 34 56 78.`  
 
@@ -247,15 +247,11 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Numero di matricola: STU-99000`  
-**Anonymized:** `Numero di <PASSPORT>: <ADDRESS>`  
+**Anonymized:** `Numero di matricola: <ADDRESS>`  
 
 ---
 
 ### pt
-
-**Source:** French  
-**Original:** `J'habite au 12 rue de Rivoli, 75001 Paris.`  
-**Anonymized:** `J'habite <ADDRESS>.`  
 
 **Source:** Location & Geographic Codes  
 **Original:** `Postal: 28013`  
@@ -272,6 +268,14 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Extended Government & Education IDs  
 **Original:** `Matrikelnummer: STU-55666`  
 **Anonymized:** `Matrikelnummer: <ADDRESS>`  
+
+---
+
+### tl
+
+**Source:** Authentication Secrets  
+**Original:** `PUK: 1010101`  
+**Anonymized:** `<ADDRESS>101`  
 
 ---
 
@@ -317,9 +321,13 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `API Key: sk_live_abcDEF1234567890ghijkl`  
 **Anonymized:** `API Key: <API_KEY>`  
 
+---
+
+### de
+
 **Source:** API & Authentication Tokens  
-**Original:** `api_key: sk_test_9876543210fedcbaZYXW`  
-**Anonymized:** `api_key: <API_KEY>`  
+**Original:** `AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE`  
+**Anonymized:** `AWS_ACCESS_KEY_ID: <API_KEY>`  
 
 ---
 
@@ -367,11 +375,11 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### tl
+### no
 
 **Source:** API & Authentication Tokens  
-**Original:** `AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE`  
-**Anonymized:** `AWS_ACCESS_KEY_ID: <API_KEY>`  
+**Original:** `api_key: sk_test_9876543210fedcbaZYXW`  
+**Anonymized:** `api_key: <API_KEY>`  
 
 ---
 
@@ -473,10 +481,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Voter Number: VN-2024-554433`  
 **Anonymized:** `Voter Number: <CASE_REFERENCE>`  
 
-**Source:** Financial & Routing  
-**Original:** `Ticket Number: TKT-2024-111222`  
-**Anonymized:** `<CASE_REFERENCE>`  
-
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Dossier: DOSS2024999888`  
 **Anonymized:** `<CASE_REFERENCE>`  
@@ -543,6 +547,14 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Case Reference (Multilingual)  
 **Original:** `Numéro de dossier: ND-2024-001`  
+**Anonymized:** `<CASE_REFERENCE>`  
+
+---
+
+### sv
+
+**Source:** Financial & Routing  
+**Original:** `Ticket Number: TKT-2024-111222`  
 **Anonymized:** `<CASE_REFERENCE>`  
 
 ---
@@ -645,7 +657,7 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### ro
+### pt
 
 **Source:** Commercial Register (European)  
 **Original:** `REA Roma 234567`  
@@ -673,14 +685,6 @@ This document demonstrates all PII entity types found by the filter.
 
 ## CRYPTO_ADDRESS
 
-### en
-
-**Source:** Crypto  
-**Original:** `bech32: bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080,`  
-**Anonymized:** `bech32: <CRYPTO_ADDRESS>,`  
-
----
-
 ### id
 
 **Source:** Crypto  
@@ -694,6 +698,14 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Crypto  
 **Original:** `ETH: 0x52908400098527886e0f7030069857d2e4169ee7`  
 **Anonymized:** `ETH: <CRYPTO_ADDRESS>`  
+
+---
+
+### pl
+
+**Source:** Crypto  
+**Original:** `bech32: bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080,`  
+**Anonymized:** `bech32: <CRYPTO_ADDRESS>,`  
 
 ---
 
@@ -806,16 +818,12 @@ This document demonstrates all PII entity types found by the filter.
 ### en
 
 **Source:** Extended Government & Education IDs  
-**Original:** `My device ID is DEV-987654321`  
-**Anonymized:** `My device ID is <DEVICE_ID>`  
-
----
-
-### nl
-
-**Source:** Extended Government & Education IDs  
 **Original:** `Device ID: DEV-123456789`  
 **Anonymized:** `Device ID: <DEVICE_ID>`  
+
+**Source:** Extended Government & Education IDs  
+**Original:** `My device ID is DEV-987654321`  
+**Anonymized:** `My device ID is <DEVICE_ID>`  
 
 ---
 
@@ -951,15 +959,11 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### fr
+### pt
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Numéro d'employé: EMP-33444`  
 **Anonymized:** `Numéro d'employé: <EMPLOYEE_ID>`  
-
----
-
-### pt
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Número de empleado: EMP-66677`  
@@ -995,6 +999,10 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `EORI: FR123456789`  
 **Anonymized:** `EORI: <EORI>`  
 
+**Source:** Extended Government & Education IDs  
+**Original:** `EORI ES 111222333`  
+**Anonymized:** `EORI <EORI>`  
+
 ---
 
 ### en
@@ -1006,14 +1014,6 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Extended Government & Education IDs  
 **Original:** `EORI: IT987654321`  
 **Anonymized:** `EORI: <EORI>`  
-
----
-
-### es
-
-**Source:** Extended Government & Education IDs  
-**Original:** `EORI ES 111222333`  
-**Anonymized:** `EORI <EORI>`  
 
 ---
 
@@ -1105,7 +1105,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Health  
 **Original:** `NHS number 943 476 5919, MRN: ABC-123456, Insurance policy: POL-987654321.`  
-**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, <PASSPORT> policy: <INSURANCE_ID>.`  
+**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, Insurance policy: <INSURANCE_ID>.`  
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Health ID: 943 476 5919`  
@@ -1183,45 +1183,9 @@ This document demonstrates all PII entity types found by the filter.
 
 ### de
 
-**Source:** German - Basics  
-**Original:** `USt-IdNr.: DE 123456789`  
-**Anonymized:** `USt-IdNr.: DE <ID_NUMBER>`  
-
 **Source:** Government & Official IDs  
 **Original:** `Student ID: 20240987654`  
 **Anonymized:** `Student ID: <ID_NUMBER>`  
-
-**Source:** Financial & Routing  
-**Original:** `Transit Number: 001005124`  
-**Anonymized:** `Transit Number: <ID_NUMBER>`  
-
-**Source:** Extended Government & Education IDs  
-**Original:** `UDID: DEV-555666777`  
-**Anonymized:** `UDID: DEV-<ID_NUMBER>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `Steuer-ID: DE 123456789`  
-**Anonymized:** `Steuer-ID: DE <ID_NUMBER>`  
-
-**Source:** some examples:  
-**Original:** `USt-IdNr.: DE 123456789`  
-**Anonymized:** `USt-IdNr.: DE <ID_NUMBER>`  
-
----
-
-### fr
-
-**Source:** Extended Government & Education IDs  
-**Original:** `Numéro d'établissement: NE ES 444555666`  
-**Anonymized:** `Numéro d'établissement: NE ES <ID_NUMBER>`  
-
----
-
-### hu
-
-**Source:** Financial & Routing  
-**Original:** `ABA: 123456789`  
-**Anonymized:** `ABA: <ID_NUMBER>`  
 
 ---
 
@@ -1233,27 +1197,19 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### nl
-
-**Source:** Extended Government & Education IDs  
-**Original:** `Device identifier: DEV-444555666`  
-**Anonymized:** `Device identifier: DEV-<ID_NUMBER>`  
-
----
-
-### so
+### pt
 
 **Source:** Spanish  
 **Original:** `ID No.: X1234567`  
 **Anonymized:** `ID No.: <ID_NUMBER>`  
 
+---
+
+### so
+
 **Source:** US Tax & IDs  
 **Original:** `SSN: 536-80-4398`  
 **Anonymized:** `SSN: <ID_NUMBER>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `Tax ID: CH CHE 123456789 TVA`  
-**Anonymized:** `Tax ID: CH CHE <ID_NUMBER> TVA`  
 
 ---
 
@@ -1289,19 +1245,15 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Health  
 **Original:** `NHS number 943 476 5919, MRN: ABC-123456, Insurance policy: POL-987654321.`  
-**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, <PASSPORT> policy: <INSURANCE_ID>.`  
+**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, Insurance policy: <INSURANCE_ID>.`  
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Insurance ID Policy123456`  
-**Anonymized:** `<PASSPORT> ID <INSURANCE_ID>`  
-
----
-
-### id
+**Anonymized:** `Insurance ID <INSURANCE_ID>`  
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Insurance member: MYINSUR1234567`  
-**Anonymized:** `<PASSPORT> member: <INSURANCE_ID>`  
+**Anonymized:** `Insurance member: <INSURANCE_ID>`  
 
 ---
 
@@ -1373,7 +1325,7 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### en
+### fr
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `License Plate: AB 12 CDE`  
@@ -1500,10 +1452,6 @@ This document demonstrates all PII entity types found by the filter.
 ### de
 
 **Source:** Healthcare & Administrative IDs  
-**Original:** `Discord: john_doe#1234`  
-**Anonymized:** `Discord: <MESSAGING_ID>`  
-
-**Source:** Healthcare & Administrative IDs  
 **Original:** `Line: line_user_9999`  
 **Anonymized:** `Line: <MESSAGING_ID>`  
 
@@ -1526,6 +1474,14 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Skype: alice.work.domain`  
 **Anonymized:** `Skype: <MESSAGING_ID>`  
+
+---
+
+### nl
+
+**Source:** Healthcare & Administrative IDs  
+**Original:** `Discord: john_doe#1234`  
+**Anonymized:** `Discord: <MESSAGING_ID>`  
 
 ---
 
@@ -1571,7 +1527,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Carte militaire: M88899900`  
-**Anonymized:** `Carte <PASSPORT>: <MILITARY_ID>`  
+**Anonymized:** `Carte militaire: <MILITARY_ID>`  
 
 ---
 
@@ -1589,7 +1545,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Health  
 **Original:** `NHS number 943 476 5919, MRN: ABC-123456, Insurance policy: POL-987654321.`  
-**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, <PASSPORT> policy: <INSURANCE_ID>.`  
+**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, Insurance policy: <INSURANCE_ID>.`  
 
 ---
 
@@ -1603,7 +1559,11 @@ This document demonstrates all PII entity types found by the filter.
 
 ## NO_ENTITY
 
-### ca
+### cy
+
+**Source:** API & Authentication Tokens  
+**Original:** `PHPSESSID: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
+**Anonymized:** `PHPSESSID: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
 
 **Source:** API & Authentication Tokens  
 **Original:** `Android ID: 7a1b8c9d0e1f2a3b4c5d6e7f`  
@@ -1696,6 +1656,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Government & Official IDs  
 **Original:** `Welfare ID: WEL-2024-456789`  
 **Anonymized:** `Welfare ID: WEL-2024-456789`  
+
+**Source:** Extended Government & Education IDs  
+**Original:** `UDID: DEV-555666777`  
+**Anonymized:** `UDID: DEV-555666777`  
 
 **Source:** some examples 2:  
 **Original:** `ich will Gewerbe anmelden.`  
@@ -1809,10 +1773,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Ich bin mark schmidt.`  
 **Anonymized:** `Ich bin mark schmidt.`  
 
-**Source:** some examples 4:  
-**Original:** `Ich bin beschäftigt schon.`  
-**Anonymized:** `Ich bin beschäftigt schon.`  
-
 ---
 
 ### en
@@ -1820,6 +1780,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** API & Authentication Tokens  
 **Original:** `Device Identifier: AABBCCDDEE11223344556677`  
 **Anonymized:** `Device Identifier: AABBCCDDEE11223344556677`  
+
+**Source:** Government & Official IDs  
+**Original:** `Residence Permit: RP-2024-123456`  
+**Anonymized:** `Residence Permit: RP-2024-123456`  
 
 **Source:** Government & Official IDs  
 **Original:** `Military ID: MIL-2024-777888`  
@@ -1869,6 +1833,10 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Medications: Insulin, Metformin`  
 **Anonymized:** `Medications: Insulin, Metformin`  
 
+**Source:** Healthcare & Administrative IDs  
+**Original:** `Reference: REF2024555444`  
+**Anonymized:** `Reference: REF2024555444`  
+
 ---
 
 ### es
@@ -1908,6 +1876,18 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Authentication Secrets  
 **Original:** `Codice Autenticazione: 234567`  
 **Anonymized:** `Codice Autenticazione: 234567`  
+
+**Source:** Healthcare & Administrative IDs  
+**Original:** `Fascicolo: FASC2024456789`  
+**Anonymized:** `Fascicolo: FASC2024456789`  
+
+---
+
+### nl
+
+**Source:** Extended Government & Education IDs  
+**Original:** `Device identifier: DEV-444555666`  
+**Anonymized:** `Device identifier: DEV-444555666`  
 
 ---
 
@@ -2015,27 +1995,11 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### ca
-
-**Source:** API & Authentication Tokens  
-**Original:** `PHPSESSID: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
-**Anonymized:** `<PASSPORT>: 9a1f6d3a8e4b7c2f5d9b1a3e6c8f2b5d`  
-
-**Source:** Government & Official IDs  
-**Original:** `Electoral Card: 123-456-789-012`  
-**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
-
----
-
 ### de
 
 **Source:** German - Basics  
 **Original:** `Personalausweisnummer: T22000129`  
 **Anonymized:** `Personalausweisnummer: <PASSPORT>`  
-
-**Source:** US Tax & IDs  
-**Original:** `U.S. Passport: Z98765432`  
-**Anonymized:** `U.S. Passport: <PASSPORT>`  
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Meine Wählerausweinnummer: V4455667`  
@@ -2061,10 +2025,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beantragen`  
 **Anonymized:** `Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist <PASSPORT>. Ich möchte einen neuen Personalausweis beantragen`  
 
-**Source:** some examples 5:  
-**Original:** `ich habe meinen Abschluss als Elektriker in Polen gemacht und bin am 21.08.1995 geboren.`  
-**Anonymized:** `ich habe meinen <PASSPORT> als Elektriker <ADDRESS>.`  
-
 ---
 
 ### en
@@ -2075,43 +2035,19 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** French  
 **Original:** `Passeport (UE): AB1234567`  
-**Anonymized:** `<PASSPORT> (UE): <PASSPORT>`  
+**Anonymized:** `Passeport (UE): <PASSPORT>`  
 
-**Source:** French  
-**Original:** `Passeport (UE): AB1234567`  
-**Anonymized:** `<PASSPORT> (UE): <PASSPORT>`  
-
-**Source:** Health  
-**Original:** `NHS number 943 476 5919, MRN: ABC-123456, Insurance policy: POL-987654321.`  
-**Anonymized:** `NHS number <HEALTH_ID>, MRN: <MRN>, <PASSPORT> policy: <INSURANCE_ID>.`  
+**Source:** US Tax & IDs  
+**Original:** `U.S. Passport: Z98765432`  
+**Anonymized:** `U.S. Passport: <PASSPORT>`  
 
 **Source:** Government & Official IDs  
 **Original:** `DL: CA1234567`  
 **Anonymized:** `DL: <PASSPORT>`  
 
-**Source:** Government & Official IDs  
-**Original:** `Residence Permit: RP-2024-123456`  
-**Anonymized:** `<PASSPORT> Permit: RP-2024-123456`  
-
-**Source:** Government & Official IDs  
-**Original:** `Architect License: ARC-2024-111222`  
-**Anonymized:** `<PASSPORT> <PRO_LICENSE>: ARC-<PHONE_NUMBER>`  
-
-**Source:** Extended Government & Education IDs  
-**Original:** `My residence permit is RP654321`  
-**Anonymized:** `My <PASSPORT> permit is <RESIDENCE_PERMIT>`  
-
 **Source:** Extended Government & Education IDs  
 **Original:** `Allocations familiales: A55566677`  
 **Anonymized:** `Allocations familiales: <PASSPORT>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `Insurance ID Policy123456`  
-**Anonymized:** `<PASSPORT> ID <INSURANCE_ID>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `Reference: REF2024555444`  
-**Anonymized:** `<PASSPORT>: REF2024555444`  
 
 ---
 
@@ -2133,37 +2069,13 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Carte d'allocataire: C98765432`  
 **Anonymized:** `Carte d'allocataire: <PASSPORT>`  
 
-**Source:** Extended Government & Education IDs  
-**Original:** `Carte militaire: M88899900`  
-**Anonymized:** `Carte <PASSPORT>: <MILITARY_ID>`  
-
 ---
 
-### id
+### so
 
 **Source:** Healthcare & Administrative IDs  
-**Original:** `Insurance member: MYINSUR1234567`  
-**Anonymized:** `<PASSPORT> member: <INSURANCE_ID>`  
-
----
-
-### it
-
-**Source:** Extended Government & Education IDs  
-**Original:** `Numero di matricola: STU-99000`  
-**Anonymized:** `Numero di <PASSPORT>: <ADDRESS>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `Fascicolo: FASC2024456789`  
-**Anonymized:** `<PASSPORT>: FASC2024456789`  
-
----
-
-### ro
-
-**Source:** Extended Government & Education IDs  
-**Original:** `Residence permit: RP123456`  
-**Anonymized:** `<PASSPORT> permit: <RESIDENCE_PERMIT>`  
+**Original:** `Tax ID: CH CHE 123456789 TVA`  
+**Anonymized:** `Tax ID: CH CHE <PASSPORT> TVA`  
 
 ---
 
@@ -2244,10 +2156,6 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PASSWORD>`  
 
 **Source:** Authentication Secrets  
-**Original:** `Mot de passe: ComplicedPass#456French`  
-**Anonymized:** `<PASSWORD>`  
-
-**Source:** Authentication Secrets  
 **Original:** `pwd: French$Pass789Secure`  
 **Anonymized:** `<PASSWORD>`  
 
@@ -2293,6 +2201,10 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `Mot de passe: MotDePasse@Secure2024`  
+**Anonymized:** `<PASSWORD>`  
+
+**Source:** Authentication Secrets  
+**Original:** `Mot de passe: ComplicedPass#456French`  
 **Anonymized:** `<PASSWORD>`  
 
 **Source:** Authentication Secrets  
@@ -2487,14 +2399,6 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### ca
-
-**Source:** Government & Official IDs  
-**Original:** `Electoral Card: 123-456-789-012`  
-**Anonymized:** `<PASSPORT> Card: <PHONE_NUMBER>`  
-
----
-
 ### de
 
 **Source:** Government & Official IDs  
@@ -2542,10 +2446,6 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `Email: <EMAIL_ADDRESS>, Phone: <PHONE_NUMBER>`  
 
 **Source:** Government & Official IDs  
-**Original:** `EU Driver License: 1234567/19/AB/CD`  
-**Anonymized:** `EU Driver <PRO_LICENSE>: <PHONE_NUMBER>/19/AB/CD`  
-
-**Source:** Government & Official IDs  
 **Original:** `Service Number: SN-2024-333444`  
 **Anonymized:** `Service Number: SN-<PHONE_NUMBER>`  
 
@@ -2555,7 +2455,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Government & Official IDs  
 **Original:** `Architect License: ARC-2024-111222`  
-**Anonymized:** `<PASSPORT> <PRO_LICENSE>: ARC-<PHONE_NUMBER>`  
+**Anonymized:** `Architect <PRO_LICENSE>: ARC-<PHONE_NUMBER>`  
 
 **Source:** Government & Official IDs  
 **Original:** `Professional Registration: PRF-2024-333444`  
@@ -2582,6 +2482,10 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PERSON>: <PHONE_NUMBER>`  
 
 **Source:** Government & Official IDs  
+**Original:** `Electoral Card: 123-456-789-012`  
+**Anonymized:** `Electoral Card: <PHONE_NUMBER>`  
+
+**Source:** Government & Official IDs  
 **Original:** `Contractor License: CTR-2024-777888`  
 **Anonymized:** `Contractor <PRO_LICENSE>: CTR-<PHONE_NUMBER>`  
 
@@ -2595,11 +2499,31 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### hu
+
+**Source:** Financial & Routing  
+**Original:** `ABA: 123456789`  
+**Anonymized:** `ABA: <PHONE_NUMBER>`  
+
+---
+
+### id
+
+**Source:** Financial & Routing  
+**Original:** `Transit Number: 001005124`  
+**Anonymized:** `Transit Number: <PHONE_NUMBER>`  
+
+---
+
 ### nl
 
 **Source:** Government & Official IDs  
 **Original:** `Driving License: 1234567/ABC/2015/00123`  
 **Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
+
+**Source:** Government & Official IDs  
+**Original:** `EU Driver License: 1234567/19/AB/CD`  
+**Anonymized:** `EU Driver <PRO_LICENSE>: <PHONE_NUMBER>/19/AB/CD`  
 
 ---
 
@@ -2624,7 +2548,7 @@ This document demonstrates all PII entity types found by the filter.
 ### ca
 
 **Source:** Authentication Secrets  
-**Original:** `code-secret: 6666`  
+**Original:** `code-secret: 2222`  
 **Anonymized:** `<PIN>`  
 
 **Source:** Authentication Secrets  
@@ -2652,7 +2576,7 @@ This document demonstrates all PII entity types found by the filter.
 ### fr
 
 **Source:** Authentication Secrets  
-**Original:** `code-secret: 2222`  
+**Original:** `code-secret: 6666`  
 **Anonymized:** `<PIN>`  
 
 **Source:** Authentication Secrets  
@@ -2771,7 +2695,7 @@ This document demonstrates all PII entity types found by the filter.
 
 ## PLUS_CODE
 
-### en
+### es
 
 **Source:** Location & Geographic Codes  
 **Original:** `location_code: 7PHWJ4WJ+M2`  
@@ -2796,20 +2720,12 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `License Number: <PRO_LICENSE>`  
 
 **Source:** Government & Official IDs  
-**Original:** `EU Driver License: 1234567/19/AB/CD`  
-**Anonymized:** `EU Driver <PRO_LICENSE>: <PHONE_NUMBER>/19/AB/CD`  
-
-**Source:** Government & Official IDs  
 **Original:** `Professional License: LIC-2024-567890`  
 **Anonymized:** `Professional License: <PRO_LICENSE>`  
 
 **Source:** Government & Official IDs  
 **Original:** `Architect License: ARC-2024-111222`  
-**Anonymized:** `<PASSPORT> <PRO_LICENSE>: ARC-<PHONE_NUMBER>`  
-
-**Source:** Healthcare & Administrative IDs  
-**Original:** `License Plate: AB 12 CDE`  
-**Anonymized:** `<PRO_LICENSE> Plate: <LICENSE_PLATE>`  
+**Anonymized:** `Architect <PRO_LICENSE>: ARC-<PHONE_NUMBER>`  
 
 ---
 
@@ -2825,6 +2741,14 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
+### fr
+
+**Source:** Healthcare & Administrative IDs  
+**Original:** `License Plate: AB 12 CDE`  
+**Anonymized:** `<PRO_LICENSE> Plate: <LICENSE_PLATE>`  
+
+---
+
 ### nl
 
 **Source:** Government & Official IDs  
@@ -2834,6 +2758,10 @@ This document demonstrates all PII entity types found by the filter.
 **Source:** Government & Official IDs  
 **Original:** `Driving License: 1234567/ABC/2015/00123`  
 **Anonymized:** `Driving <PRO_LICENSE>: <PHONE_NUMBER>/ABC/2015/00123`  
+
+**Source:** Government & Official IDs  
+**Original:** `EU Driver License: 1234567/19/AB/CD`  
+**Anonymized:** `EU Driver <PRO_LICENSE>: <PHONE_NUMBER>/19/AB/CD`  
 
 **Source:** Government & Official IDs  
 **Original:** `License Number: PROF-000123456`  
@@ -2854,6 +2782,10 @@ This document demonstrates all PII entity types found by the filter.
 ### en
 
 **Source:** Authentication Secrets  
+**Original:** `PUK: 12345678`  
+**Anonymized:** `<PUK>`  
+
+**Source:** Authentication Secrets  
 **Original:** `PUK: 23456789`  
 **Anonymized:** `<PUK>`  
 
@@ -2866,7 +2798,7 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 34567890`  
+**Original:** `PUK: 09876543`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
@@ -2874,11 +2806,11 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 45678901`  
+**Original:** `PUK: 10987654`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 10987654`  
+**Original:** `PUK: 21098765`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
@@ -2891,10 +2823,6 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `PUK: 66666666`  
-**Anonymized:** `<PUK>`  
-
-**Source:** Authentication Secrets  
-**Original:** `PUK: 78901234`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
@@ -2946,11 +2874,11 @@ This document demonstrates all PII entity types found by the filter.
 ### tl
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 12345678`  
+**Original:** `PUK: 34567890`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 09876543`  
+**Original:** `PUK: 45678901`  
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
@@ -2958,7 +2886,7 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `<PUK>`  
 
 **Source:** Authentication Secrets  
-**Original:** `PUK: 21098765`  
+**Original:** `PUK: 78901234`  
 **Anonymized:** `<PUK>`  
 
 ---
@@ -2979,10 +2907,6 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `backup-code: XYZ-ABC-789-012`  
 **Anonymized:** `<RECOVERY_CODE>`  
 
-**Source:** Authentication Secrets  
-**Original:** `backup-code: BCD-EFG-890-123`  
-**Anonymized:** `<RECOVERY_CODE>`  
-
 ---
 
 ### en
@@ -3001,6 +2925,10 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Authentication Secrets  
 **Original:** `recovery-code: DEF-GHI-234-567`  
+**Anonymized:** `<RECOVERY_CODE>`  
+
+**Source:** Authentication Secrets  
+**Original:** `backup-code: BCD-EFG-890-123`  
 **Anonymized:** `<RECOVERY_CODE>`  
 
 **Source:** Authentication Secrets  
@@ -3117,7 +3045,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Extended Government & Education IDs  
 **Original:** `My residence permit is RP654321`  
-**Anonymized:** `My <PASSPORT> permit is <RESIDENCE_PERMIT>`  
+**Anonymized:** `My residence permit is <RESIDENCE_PERMIT>`  
 
 ---
 
@@ -3125,7 +3053,7 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** Extended Government & Education IDs  
 **Original:** `Residence permit: RP123456`  
-**Anonymized:** `<PASSPORT> permit: <RESIDENCE_PERMIT>`  
+**Anonymized:** `Residence permit: <RESIDENCE_PERMIT>`  
 
 ---
 
@@ -3152,6 +3080,14 @@ This document demonstrates all PII entity types found by the filter.
 ---
 
 ## SERVICEKONTO
+
+### cs
+
+**Source:** German E-Government IDs  
+**Original:** `Service-Konto: servicekonto_56789`  
+**Anonymized:** `<SERVICEKONTO>`  
+
+---
 
 ### da
 
@@ -3185,14 +3121,6 @@ This document demonstrates all PII entity types found by the filter.
 
 **Source:** German E-Government IDs  
 **Original:** `Servicekonto: 123456789`  
-**Anonymized:** `<SERVICEKONTO>`  
-
----
-
-### it
-
-**Source:** German E-Government IDs  
-**Original:** `Service-Konto: servicekonto_56789`  
 **Anonymized:** `<SERVICEKONTO>`  
 
 ---
@@ -3280,7 +3208,7 @@ This document demonstrates all PII entity types found by the filter.
 ### es
 
 **Source:** Authentication Secrets  
-**Original:** `Numero TAN: 567891`  
+**Original:** `Numero TAN: 678912`  
 **Anonymized:** `Numero <TAN>`  
 
 ---
@@ -3300,7 +3228,7 @@ This document demonstrates all PII entity types found by the filter.
 **Anonymized:** `Numero <TAN>`  
 
 **Source:** Authentication Secrets  
-**Original:** `Numero TAN: 678912`  
+**Original:** `Numero TAN: 567891`  
 **Anonymized:** `Numero <TAN>`  
 
 ---
@@ -3397,6 +3325,14 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Steuer-ID: 12 345 678 901`  
 **Anonymized:** `Steuer-ID: <TAX_ID>`  
 
+**Source:** German - Basics  
+**Original:** `USt-IdNr.: DE 123456789`  
+**Anonymized:** `USt-IdNr.: <TAX_ID>`  
+
+**Source:** Healthcare & Administrative IDs  
+**Original:** `Steuer-ID: DE 123456789`  
+**Anonymized:** `Steuer-ID: <TAX_ID>`  
+
 **Source:** Healthcare & Administrative IDs  
 **Original:** `VAT: GB 987654321`  
 **Anonymized:** `VAT: <TAX_ID>`  
@@ -3409,9 +3345,21 @@ This document demonstrates all PII entity types found by the filter.
 **Original:** `Steuer-ID: 12 345 678 901`  
 **Anonymized:** `Steuer-ID: <TAX_ID>`  
 
+**Source:** some examples:  
+**Original:** `USt-IdNr.: DE 123456789`  
+**Anonymized:** `USt-IdNr.: <TAX_ID>`  
+
 **Source:** some examples 5:  
 **Original:** `Steuer-ID: 12 345 678 901`  
 **Anonymized:** `Steuer-ID: <TAX_ID>`  
+
+---
+
+### fr
+
+**Source:** Extended Government & Education IDs  
+**Original:** `Numéro d'établissement: NE ES 444555666`  
+**Anonymized:** `Numéro d'établissement: NE <TAX_ID>`  
 
 ---
 
@@ -3457,15 +3405,11 @@ This document demonstrates all PII entity types found by the filter.
 
 ---
 
-### id
+### sv
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Task Number: TASK2024888`  
 **Anonymized:** `<TICKET_ID>`  
-
----
-
-### sv
 
 **Source:** Healthcare & Administrative IDs  
 **Original:** `Ticketnummer: TKT2024666`  
