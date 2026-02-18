@@ -846,6 +846,7 @@ Personalausweisnummer: T22000129
 Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?
 Gibt es in Tempelhof-Shöneberg Beratungsstellen für Gastronomiebetriebe?
 Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beanragen
+Hallo mein Name ist lukas fuchs. Meine Personalausweisnummer ist L01X00T47. Ich möchte einen neuen Personalausweis beantragen
 Ich bin Elektriker und habe meine Ausbildung in Polen gemacht. Wie geht das mit Anerkennung?
 """,
     "some examples 4:": """
@@ -861,7 +862,13 @@ Ich bin Beschäftigt."
 Ich bin mark und bin beschäftigt.
 Ich bin Mark und bin beschäftigt.
 Ich bin mark.
+Ich bin Mark.
+Ich bin mark schmidt.
+Ich bin Mark schmidt.
+Ich bin mark Schmidt.
+Ich bin Mark Schmidt.
 Ich bin beschäftigt schon.
+Ich bin schon beschäftigt.
 """,
 
 }
