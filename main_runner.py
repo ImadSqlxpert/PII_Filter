@@ -861,6 +861,17 @@ Ich bin einfach beschäftigt.
 Ich bin Beschäftigt."
 Ich bin mark und bin beschäftigt.
 Ich bin Mark und bin beschäftigt.
+Ich bin schnell.
+Ich bin nicht schnell.
+Ich bin heute schnell.
+Ich bin schnell heute.
+Ich bin sehr schnell.
+Ich bin schnell sehr
+Ich bin schnell einfach.
+Ich bin einfach schnell.
+Ich bin Schnell."
+Ich bin mark und bin schnell.
+Ich bin Mark und bin schnell.
 Ich bin mark.
 Ich bin Mark.
 Ich bin mark schmidt.
@@ -869,6 +880,9 @@ Ich bin mark Schmidt.
 Ich bin Mark Schmidt.
 Ich bin beschäftigt schon.
 Ich bin schon beschäftigt.
+Ich bin schnell schon.
+Ich bin schon schnell.
+
 """,
 
 }

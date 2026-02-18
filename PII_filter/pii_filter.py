@@ -1694,25 +1694,24 @@ class PIIFilter:
         return any(cue in prefix for cue in self.INTRO_CUES)
     
     def _looks_like_name_token(self, token: str) -> bool:
-        """
-        Single-token name-likeness check used for the special 'ich bin <token>' case.
-        Accept:
-        • alphabetic (with accents), length >= 2
-        • not in street blockers, not in generic non-person tokens
-        • not in PERSON blacklist, not in DE_NON_NAME_AFTER_ICH_BIN
-        """
-        if not token:
-            return False
-        t = token.strip()
-        if not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ][A-Za-zÀ-ÖØ-öø-ÿĀ-ſ'’-]*", t):
-            return False
-        if len(t) < 2:
-            return False
-        low = t.lower()
-        if low in self.STREET_BLOCKERS or low in self.NON_PERSON_SINGLE_TOKENS \
-        or low in self.PERSON_BLACKLIST_WORDS or low in getattr(self, 'DE_NON_NAME_AFTER_ICH_BIN', set()):
-            return False
-        return True
+            """
+            Single-token name-likeness check used for the special 'ich bin <token>' case.
+            """
+            if not token:
+                return False
+            t = token.strip()
+            if not re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿĀ-ſ][A-Za-zÀ-ÖØ-öø-ÿĀ-ſ'’-]*", t):
+                return False
+            if len(t) < 2:
+                return False
+            low = t.lower()
+            if low in self.STREET_BLOCKERS \
+            or low in self.NON_PERSON_SINGLE_TOKENS \
+            or low in self.PERSON_BLACKLIST_WORDS \
+            or low in getattr(self, 'DE_NON_NAME_AFTER_ICH_BIN', set()):
+                return False
+            return True
+    
 
     def _effective_priority(self, text: str, r) -> int:
         """Bump PERSON priority above ADDRESS if preceded by an intro cue."""
@@ -1940,6 +1939,11 @@ class PIIFilter:
 
             if span_text and span_text[0].islower():
                 continue
+
+
+            if re.match(r"(?i)^(gibt|ist|sind|war|waren|kann|können|moechte|möchte|will|wird|werden|habe|hat|wie|wo|wer|was|wann)\\b", span_text):
+                continue
+
 
             # ❗ DROP standalone LOCATION
             continue
