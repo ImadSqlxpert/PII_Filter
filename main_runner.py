@@ -884,6 +884,26 @@ Ich bin schnell schon.
 Ich bin schon schnell.
 
 """,
+"some examples 5:": """
+Ich will mich selbstständig machen – muss ich dafür überhaupt ein Gewerbe anmelden?
+Ich möchte einen kleinen Imbiss eröffnen – welche Genehmigungen brauche ich dafür in Berlin?
+Ich ziehe mit meinem Business um – wo melde ich die neue Adresse für mein Gewerbe an?
+Ich will für Firmen alten Schrott und Abfälle abholen und wegbringen – brauche ich dafür eine Erlaubnis oder Anmeldung?
+Ich habe meinen Abschluss im Ausland gemacht – wie kann ich meinen Beruf in Berlin anerkennen lassen, damit ich arbeiten darf?
+Gibt es Beratungszentern in Tempelhof-Shöneberg für Gründung von Unternehmen?
+Gibt es in Tempelhof-Shöneberg Beratungsstellen für Gastronomiebetriebe?
+Meine E-Mail ist max.mustermann@beispiel.de und meine Nummer ist 0176 12345678.
+Steuer-ID: 12 345 678 901
+Ich wohne in der Musterstraße 5, 10115 Berlin (Mitte).
+Ich möchte einen kleinen Imbiss eröffnen.
+Die Adresse wäre Karl-Marx-Straße 201, 12055 Berlin.
+Welche Genehmigungen brauche ich dafür in Berlin?
+ich betreibe ein Gewerbe unter der Nummer GEW-2025-7788.
+Ich ziehe mit meinem Business um – wo melde ich die neue Adresse für mein Gewerbe an?
+ich habe meinen Abschluss als Elektriker in Polen gemacht und bin am 21.08.1995 geboren.
+Wie kann ich meinen Beruf in Berlin anerkennen lassen, damit ich arbeiten darf?
+ 
+""",
 
 }
 
